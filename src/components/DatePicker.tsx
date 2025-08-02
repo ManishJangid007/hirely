@@ -11,7 +11,12 @@ interface DatePickerProps {
 const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = "Select date", className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(value ? new Date(value) : null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+    if (!value) return null;
+    // Parse YYYY-MM-DD string to local date to avoid timezone issues
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  });
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,15 +31,19 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
   }, []);
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    // Format date in local timezone to avoid timezone issues
+    const year = date.getFullYear();
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const day = date.getDate();
+    return `${month} ${day}, ${year}`;
   };
 
   const formatDateForInput = (date: Date): string => {
-    return date.toISOString().split('T')[0];
+    // Format date as YYYY-MM-DD in local timezone to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const getDaysInMonth = (date: Date): Date[] => {

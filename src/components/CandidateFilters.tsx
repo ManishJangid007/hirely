@@ -58,10 +58,8 @@ const CandidateFilters: React.FC<CandidateFiltersProps> = ({
         if (newFilters.interviewDate) {
             filtered = filtered.filter(candidate => {
                 if (!candidate.interviewDate) return false;
-                // Compare dates by converting to YYYY-MM-DD format
-                const candidateDateStr = candidate.interviewDate.split('T')[0];
-                const filterDateStr = newFilters.interviewDate;
-                return candidateDateStr === filterDateStr;
+                // Direct string comparison since both are in YYYY-MM-DD format
+                return candidate.interviewDate === newFilters.interviewDate;
             });
         }
 

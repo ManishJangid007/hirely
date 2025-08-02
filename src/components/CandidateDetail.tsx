@@ -184,11 +184,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 <p className="text-sm text-gray-500 dark:text-gray-400">{candidate.position}</p>
                                 {candidate.interviewDate && (
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Interview Date: {new Date(candidate.interviewDate).toLocaleDateString('en-US', {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric'
-                                        })}
+                                        Interview Date: {(() => {
+                                            const [year, month, day] = candidate.interviewDate.split('-').map(Number);
+                                            const date = new Date(year, month - 1, day);
+                                            return date.toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric'
+                                            });
+                                        })()}
                                     </p>
                                 )}
                             </div>

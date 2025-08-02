@@ -165,7 +165,11 @@ function getRandomElements<T>(array: T[], count: number): T[] {
 
 function generateRandomDate(start: Date, end: Date): string {
   const randomDate = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-  return randomDate.toISOString().split('T')[0];
+  // Format as YYYY-MM-DD in local timezone to avoid timezone issues
+  const year = randomDate.getFullYear();
+  const month = String(randomDate.getMonth() + 1).padStart(2, '0');
+  const day = String(randomDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function generateRandomCandidate(): Omit<Candidate, 'id' | 'createdAt'> {
@@ -277,17 +281,17 @@ function generateRandomQuestionTemplate(): Omit<QuestionTemplate, 'id'> {
 async function seedDatabase() {
   try {
     console.log('Starting database seeding...');
-    
+
     // Initialize database
     await databaseService.init();
-    
+
     // Clear existing data
     await databaseService.clearAllData();
-    
+
     // Generate random candidates
     const candidates: Candidate[] = [];
     const candidateCount = 25; // Generate 25 random candidates
-    
+
     for (let i = 0; i < candidateCount; i++) {
       const candidateData = generateRandomCandidate();
       const candidate: Candidate = {
@@ -297,11 +301,11 @@ async function seedDatabase() {
       };
       candidates.push(candidate);
     }
-    
+
     // Generate random question templates
     const templates: QuestionTemplate[] = [];
     const templateCount = 8; // Generate 8 random templates
-    
+
     for (let i = 0; i < templateCount; i++) {
       const templateData = generateRandomQuestionTemplate();
       const template: QuestionTemplate = {
@@ -310,19 +314,19 @@ async function seedDatabase() {
       };
       templates.push(template);
     }
-    
+
     // Add candidates to database
     console.log(`Adding ${candidates.length} candidates...`);
     for (const candidate of candidates) {
       await databaseService.addCandidate(candidate);
     }
-    
+
     // Add templates to database
     console.log(`Adding ${templates.length} question templates...`);
     for (const template of templates) {
       await databaseService.addQuestionTemplate(template);
     }
-    
+
     // Add interview results for candidates who have been interviewed
     console.log('Adding interview results...');
     const interviewedCandidates = candidates.filter(c => c.status !== 'Not Interviewed');
@@ -337,7 +341,7 @@ async function seedDatabase() {
         `${candidate.fullName} has good technical knowledge but needs work on soft skills.`,
         `${candidate.fullName} is a strong candidate with relevant experience.`
       ];
-      
+
       const interviewResult = {
         id: Date.now().toString() + Math.random(),
         candidateId: candidate.id,
@@ -346,20 +350,20 @@ async function seedDatabase() {
         questions: candidate.questions,
         createdAt: candidate.interviewDate ? new Date(candidate.interviewDate).toISOString() : candidate.createdAt
       };
-      
+
       await databaseService.addInterviewResult(interviewResult);
     }
-    
+
     // Set default positions
     const defaultPositions = [
       'Frontend Developer', 'Backend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist',
       'Mobile Developer', 'UI/UX Designer', 'Product Manager', 'QA Engineer', 'System Administrator'
     ];
     await databaseService.setPositions(defaultPositions);
-    
+
     console.log('Database seeding completed successfully!');
     console.log(`Generated ${candidates.length} candidates, ${templates.length} question templates, and ${interviewedCandidates.length} interview results.`);
-    
+
   } catch (error) {
     console.error('Error seeding database:', error);
   }
