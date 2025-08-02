@@ -13,6 +13,7 @@ import { Candidate, Question, QuestionTemplate } from '../types';
 import AddQuestionModal from './AddQuestionModal';
 import SaveResultModal from './SaveResultModal';
 import ResultSummaryModal from './ResultSummaryModal';
+import ConfirmationModal from './ConfirmationModal';
 
 interface CandidateDetailProps {
     candidates: Candidate[];
@@ -33,6 +34,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
     const [showSaveResultModal, setShowSaveResultModal] = useState(false);
     const [showResultSummaryModal, setShowResultSummaryModal] = useState(false);
+    const [showDeleteQuestionConfirmModal, setShowDeleteQuestionConfirmModal] = useState(false);
+    const [questionToDelete, setQuestionToDelete] = useState<Question | null>(null);
 
     useEffect(() => {
         // Load questions from localStorage
@@ -82,6 +85,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     const deleteQuestion = (questionId: string) => {
         setQuestions(prev => prev.filter(q => q.id !== questionId));
+    };
+
+    const handleDeleteQuestion = (question: Question) => {
+        setQuestionToDelete(question);
+        setShowDeleteQuestionConfirmModal(true);
     };
 
     const markQuestionCorrect = (questionId: string) => {
@@ -250,7 +258,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                             questionNumber={index + 1}
                                             onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
                                             onUndo={() => undoQuestion(question.id)}
-                                            onDelete={() => deleteQuestion(question.id)}
+                                            onDelete={() => handleDeleteQuestion(question)}
                                             showUndo={true}
                                         />
                                     ))}
@@ -275,7 +283,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                             onMarkCorrect={() => markQuestionCorrect(question.id)}
                                             onMarkWrong={() => markQuestionWrong(question.id)}
                                             onUndo={() => undoQuestion(question.id)}
-                                            onDelete={() => deleteQuestion(question.id)}
+                                            onDelete={() => handleDeleteQuestion(question)}
                                             showUndo={question.isAnswered}
                                         />
                                     ))}
@@ -297,7 +305,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                             onMarkCorrect={() => markQuestionCorrect(question.id)}
                                             onMarkWrong={() => markQuestionWrong(question.id)}
                                             onUndo={() => undoQuestion(question.id)}
-                                            onDelete={() => deleteQuestion(question.id)}
+                                            onDelete={() => handleDeleteQuestion(question)}
                                             showUndo={question.isAnswered}
                                         />
                                     ))}
@@ -329,6 +337,24 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 onClose={() => setShowResultSummaryModal(false)}
                 candidate={candidate}
                 questions={questions}
+            />
+
+            {/* Delete Question Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={showDeleteQuestionConfirmModal}
+                onClose={() => {
+                    setShowDeleteQuestionConfirmModal(false);
+                    setQuestionToDelete(null);
+                }}
+                onConfirm={() => {
+                    if (questionToDelete) {
+                        deleteQuestion(questionToDelete.id);
+                    }
+                }}
+                title="Delete Question"
+                message={questionToDelete ? `Are you sure you want to delete "${questionToDelete.text}"?` : ''}
+                confirmText="Delete"
+                cancelText="Cancel"
             />
         </div>
     );
@@ -374,9 +400,19 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
             </div>
 
             <div className="space-y-4">
+                {question.answer && (
+                    <div>
+                        <label className="form-label">
+                            Expected Answer
+                        </label>
+                        <div className="p-3 bg-gray-50 dark:bg-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300">
+                            {question.answer}
+                        </div>
+                    </div>
+                )}
                 <div>
                     <label className="form-label">
-                        Answer
+                        Candidate's Answer
                     </label>
                     <textarea
                         value={question.answer || ''}
