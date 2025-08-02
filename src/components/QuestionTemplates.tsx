@@ -110,28 +110,48 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
         }
     };
 
-    const handleAddQuestion = (templateId: string, sectionId: string, questionText: string, answer?: string) => {
+    const handleAddQuestion = (templateId: string, sectionId: string, questionText: string, selectedSection: string, answer?: string) => {
         const template = templates.find(t => t.id === templateId);
         if (template) {
-            const section = template.sections.find(s => s.id === sectionId);
-            if (section) {
-                const newQuestion = {
+            // Check if the selected section exists in the template
+            let targetSection = template.sections.find(s => s.name === selectedSection);
+
+            // Create the new question
+            const newQuestion = {
+                id: Date.now().toString(),
+                text: questionText,
+                section: selectedSection,
+                answer: answer,
+                isAnswered: false
+            };
+
+            let updatedTemplate;
+
+            // If the selected section doesn't exist, create it with the question
+            if (!targetSection) {
+                const newSection: QuestionSection = {
                     id: Date.now().toString(),
-                    text: questionText,
-                    section: section.name,
-                    answer: answer,
-                    isAnswered: false
+                    name: selectedSection,
+                    questions: [newQuestion]
                 };
-                const updatedSection = {
-                    ...section,
-                    questions: [...section.questions, newQuestion]
-                };
-                const updatedTemplate = {
+                updatedTemplate = {
                     ...template,
-                    sections: template.sections.map(s => s.id === sectionId ? updatedSection : s)
+                    sections: [...template.sections, newSection]
                 };
-                onUpdateTemplate(templateId, updatedTemplate);
+            } else {
+                // Add the question to the existing section
+                const updatedSection = {
+                    ...targetSection,
+                    questions: [...targetSection.questions, newQuestion]
+                };
+                updatedTemplate = {
+                    ...template,
+                    sections: template.sections.map(s => s.id === targetSection!.id ? updatedSection : s)
+                };
             }
+
+            // Update the template with a single call
+            onUpdateTemplate(templateId, updatedTemplate);
         }
         setShowAddQuestionModal(false);
         setQuestionModalData(null);
@@ -494,7 +514,7 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                             setQuestionModalData(null);
                         }}
                         onAddQuestion={(questionText, section, answer) => {
-                            handleAddQuestion(questionModalData.templateId, questionModalData.sectionId, questionText, answer);
+                            handleAddQuestion(questionModalData.templateId, questionModalData.sectionId, questionText, section, answer);
                         }}
                         questionTemplates={templates}
                         preSelectedSection={templates.find(t => t.id === questionModalData.templateId)?.sections.find(s => s.id === questionModalData.sectionId)?.name}
