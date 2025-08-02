@@ -65,6 +65,15 @@ class DatabaseService {
   async init(): Promise<void> {
     return new Promise((resolve, reject) => {
       console.log('Initializing database...');
+
+      // Check if IndexedDB is supported
+      if (!window.indexedDB) {
+        const error = new Error('IndexedDB is not supported in this browser');
+        console.error('IndexedDB not supported:', error);
+        reject(error);
+        return;
+      }
+
       const request = indexedDB.open(this.dbName, this.version);
 
       request.onerror = () => {
@@ -74,7 +83,7 @@ class DatabaseService {
 
       request.onsuccess = () => {
         this.db = request.result;
-        console.log('Database initialized successfully');
+        console.log('Database initialized successfully, db object:', this.db);
         resolve();
       };
 
@@ -117,7 +126,9 @@ class DatabaseService {
 
   // Check if database is initialized
   isInitialized(): boolean {
-    return this.db !== null;
+    const initialized = this.db !== null;
+    console.log('Database initialization check:', { db: this.db, initialized });
+    return initialized;
   }
 
   // Backup and Recovery Methods

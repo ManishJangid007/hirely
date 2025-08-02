@@ -11,6 +11,7 @@ import {
     PencilIcon
 } from '@heroicons/react/24/outline';
 import { Candidate, Question, QuestionTemplate } from '../types';
+import { databaseService } from '../services/database';
 import AddQuestionModal from './AddQuestionModal';
 import EditQuestionModal from './EditQuestionModal';
 import SaveResultModal from './SaveResultModal';
@@ -126,11 +127,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         return sections;
     };
 
-    const handleSaveResult = (description: string, result: 'Passed' | 'Rejected' | 'Maybe') => {
+    const handleSaveResult = async (description: string, result: 'Passed' | 'Rejected' | 'Maybe') => {
         // Update candidate with current questions and status
         onUpdateCandidate(candidate.id, { status: result, questions });
 
-        // Save interview result to localStorage
+        // Save interview result to database
         const interviewResult = {
             id: Date.now().toString(),
             candidateId: candidate.id,
@@ -139,8 +140,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             questions,
             createdAt: new Date().toISOString()
         };
-        localStorage.setItem(`interview_result_${candidate.id}`, JSON.stringify(interviewResult));
-        navigate('/');
+
+        try {
+            await databaseService.addInterviewResult(interviewResult);
+            navigate('/');
+        } catch (error) {
+            console.error('Failed to save interview result:', error);
+            // Fallback to localStorage if database fails
+            localStorage.setItem(`interview_result_${candidate.id}`, JSON.stringify(interviewResult));
+            navigate('/');
+        }
     };
 
     const getStatusColor = (status: Candidate['status']) => {

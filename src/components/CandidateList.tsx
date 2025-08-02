@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { Candidate, QuestionTemplate } from '../types';
+import { databaseService } from '../services/database';
 import AddCandidateModal from './AddCandidateModal';
 import EditCandidateModal from './EditCandidateModal';
 import ManagePositionsModal from './ManagePositionsModal';
@@ -35,6 +36,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
     const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
     const [candidateToEdit, setCandidateToEdit] = useState<Candidate | null>(null);
     const [candidateForSummary, setCandidateForSummary] = useState<Candidate | null>(null);
+    const [candidatesWithResults, setCandidatesWithResults] = useState<Set<string>>(new Set());
 
     const getStatusColor = (status: Candidate['status']) => {
         switch (status) {
@@ -69,9 +71,9 @@ const CandidateList: React.FC<CandidateListProps> = ({
         }
     };
 
-    const hasInterviewResult = (candidateId: string) => {
-        const saved = localStorage.getItem(`interview_result_${candidateId}`);
-        return saved ? JSON.parse(saved) : null;
+    const hasInterviewResult = (candidate: Candidate) => {
+        // Check if candidate has been interviewed (status is not "Not Interviewed")
+        return candidate.status !== 'Not Interviewed';
     };
 
     const handleViewSummary = (candidate: Candidate) => {
@@ -182,7 +184,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                             <span className="ml-1">{candidate.status}</span>
                                         </span>
                                         <div className="flex space-x-2">
-                                            {hasInterviewResult(candidate.id) && (
+                                            {hasInterviewResult(candidate) && (
                                                 <button
                                                     onClick={() => handleViewSummary(candidate)}
                                                     className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"

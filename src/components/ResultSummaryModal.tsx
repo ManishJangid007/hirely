@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XMarkIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { Candidate, Question } from '../types';
+import { databaseService } from '../services/database';
 
 interface ResultSummaryModalProps {
   isOpen: boolean;
@@ -16,14 +17,33 @@ const ResultSummaryModal: React.FC<ResultSummaryModalProps> = ({
   questions
 }) => {
   const [copied, setCopied] = useState(false);
+  const [interviewResult, setInterviewResult] = useState<any>(null);
 
-  // Load interview result from localStorage
-  const getInterviewResult = () => {
-    const saved = localStorage.getItem(`interview_result_${candidate.id}`);
-    return saved ? JSON.parse(saved) : null;
-  };
+  // Load interview result from database or localStorage
+  useEffect(() => {
+    const loadInterviewResult = async () => {
+      try {
+        // Try to get from database first
+        const dbResult = await databaseService.getInterviewResultByCandidateId(candidate.id);
+        if (dbResult) {
+          setInterviewResult(dbResult);
+          return;
+        }
+      } catch (error) {
+        console.log('Database query failed, trying localStorage');
+      }
 
-  const interviewResult = getInterviewResult();
+      // Fallback to localStorage
+      const saved = localStorage.getItem(`interview_result_${candidate.id}`);
+      if (saved) {
+        setInterviewResult(JSON.parse(saved));
+      }
+    };
+
+    if (isOpen) {
+      loadInterviewResult();
+    }
+  }, [isOpen, candidate.id]);
 
   const getQuestionsBySection = () => {
     const sections: { [key: string]: Question[] } = {};

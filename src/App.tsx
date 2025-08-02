@@ -25,8 +25,35 @@ function App() {
     const initializeApp = async () => {
       try {
         console.log('Starting app initialization...');
-        await databaseService.init();
+
+        // Retry database initialization up to 3 times
+        let initAttempts = 0;
+        let initSuccess = false;
+
+        while (!initSuccess && initAttempts < 3) {
+          try {
+            await databaseService.init();
+            initSuccess = true;
+            console.log('Database initialized successfully on attempt', initAttempts + 1);
+          } catch (error) {
+            initAttempts++;
+            console.error(`Database initialization attempt ${initAttempts} failed:`, error);
+            if (initAttempts < 3) {
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+          }
+        }
+
+        if (!initSuccess) {
+          throw new Error('Database failed to initialize after 3 attempts');
+        }
+
         console.log('Database initialized, loading data...');
+
+        // Verify database is initialized
+        if (!databaseService.isInitialized()) {
+          throw new Error('Database failed to initialize properly');
+        }
 
         // Try to restore from backup if IndexedDB is empty
         const backupInfo = databaseService.getBackupInfo();
@@ -50,6 +77,9 @@ function App() {
           positions: positions.length
         });
 
+        // Small delay to ensure database is fully ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         setAppState({
           candidates: candidatesAfterRestore.sort((a, b) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -59,6 +89,8 @@ function App() {
         });
       } catch (error) {
         console.error('Failed to initialize app:', error);
+        // Set loading to false even on error so app doesn't hang
+        setIsLoading(false);
       } finally {
         setIsLoading(false);
       }
@@ -68,6 +100,18 @@ function App() {
   }, []);
 
   const addCandidate = async (candidate: Omit<Candidate, 'id' | 'createdAt'>) => {
+    if (isLoading) {
+      console.error('App is still loading, please wait');
+      return;
+    }
+
+    // Wait for database to be initialized
+    let attempts = 0;
+    while (!databaseService.isInitialized() && attempts < 10) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+
     if (!databaseService.isInitialized()) {
       console.error('Database not initialized, cannot add candidate');
       return;
@@ -152,10 +196,43 @@ function App() {
   };
 
   const addQuestionTemplate = async (template: Omit<QuestionTemplate, 'id'>) => {
-    if (!databaseService.isInitialized()) {
-      console.error('Database not initialized, cannot add question template');
+    if (isLoading) {
+      console.error('App is still loading, please wait');
       return;
     }
+
+    console.log('Attempting to add question template, database initialized:', databaseService.isInitialized());
+
+    // Wait for database to be initialized
+    let attempts = 0;
+    while (!databaseService.isInitialized() && attempts < 20) {
+      console.log(`Database not ready, attempt ${attempts + 1}/20`);
+      await new Promise(resolve => setTimeout(resolve, 200));
+      attempts++;
+    }
+
+    if (!databaseService.isInitialized()) {
+      console.error('Database not initialized after 20 attempts, cannot add question template');
+      // Fallback to localStorage for critical operations
+      console.log('Using localStorage fallback for template addition');
+      const newTemplate: QuestionTemplate = {
+        ...template,
+        id: Date.now().toString()
+      };
+
+      // Store in localStorage as fallback
+      const existingTemplates = JSON.parse(localStorage.getItem('questionTemplates') || '[]');
+      existingTemplates.push(newTemplate);
+      localStorage.setItem('questionTemplates', JSON.stringify(existingTemplates));
+
+      setAppState(prev => ({
+        ...prev,
+        questionTemplates: [...prev.questionTemplates, newTemplate]
+      }));
+      return;
+    }
+
+    console.log('Database is ready, proceeding with template addition');
 
     const newTemplate: QuestionTemplate = {
       ...template,
@@ -170,6 +247,15 @@ function App() {
       }));
     } catch (error) {
       console.error('Failed to add question template:', error);
+      // Fallback to localStorage
+      const existingTemplates = JSON.parse(localStorage.getItem('questionTemplates') || '[]');
+      existingTemplates.push(newTemplate);
+      localStorage.setItem('questionTemplates', JSON.stringify(existingTemplates));
+
+      setAppState(prev => ({
+        ...prev,
+        questionTemplates: [...prev.questionTemplates, newTemplate]
+      }));
     }
   };
 
@@ -280,6 +366,7 @@ function App() {
                     onAddTemplate={addQuestionTemplate}
                     onUpdateTemplate={updateQuestionTemplate}
                     onDeleteTemplate={deleteQuestionTemplate}
+                    isLoading={isLoading}
                   />
                 }
               />
