@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 interface DatePickerProps {
@@ -29,12 +30,19 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
     }
   }, [value]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
 
   useEffect(() => {
     if (disableClickOutside) return;
 
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Element;
+      // Check if click is outside both the input and the dropdown
+      const isOutsideInput = !dropdownRef.current?.contains(target);
+      const isOutsideDropdown = !target.closest('[data-datepicker-dropdown]');
+
+      if (isOutsideInput && isOutsideDropdown) {
         setIsOpen(false);
       }
     };
@@ -106,6 +114,24 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
     setIsOpen(false);
   };
 
+  const updateDropdownPosition = () => {
+    if (inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  };
+
+  const handleInputClick = () => {
+    if (!isOpen) {
+      updateDropdownPosition();
+    }
+    setIsOpen(!isOpen);
+  };
+
   const goToPreviousMonth = (e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
@@ -132,18 +158,28 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
     <div className={`relative date-picker-container ${className}`} ref={dropdownRef}>
       <div className="relative">
         <input
+          ref={inputRef}
           type="text"
           value={selectedDate ? formatDate(selectedDate) : ''}
           placeholder={placeholder}
           readOnly
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleInputClick}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 cursor-pointer"
         />
         <CalendarIcon className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
       </div>
 
-      {isOpen && (
-        <div className="absolute z-50 mt-1 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+      {isOpen && createPortal(
+        <div
+          className="fixed z-[9999] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+          data-datepicker-dropdown
+          style={{
+            top: dropdownPosition.top,
+            left: dropdownPosition.left,
+            width: Math.max(dropdownPosition.width, 320), // Minimum width of 320px
+            maxWidth: '80vw'
+          }}
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <button
@@ -203,7 +239,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
               ))}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
