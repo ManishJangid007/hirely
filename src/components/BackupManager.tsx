@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     CloudArrowUpIcon,
     CloudArrowDownIcon,
     ExclamationTriangleIcon,
     CheckCircleIcon,
-    XMarkIcon
+    XMarkIcon,
+    ArrowDownTrayIcon,
+    ArrowUpTrayIcon
 } from '@heroicons/react/24/outline';
 import { databaseService } from '../services/database';
 import ConfirmationModal from './ConfirmationModal';
@@ -18,8 +20,11 @@ const BackupManager: React.FC<BackupManagerProps> = ({ isOpen, onClose }) => {
     const [backupInfo, setBackupInfo] = useState<{ exists: boolean; lastBackup?: string }>({ exists: false });
     const [isCreatingBackup, setIsCreatingBackup] = useState(false);
     const [isRestoringBackup, setIsRestoringBackup] = useState(false);
+    const [isExportingData, setIsExportingData] = useState(false);
+    const [isImportingData, setIsImportingData] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
     const [showRestoreConfirmModal, setShowRestoreConfirmModal] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (isOpen) {
@@ -62,6 +67,101 @@ const BackupManager: React.FC<BackupManagerProps> = ({ isOpen, onClose }) => {
             setMessage({ type: 'error', text: 'Failed to restore backup. Please try again.' });
         } finally {
             setIsRestoringBackup(false);
+        }
+    };
+
+    const handleExportData = async () => {
+        setIsExportingData(true);
+        setMessage(null);
+
+        try {
+            const [candidates, templates, positions, results] = await Promise.all([
+                databaseService.getCandidates(),
+                databaseService.getQuestionTemplates(),
+                databaseService.getPositions(),
+                databaseService.getInterviewResults()
+            ]);
+
+            const exportData = {
+                candidates,
+                questionTemplates: templates,
+                positions,
+                interviewResults: results,
+                exportedAt: new Date().toISOString(),
+                version: '1.0'
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `interview-app-data-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            setMessage({ type: 'success', text: 'Data exported successfully!' });
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Failed to export data. Please try again.' });
+        } finally {
+            setIsExportingData(false);
+        }
+    };
+
+    const handleImportData = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsImportingData(true);
+        setMessage(null);
+
+        try {
+            const text = await file.text();
+            const importData = JSON.parse(text);
+
+            // Validate the imported data structure
+            if (!importData.candidates || !importData.questionTemplates || !importData.positions) {
+                throw new Error('Invalid data format');
+            }
+
+            // Clear existing data
+            await databaseService.clearAllData();
+
+            // Import candidates
+            for (const candidate of importData.candidates) {
+                await databaseService.addCandidate(candidate);
+            }
+
+            // Import question templates
+            for (const template of importData.questionTemplates) {
+                await databaseService.addQuestionTemplate(template);
+            }
+
+            // Import positions
+            await databaseService.setPositions(importData.positions);
+
+            // Import interview results if they exist
+            if (importData.interviewResults) {
+                for (const result of importData.interviewResults) {
+                    await databaseService.addInterviewResult(result);
+                }
+            }
+
+            setMessage({ type: 'success', text: 'Data imported successfully! Please refresh the page.' });
+            setTimeout(() => window.location.reload(), 2000);
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Failed to import data. Please check the file format.' });
+        } finally {
+            setIsImportingData(false);
+            // Reset file input
+            if (event.target) {
+                event.target.value = '';
+            }
         }
     };
 
@@ -142,6 +242,29 @@ const BackupManager: React.FC<BackupManagerProps> = ({ isOpen, onClose }) => {
                             <CloudArrowDownIcon className="w-4 h-4 mr-2" />
                             {isRestoringBackup ? 'Restoring...' : 'Restore from Backup'}
                         </button>
+
+                        <div className="border-t border-gray-200 dark:border-gray-700 pt-3">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">Data Export/Import</h4>
+                            <div className="space-y-2">
+                                <button
+                                    onClick={handleExportData}
+                                    disabled={isExportingData}
+                                    className="w-full inline-flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                >
+                                    <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
+                                    {isExportingData ? 'Exporting...' : 'Export Data (JSON)'}
+                                </button>
+
+                                <button
+                                    onClick={handleImportData}
+                                    disabled={isImportingData}
+                                    className="w-full inline-flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                >
+                                    <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
+                                    {isImportingData ? 'Importing...' : 'Import Data (JSON)'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Message Display */}
@@ -167,8 +290,19 @@ const BackupManager: React.FC<BackupManagerProps> = ({ isOpen, onClose }) => {
                             <li>• Create backups regularly to protect your data</li>
                             <li>• Restore from backup if data is lost</li>
                             <li>• Backups are automatically created when you make changes</li>
+                            <li>• Export data as JSON files for external storage</li>
+                            <li>• Import data from previously exported JSON files</li>
                         </ul>
                     </div>
+
+                    {/* Hidden file input for import */}
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".json"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                    />
                 </div>
             </div>
 

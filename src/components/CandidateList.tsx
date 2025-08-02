@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { Candidate, QuestionTemplate } from '../types';
 import AddCandidateModal from './AddCandidateModal';
 import EditCandidateModal from './EditCandidateModal';
 import ManagePositionsModal from './ManagePositionsModal';
+import ResultSummaryModal from './ResultSummaryModal';
 
 interface CandidateListProps {
     candidates: Candidate[];
@@ -30,8 +31,10 @@ const CandidateList: React.FC<CandidateListProps> = ({
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showPositionsModal, setShowPositionsModal] = useState(false);
+    const [showResultSummaryModal, setShowResultSummaryModal] = useState(false);
     const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
     const [candidateToEdit, setCandidateToEdit] = useState<Candidate | null>(null);
+    const [candidateForSummary, setCandidateForSummary] = useState<Candidate | null>(null);
 
     const getStatusColor = (status: Candidate['status']) => {
         switch (status) {
@@ -64,6 +67,16 @@ const CandidateList: React.FC<CandidateListProps> = ({
             onDeleteCandidate(candidateToDelete.id);
             setCandidateToDelete(null);
         }
+    };
+
+    const hasInterviewResult = (candidateId: string) => {
+        const saved = localStorage.getItem(`interview_result_${candidateId}`);
+        return saved ? JSON.parse(saved) : null;
+    };
+
+    const handleViewSummary = (candidate: Candidate) => {
+        setCandidateForSummary(candidate);
+        setShowResultSummaryModal(true);
     };
 
     return (
@@ -168,12 +181,23 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                             {getStatusIcon(candidate.status)}
                                             <span className="ml-1">{candidate.status}</span>
                                         </span>
-                                        <Link
-                                            to={`/candidate/${candidate.id}`}
-                                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                        >
-                                            View Details
-                                        </Link>
+                                        <div className="flex space-x-2">
+                                            {hasInterviewResult(candidate.id) && (
+                                                <button
+                                                    onClick={() => handleViewSummary(candidate)}
+                                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                                >
+                                                    <ClipboardDocumentIcon className="w-4 h-4 mr-1" />
+                                                    Summary
+                                                </button>
+                                            )}
+                                            <Link
+                                                to={`/candidate/${candidate.id}`}
+                                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                            >
+                                                View Details
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -209,6 +233,19 @@ const CandidateList: React.FC<CandidateListProps> = ({
                 onAddPosition={onAddPosition}
                 onRemovePosition={onRemovePosition}
             />
+
+            {/* Result Summary Modal */}
+            {candidateForSummary && (
+                <ResultSummaryModal
+                    isOpen={showResultSummaryModal}
+                    onClose={() => {
+                        setShowResultSummaryModal(false);
+                        setCandidateForSummary(null);
+                    }}
+                    candidate={candidateForSummary}
+                    questions={candidateForSummary.questions || []}
+                />
+            )}
 
             {/* Delete Confirmation Modal */}
             {candidateToDelete && (
