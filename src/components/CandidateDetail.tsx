@@ -139,22 +139,22 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header */}
-            <div className="bg-white shadow-sm border-b">
+            <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-6">
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={() => navigate('/')}
-                                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
                             >
                                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                                 Back
                             </button>
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">{candidate.fullName}</h1>
-                                <p className="text-sm text-gray-500">{candidate.position}</p>
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{candidate.fullName}</h1>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{candidate.position}</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-3">
@@ -164,7 +164,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             {candidate.status !== 'Not Interviewed' && (
                                 <button
                                     onClick={() => setShowResultSummaryModal(true)}
-                                    className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
+                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
                                 >
                                     <ClipboardDocumentIcon className="w-4 h-4 mr-2" />
                                     View Summary
@@ -176,21 +176,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </div>
 
             {/* Stats Bar */}
-            <div className="bg-white border-b">
+            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center py-4">
                         <div className="flex space-x-6">
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-green-600">{getCorrectCount()}</div>
-                                <div className="text-xs text-gray-500">Correct</div>
+                                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{getCorrectCount()}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">Correct</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-red-600">{getWrongCount()}</div>
-                                <div className="text-xs text-gray-500">Wrong</div>
+                                <div className="text-2xl font-bold text-red-600 dark:text-red-400">{getWrongCount()}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">Wrong</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-gray-600">{getRemainingCount()}</div>
-                                <div className="text-xs text-gray-500">Remaining</div>
+                                <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">{getRemainingCount()}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">Remaining</div>
                             </div>
                         </div>
                         <div className="flex space-x-3">
@@ -219,9 +219,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {questions.length === 0 ? (
                     <div className="text-center py-12">
-                        <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
-                        <h3 className="mt-2 text-sm font-medium text-gray-900">No questions</h3>
-                        <p className="mt-1 text-sm text-gray-500">Get started by adding your first question.</p>
+                        <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+                        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No questions</h3>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by adding your first question.</p>
                         <div className="mt-6">
                             <button
                                 onClick={() => setShowAddQuestionModal(true)}
@@ -283,29 +283,26 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         )}
 
                         {/* Questions by Section */}
-                        {Object.entries(getQuestionsBySection()).map(([sectionName, sectionQuestions]) => {
-                            const unansweredQuestions = sectionQuestions.filter(q => !q.isAnswered);
-                            if (unansweredQuestions.length === 0) return null;
-
-                            return (
-                                <div key={sectionName}>
-                                    <h2 className="text-lg font-medium text-gray-900 mb-4">{sectionName}</h2>
-                                    <div className="space-y-4">
-                                        {unansweredQuestions.map((question, index) => (
-                                            <QuestionCard
-                                                key={question.id}
-                                                question={question}
-                                                questionNumber={index + 1}
-                                                onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
-                                                onMarkCorrect={() => markQuestionCorrect(question.id)}
-                                                onMarkWrong={() => markQuestionWrong(question.id)}
-                                                onDelete={() => deleteQuestion(question.id)}
-                                            />
-                                        ))}
-                                    </div>
+                        {Object.entries(getQuestionsBySection()).map(([sectionName, sectionQuestions]) => (
+                            <div key={sectionName}>
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{sectionName}</h2>
+                                <div className="space-y-4">
+                                    {sectionQuestions.map((question, index) => (
+                                        <QuestionCard
+                                            key={question.id}
+                                            question={question}
+                                            questionNumber={index + 1}
+                                            onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
+                                            onMarkCorrect={() => markQuestionCorrect(question.id)}
+                                            onMarkWrong={() => markQuestionWrong(question.id)}
+                                            onUndo={() => undoQuestion(question.id)}
+                                            onDelete={() => deleteQuestion(question.id)}
+                                            showUndo={question.isAnswered}
+                                        />
+                                    ))}
                                 </div>
-                            );
-                        })}
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>
@@ -359,13 +356,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     showUndo = false
 }) => {
     return (
-        <div className="bg-white rounded-lg shadow border p-6">
+        <div className="bg-white dark:bg-gray-700 rounded-lg shadow border p-6">
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center">
                     <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 text-sm font-medium rounded-full mr-3">
                         {questionNumber}
                     </span>
-                    <h3 className="text-lg font-medium text-gray-900">{question.text}</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{question.text}</h3>
                 </div>
                 <button
                     onClick={onDelete}
@@ -411,7 +408,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     {showUndo && onUndo && (
                         <button
                             onClick={onUndo}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm leading-4 font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 transition-all duration-200"
                         >
                             Undo
                         </button>

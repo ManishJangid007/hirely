@@ -63,13 +63,13 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <div className="mt-3">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-medium text-gray-900">Add Question</h3>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add Question</h3>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
                         >
                             <XMarkIcon className="w-6 h-6" />
                         </button>
@@ -131,7 +131,7 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                             >
                                 Cancel
                             </button>

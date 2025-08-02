@@ -36,13 +36,13 @@ const ManagePositionsModal: React.FC<ManagePositionsModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <div className="mt-3">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-medium text-gray-900">Manage Positions</h3>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">Manage Positions</h3>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
                         >
                             <XMarkIcon className="w-6 h-6" />
                         </button>
@@ -70,24 +70,24 @@ const ManagePositionsModal: React.FC<ManagePositionsModalProps> = ({
 
                     {/* List of positions */}
                     <div>
-                        <h4 className="text-sm font-medium text-gray-900 mb-4">Current Positions</h4>
+                        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-4">Current Positions</h4>
                         <div className="space-y-3">
                             {positions.map((position) => (
                                 <div
                                     key={position}
-                                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200"
+                                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
                                 >
-                                    <span className="text-sm text-gray-700 font-medium">{position}</span>
+                                    <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{position}</span>
                                     <button
                                         onClick={() => handleRemovePosition(position)}
-                                        className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
                                     >
                                         <TrashIcon className="w-4 h-4" />
                                     </button>
                                 </div>
                             ))}
                             {positions.length === 0 && (
-                                <p className="text-sm text-gray-500 text-center py-6">
+                                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-6">
                                     No positions added yet
                                 </p>
                             )}
@@ -97,7 +97,7 @@ const ManagePositionsModal: React.FC<ManagePositionsModalProps> = ({
                     <div className="mt-6 flex justify-end">
                         <button
                             onClick={onClose}
-                            className="px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                         >
                             Close
                         </button>
