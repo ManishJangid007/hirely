@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { QuestionTemplate } from '../types';
 
@@ -7,19 +7,29 @@ interface AddQuestionModalProps {
     onClose: () => void;
     onAddQuestion: (questionText: string, section: string, answer?: string) => void;
     questionTemplates: QuestionTemplate[];
+    preSelectedSection?: string;
 }
 
 const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
     isOpen,
     onClose,
     onAddQuestion,
-    questionTemplates
+    questionTemplates,
+    preSelectedSection
 }) => {
     const [questionText, setQuestionText] = useState('');
     const [answer, setAnswer] = useState('');
     const [selectedSection, setSelectedSection] = useState('');
     const [customSection, setCustomSection] = useState('');
     const [showCustomSection, setShowCustomSection] = useState(false);
+
+    // Set pre-selected section when modal opens
+    useEffect(() => {
+        if (isOpen && preSelectedSection) {
+            setSelectedSection(preSelectedSection);
+            setShowCustomSection(false);
+        }
+    }, [isOpen, preSelectedSection]);
 
     // Get all unique sections from templates
     const getAllSections = () => {

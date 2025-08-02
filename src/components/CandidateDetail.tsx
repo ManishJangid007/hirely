@@ -152,28 +152,28 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             {/* Header */}
             <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-6">
-                        <div className="flex items-center space-x-4">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6 space-y-4 sm:space-y-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                             <button
                                 onClick={() => navigate('/')}
-                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 w-fit"
                             >
                                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                                 Back
                             </button>
-                            <div>
-                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{candidate.fullName}</h1>
+                            <div className="text-center sm:text-left">
+                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{candidate.fullName}</h1>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">{candidate.position}</p>
                             </div>
                         </div>
-                        <div className="flex items-center space-x-3">
+                        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3">
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(candidate.status)}`}>
                                 {candidate.status}
                             </span>
                             {candidate.status !== 'Not Interviewed' && (
                                 <button
                                     onClick={() => setShowResultSummaryModal(true)}
-                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
+                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 w-fit"
                                 >
                                     <ClipboardDocumentIcon className="w-4 h-4 mr-2" />
                                     View Summary
@@ -187,8 +187,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             {/* Stats Bar */}
             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex justify-between items-center py-4">
-                        <div className="flex space-x-6">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 space-y-4 sm:space-y-0">
+                        <div className="flex justify-center sm:justify-start space-x-6">
                             <div className="text-center">
                                 <div className="text-2xl font-bold text-green-600 dark:text-green-400">{getCorrectCount()}</div>
                                 <div className="text-xs text-gray-500 dark:text-gray-400">Correct</div>
@@ -202,10 +202,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 <div className="text-xs text-gray-500 dark:text-gray-400">Remaining</div>
                             </div>
                         </div>
-                        <div className="flex space-x-3">
+                        <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3">
                             <button
                                 onClick={() => setShowAddQuestionModal(true)}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
+                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto"
                             >
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Question
@@ -213,7 +213,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             {questions.length > 0 && (
                                 <button
                                     onClick={() => setShowSaveResultModal(true)}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-all duration-200"
+                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-all duration-200 w-full sm:w-auto"
                                 >
                                     <DocumentTextIcon className="w-4 h-4 mr-2" />
                                     Save Result
