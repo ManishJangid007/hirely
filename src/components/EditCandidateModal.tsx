@@ -31,6 +31,13 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
             setExperienceYears(candidate.experience.years);
             setExperienceMonths(candidate.experience.months);
             setInterviewDate(candidate.interviewDate || '');
+        } else {
+            // Reset form when no candidate is selected
+            setFullName('');
+            setPosition('');
+            setExperienceYears(0);
+            setExperienceMonths(0);
+            setInterviewDate('');
         }
     }, [candidate]);
 
@@ -51,6 +58,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
     };
 
     const handleClose = () => {
+        // Reset form to current candidate's data when closing
         if (candidate) {
             setFullName(candidate.fullName);
             setPosition(candidate.position);
@@ -119,6 +127,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                                 Interview Date
                             </label>
                             <DatePicker
+                                key={candidate?.id || 'new'} // Force re-render when candidate changes
                                 value={interviewDate}
                                 onChange={setInterviewDate}
                                 placeholder="Select interview date"

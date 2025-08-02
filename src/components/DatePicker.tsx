@@ -17,6 +17,16 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
     const [year, month, day] = value.split('-').map(Number);
     return new Date(year, month - 1, day);
   });
+
+  // Update selectedDate when value prop changes
+  useEffect(() => {
+    if (value) {
+      const [year, month, day] = value.split('-').map(Number);
+      setSelectedDate(new Date(year, month - 1, day));
+    } else {
+      setSelectedDate(null);
+    }
+  }, [value]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
