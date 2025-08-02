@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CandidateList from './components/CandidateList';
 import CandidateDetail from './components/CandidateDetail';
 import QuestionTemplates from './components/QuestionTemplates';
+import BackupManager from './components/BackupManager';
 import { Candidate, QuestionTemplate, AppState } from './types';
 import { databaseService } from './services/database';
 
@@ -13,22 +14,37 @@ function App() {
     positions: ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist']
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [showBackupManager, setShowBackupManager] = useState(false);
 
   // Initialize database and load data
   useEffect(() => {
     const initializeApp = async () => {
       try {
         await databaseService.init();
+
+        // Try to restore from backup if IndexedDB is empty
+        const backupInfo = databaseService.getBackupInfo();
+        const candidates = await databaseService.getCandidates();
+
+        if (candidates.length === 0 && backupInfo.exists) {
+          const shouldRestore = window.confirm(
+            'No data found in the database, but a backup is available. Would you like to restore from backup?'
+          );
+          if (shouldRestore) {
+            await databaseService.restoreFromBackup();
+          }
+        }
+
         await databaseService.migrateFromLocalStorage();
 
-        const [candidates, templates, positions] = await Promise.all([
+        const [candidatesAfterRestore, templates, positions] = await Promise.all([
           databaseService.getCandidates(),
           databaseService.getQuestionTemplates(),
           databaseService.getPositions()
         ]);
 
         setAppState({
-          candidates,
+          candidates: candidatesAfterRestore,
           questionTemplates: templates,
           positions: positions.length > 0 ? positions : ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist']
         });
@@ -179,6 +195,19 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
+        {/* Global Backup Button */}
+        <div className="fixed top-4 right-4 z-40">
+          <button
+            onClick={() => setShowBackupManager(true)}
+            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+            </svg>
+            Backup
+          </button>
+        </div>
+
         <Routes>
           <Route
             path="/"
@@ -217,6 +246,12 @@ function App() {
             }
           />
         </Routes>
+
+        {/* Backup Manager Modal */}
+        <BackupManager
+          isOpen={showBackupManager}
+          onClose={() => setShowBackupManager(false)}
+        />
       </div>
     </Router>
   );

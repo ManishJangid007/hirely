@@ -47,10 +47,19 @@ export interface QuestionTemplate {
   sections: QuestionSection[];
 }
 
+export interface BackupData {
+  candidates: Candidate[];
+  questionTemplates: QuestionTemplate[];
+  positions: string[];
+  interviewResults: InterviewResult[];
+  lastBackup: string;
+}
+
 class DatabaseService {
   private dbName = 'InterviewAppDB';
   private version = 1;
   private db: IDBDatabase | null = null;
+  private backupKey = 'interview_app_backup';
 
   async init(): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -95,6 +104,100 @@ class DatabaseService {
     return transaction.objectStore(storeName);
   }
 
+  // Backup and Recovery Methods
+  async createBackup(): Promise<void> {
+    try {
+      const [candidates, templates, positions, results] = await Promise.all([
+        this.getCandidates(),
+        this.getQuestionTemplates(),
+        this.getPositions(),
+        this.getInterviewResults()
+      ]);
+
+      const backupData: BackupData = {
+        candidates,
+        questionTemplates: templates,
+        positions,
+        interviewResults: results,
+        lastBackup: new Date().toISOString()
+      };
+
+      localStorage.setItem(this.backupKey, JSON.stringify(backupData));
+      console.log('Backup created successfully');
+    } catch (error) {
+      console.error('Failed to create backup:', error);
+    }
+  }
+
+  async restoreFromBackup(): Promise<boolean> {
+    try {
+      const backupData = localStorage.getItem(this.backupKey);
+      if (!backupData) {
+        console.log('No backup found');
+        return false;
+      }
+
+      const backup: BackupData = JSON.parse(backupData);
+
+      // Clear existing data
+      await this.clearAllData();
+
+      // Restore data
+      for (const candidate of backup.candidates) {
+        await this.addCandidate(candidate);
+      }
+
+      for (const template of backup.questionTemplates) {
+        await this.addQuestionTemplate(template);
+      }
+
+      await this.setPositions(backup.positions);
+
+      for (const result of backup.interviewResults) {
+        await this.addInterviewResult(result);
+      }
+
+      console.log('Backup restored successfully');
+      return true;
+    } catch (error) {
+      console.error('Failed to restore backup:', error);
+      return false;
+    }
+  }
+
+  async clearAllData(): Promise<void> {
+    const stores = ['candidates', 'questionTemplates', 'positions', 'interviewResults'];
+
+    for (const storeName of stores) {
+      const store = this.getStore(storeName, 'readwrite');
+      await new Promise<void>((resolve, reject) => {
+        const request = store.clear();
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+      });
+    }
+  }
+
+  getBackupInfo(): { exists: boolean; lastBackup?: string } {
+    const backupData = localStorage.getItem(this.backupKey);
+    if (!backupData) {
+      return { exists: false };
+    }
+
+    try {
+      const backup: BackupData = JSON.parse(backupData);
+      return { exists: true, lastBackup: backup.lastBackup };
+    } catch {
+      return { exists: false };
+    }
+  }
+
+  // Auto-backup on data changes
+  private async autoBackup(): Promise<void> {
+    // Create backup every 5 minutes or after significant changes
+    await this.createBackup();
+  }
+
   // Candidate operations
   async getCandidates(): Promise<Candidate[]> {
     return new Promise((resolve, reject) => {
@@ -112,7 +215,10 @@ class DatabaseService {
       const request = store.add(candidate);
 
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
     });
   }
 
@@ -122,7 +228,10 @@ class DatabaseService {
       const request = store.put(candidate);
 
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
     });
   }
 
@@ -132,7 +241,10 @@ class DatabaseService {
       const request = store.delete(id);
 
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
     });
   }
 
@@ -153,7 +265,10 @@ class DatabaseService {
       const request = store.add(template);
 
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
     });
   }
 
@@ -163,7 +278,10 @@ class DatabaseService {
       const request = store.put(template);
 
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
     });
   }
 
@@ -173,7 +291,10 @@ class DatabaseService {
       const request = store.delete(id);
 
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
     });
   }
 
@@ -209,7 +330,10 @@ class DatabaseService {
           });
         });
 
-        Promise.all(promises).then(() => resolve()).catch(reject);
+        Promise.all(promises).then(async () => {
+          await this.autoBackup();
+          resolve();
+        }).catch(reject);
       };
     });
   }
@@ -231,7 +355,10 @@ class DatabaseService {
       const request = store.add(result);
 
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
     });
   }
 
@@ -252,7 +379,10 @@ class DatabaseService {
       const request = store.put(result);
 
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
     });
   }
 
@@ -262,7 +392,10 @@ class DatabaseService {
       const request = store.delete(id);
 
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve();
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
     });
   }
 
