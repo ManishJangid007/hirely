@@ -371,6 +371,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 onClose={() => setShowAddQuestionModal(false)}
                 onAddQuestion={addQuestion}
                 questionTemplates={questionTemplates}
+                candidateQuestions={questions}
             />
 
             <EditQuestionModal

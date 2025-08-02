@@ -16,23 +16,41 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
     candidate
 }) => {
     const [fullName, setFullName] = useState('');
+    const [position, setPosition] = useState('');
+    const [experienceYears, setExperienceYears] = useState(0);
+    const [experienceMonths, setExperienceMonths] = useState(0);
 
     useEffect(() => {
         if (candidate) {
             setFullName(candidate.fullName);
+            setPosition(candidate.position);
+            setExperienceYears(candidate.experience.years);
+            setExperienceMonths(candidate.experience.months);
         }
     }, [candidate]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!candidate || !fullName.trim()) return;
+        if (!candidate || !fullName.trim() || !position.trim()) return;
 
-        onUpdateCandidate(candidate.id, { fullName: fullName.trim() });
+        onUpdateCandidate(candidate.id, {
+            fullName: fullName.trim(),
+            position: position.trim(),
+            experience: {
+                years: experienceYears,
+                months: experienceMonths
+            }
+        });
         onClose();
     };
 
     const handleClose = () => {
-        setFullName(candidate?.fullName || '');
+        if (candidate) {
+            setFullName(candidate.fullName);
+            setPosition(candidate.position);
+            setExperienceYears(candidate.experience.years);
+            setExperienceMonths(candidate.experience.months);
+        }
         onClose();
     };
 
@@ -67,6 +85,57 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                                 required
                                 autoFocus
                             />
+                        </div>
+
+                        <div>
+                            <label htmlFor="position" className="form-label required">
+                                Position
+                            </label>
+                            <input
+                                type="text"
+                                id="position"
+                                value={position}
+                                onChange={(e) => setPosition(e.target.value)}
+                                className="form-input"
+                                placeholder="Enter candidate's position"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className="form-label">
+                                Experience
+                            </label>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="experienceYears" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Years
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="experienceYears"
+                                        value={experienceYears}
+                                        onChange={(e) => setExperienceYears(parseInt(e.target.value) || 0)}
+                                        className="form-input"
+                                        min="0"
+                                        max="50"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="experienceMonths" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Months
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="experienceMonths"
+                                        value={experienceMonths}
+                                        onChange={(e) => setExperienceMonths(parseInt(e.target.value) || 0)}
+                                        className="form-input"
+                                        min="0"
+                                        max="11"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div className="flex justify-end space-x-3 pt-6">

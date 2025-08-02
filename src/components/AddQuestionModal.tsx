@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { QuestionTemplate } from '../types';
+import { QuestionTemplate, Question } from '../types';
 
 interface AddQuestionModalProps {
     isOpen: boolean;
@@ -8,6 +8,7 @@ interface AddQuestionModalProps {
     onAddQuestion: (questionText: string, section: string, answer?: string) => void;
     questionTemplates: QuestionTemplate[];
     preSelectedSection?: string;
+    candidateQuestions?: Question[];
 }
 
 const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
@@ -15,7 +16,8 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
     onClose,
     onAddQuestion,
     questionTemplates,
-    preSelectedSection
+    preSelectedSection,
+    candidateQuestions = []
 }) => {
     const [questionText, setQuestionText] = useState('');
     const [answer, setAnswer] = useState('');
@@ -31,15 +33,25 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
         }
     }, [isOpen, preSelectedSection]);
 
-    // Get all unique sections from templates
+    // Get all unique sections from templates and candidate questions
     const getAllSections = () => {
         const sections = new Set<string>();
+
+        // Add sections from templates
         questionTemplates.forEach(template => {
             template.sections.forEach(section => {
                 sections.add(section.name);
             });
         });
-        return Array.from(sections);
+
+        // Add sections from candidate's existing questions
+        candidateQuestions.forEach(question => {
+            if (question.section) {
+                sections.add(question.section);
+            }
+        });
+
+        return Array.from(sections).sort();
     };
 
     const handleSubmit = (e: React.FormEvent) => {
