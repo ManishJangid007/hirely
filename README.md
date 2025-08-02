@@ -1,46 +1,132 @@
-# Getting Started with Create React App
+# Candidate Interview App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, responsive web application for managing candidate interviews and questions. Built with React, TypeScript, and Tailwind CSS.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+### 🏠 Home Page (Candidate List)
+- **Candidate Cards** with full name, position, status, and experience
+- **Status Management**: Not Interviewed (grey), Passed (green), Rejected (red), Maybe (yellow-orange)
+- **Add Candidate** with modal form
+- **Manage Positions** with add/remove functionality
+- **Delete Candidates** with confirmation dialog
 
-### `npm start`
+### 👤 Candidate Detail Page
+- **Question Management**: Add, edit, and delete questions
+- **Section Organization**: Group questions by sections
+- **Answer Tracking**: Record candidate answers
+- **Scoring System**: Mark questions as correct/wrong with undo functionality
+- **Auto-sorting**: Questions automatically move to "Correct Answers" or "Wrong/Unanswered" sections
+- **Statistics Bar**: Real-time counters for correct, wrong, and remaining questions
+- **Save Interview Result**: Finalize interview with description and result
+- **Result Summary**: View detailed interview summary with copy functionality
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### 📋 Question Templates
+- **Template Management**: Create and manage reusable question templates
+- **Section Organization**: Add sections within templates
+- **Question Bank**: Build a library of questions by section
+- **Import Functionality**: Import questions from templates when adding candidates
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Tech Stack
 
-### `npm test`
+- **React 18** with TypeScript
+- **React Router** for navigation
+- **Tailwind CSS** for styling and responsiveness
+- **Heroicons** for beautiful icons
+- **LocalStorage** for data persistence
+- **Mobile-first** responsive design
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Getting Started
 
-### `npm run build`
+### Prerequisites
+- Node.js (v14 or higher)
+- npm or yarn
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Installation
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd interview-app
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. Install dependencies:
+```bash
+npm install
+```
 
-### `npm run eject`
+3. Start the development server:
+```bash
+npm start
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+4. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Available Scripts
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+- `npm start` - Runs the app in development mode
+- `npm test` - Launches the test runner
+- `npm run build` - Builds the app for production
+- `npm run eject` - Ejects from Create React App (one-way operation)
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Usage
 
-## Learn More
+### Adding Candidates
+1. Click "Add Candidate" on the home page
+2. Fill in the candidate details (name, position, experience)
+3. Optionally import questions from templates
+4. Save the candidate
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Conducting Interviews
+1. Click "View Details" on a candidate card
+2. Add questions using the "Add Question" button
+3. Record candidate answers in the text areas
+4. Mark questions as correct (✓) or wrong (✗)
+5. Use the undo button if you make a mistake
+6. Save the interview result when finished
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Managing Question Templates
+1. Navigate to "Question Templates" from the home page
+2. Create new templates with "Add Template"
+3. Add sections to organize questions
+4. Add questions to each section
+5. Use templates when adding new candidates
+
+### Viewing Results
+1. After completing an interview, view the summary
+2. Copy the formatted summary to clipboard
+3. Share results with stakeholders
+
+## Data Storage
+
+The app uses localStorage for data persistence:
+- Candidates and their details
+- Question templates and sections
+- Interview questions and answers
+- Interview results and descriptions
+
+## Responsive Design
+
+The app is fully responsive and works on:
+- Desktop computers
+- Tablets
+- Mobile phones
+
+## Browser Support
+
+- Chrome (recommended)
+- Firefox
+- Safari
+- Edge
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.

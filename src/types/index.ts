@@ -1,0 +1,47 @@
+export interface Candidate {
+    id: string;
+    fullName: string;
+    position: string;
+    status: 'Not Interviewed' | 'Passed' | 'Rejected' | 'Maybe';
+    experience: {
+        years: number;
+        months: number;
+    };
+    createdAt: string;
+}
+
+export interface Question {
+    id: string;
+    text: string;
+    section: string;
+    answer?: string;
+    isCorrect?: boolean;
+    isAnswered: boolean;
+}
+
+export interface InterviewResult {
+    id: string;
+    candidateId: string;
+    description: string;
+    result: 'Passed' | 'Rejected' | 'Maybe';
+    questions: Question[];
+    createdAt: string;
+}
+
+export interface QuestionSection {
+    id: string;
+    name: string;
+    questions: Question[];
+}
+
+export interface QuestionTemplate {
+    id: string;
+    name: string;
+    sections: QuestionSection[];
+}
+
+export interface AppState {
+    candidates: Candidate[];
+    questionTemplates: QuestionTemplate[];
+    positions: string[];
+} 
