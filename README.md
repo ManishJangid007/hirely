@@ -38,6 +38,18 @@ A modern, responsive web application for managing candidate interviews and quest
 - **Restore Functionality**: Restore from local backups
 - **Cross-device Support**: Export/import allows data transfer between devices
 
+## 📸 Screenshots
+
+### Light Theme
+![Home Page - Light Theme](docs/screenshots/Home_page_light.png)
+![Candidate Detail - Light Theme](docs/screenshots/Candidate_page_light.png)
+![Question Templates - Light Theme](docs/screenshots/Question_page_light.png)
+
+### Dark Theme
+![Home Page - Dark Theme](docs/screenshots/Home_page_dark.png)
+![Candidate Detail - Dark Theme](docs/screenshots/Candidate_page_dark.png)
+![Question Templates - Dark Theme](docs/screenshots/Question_page_dark.png)
+
 ## 🛠️ Tech Stack
 
 - **React 18** with TypeScript
