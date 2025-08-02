@@ -105,7 +105,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     };
 
     const undoQuestion = (questionId: string) => {
-        updateQuestion(questionId, { isCorrect: undefined, isAnswered: false });
+        updateQuestion(questionId, {
+            isCorrect: undefined,
+            isAnswered: false
+        });
     };
 
     const getCorrectCount = () => questions.filter(q => q.isCorrect === true).length;
@@ -249,6 +252,45 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     </div>
                 ) : (
                     <div className="space-y-8">
+                        {/* Questions by Section (only unanswered questions) */}
+                        {Object.entries(getQuestionsBySection()).map(([sectionName, sectionQuestions]) => {
+                            const unansweredQuestions = sectionQuestions.filter(q => !q.isAnswered);
+                            if (unansweredQuestions.length === 0) return null;
+
+                            return (
+                                <div key={sectionName}>
+                                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{sectionName}</h2>
+                                    <div className="space-y-4">
+                                        {unansweredQuestions.map((question, index) => (
+                                            <QuestionCard
+                                                key={question.id}
+                                                question={question}
+                                                questionNumber={index + 1}
+                                                onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
+                                                onMarkCorrect={() => markQuestionCorrect(question.id)}
+                                                onMarkWrong={() => markQuestionWrong(question.id)}
+                                                onUndo={() => undoQuestion(question.id)}
+                                                onDelete={() => handleDeleteQuestion(question)}
+                                                onEdit={() => {
+                                                    setQuestionToEdit(question);
+                                                    setShowEditQuestionModal(true);
+                                                }}
+                                                showUndo={false}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {/* Divider */}
+                        {(questions.filter(q => q.isCorrect === true).length > 0 || questions.filter(q => q.isCorrect === false).length > 0) &&
+                            Object.entries(getQuestionsBySection()).some(([sectionName, sectionQuestions]) =>
+                                sectionQuestions.filter(q => !q.isAnswered).length > 0
+                            ) && (
+                                <hr className="border-gray-200 dark:border-gray-700" />
+                            )}
+
                         {/* Correct Answers Section */}
                         {questions.filter(q => q.isCorrect === true).length > 0 && (
                             <div>
@@ -276,15 +318,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             </div>
                         )}
 
+                        {/* Divider */}
+                        {questions.filter(q => q.isCorrect === true).length > 0 &&
+                            questions.filter(q => q.isCorrect === false).length > 0 && (
+                                <hr className="border-gray-200 dark:border-gray-700" />
+                            )}
+
                         {/* Wrong/Unanswered Section */}
-                        {questions.filter(q => q.isCorrect === false || !q.isAnswered).length > 0 && (
+                        {questions.filter(q => q.isCorrect === false).length > 0 && (
                             <div>
                                 <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
                                     <XMarkIcon className="w-5 h-5 text-red-600 mr-2" />
                                     Wrong/Unanswered Questions
                                 </h2>
                                 <div className="space-y-4">
-                                    {questions.filter(q => q.isCorrect === false || !q.isAnswered).map((question, index) => (
+                                    {questions.filter(q => q.isCorrect === false).map((question, index) => (
                                         <QuestionCard
                                             key={question.id}
                                             question={question}
@@ -298,43 +346,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                                 setQuestionToEdit(question);
                                                 setShowEditQuestionModal(true);
                                             }}
-                                            showUndo={question.isAnswered}
+                                            showUndo={true}
                                         />
                                     ))}
                                 </div>
                             </div>
                         )}
-
-                        {/* Questions by Section (only unanswered questions) */}
-                        {Object.entries(getQuestionsBySection()).map(([sectionName, sectionQuestions]) => {
-                            const unansweredQuestions = sectionQuestions.filter(q => !q.isAnswered);
-                            if (unansweredQuestions.length === 0) return null;
-
-                            return (
-                                <div key={sectionName}>
-                                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{sectionName}</h2>
-                                    <div className="space-y-4">
-                                        {unansweredQuestions.map((question, index) => (
-                                            <QuestionCard
-                                                key={question.id}
-                                                question={question}
-                                                questionNumber={index + 1}
-                                                onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
-                                                onMarkCorrect={() => markQuestionCorrect(question.id)}
-                                                onMarkWrong={() => markQuestionWrong(question.id)}
-                                                onUndo={() => undoQuestion(question.id)}
-                                                onDelete={() => handleDeleteQuestion(question)}
-                                                onEdit={() => {
-                                                    setQuestionToEdit(question);
-                                                    setShowEditQuestionModal(true);
-                                                }}
-                                                showUndo={question.isAnswered}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
                     </div>
                 )}
             </div>
