@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { Candidate, QuestionTemplate } from '../types';
 import AddCandidateModal from './AddCandidateModal';
+import EditCandidateModal from './EditCandidateModal';
 import ManagePositionsModal from './ManagePositionsModal';
 
 interface CandidateListProps {
@@ -27,8 +28,10 @@ const CandidateList: React.FC<CandidateListProps> = ({
     onRemovePosition
 }) => {
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [showPositionsModal, setShowPositionsModal] = useState(false);
     const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
+    const [candidateToEdit, setCandidateToEdit] = useState<Candidate | null>(null);
 
     const getStatusColor = (status: Candidate['status']) => {
         switch (status) {
@@ -139,12 +142,25 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                                 {candidate.experience.years} years, {candidate.experience.months} months
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => setCandidateToDelete(candidate)}
-                                            className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
-                                        >
-                                            <TrashIcon className="w-5 h-5" />
-                                        </button>
+                                        <div className="flex space-x-2">
+                                            <button
+                                                onClick={() => {
+                                                    setCandidateToEdit(candidate);
+                                                    setShowEditModal(true);
+                                                }}
+                                                className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                                                title="Edit candidate"
+                                            >
+                                                <PencilIcon className="w-5 h-5" />
+                                            </button>
+                                            <button
+                                                onClick={() => setCandidateToDelete(candidate)}
+                                                className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
+                                                title="Delete candidate"
+                                            >
+                                                <TrashIcon className="w-5 h-5" />
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div className="flex items-center justify-between">
@@ -174,6 +190,16 @@ const CandidateList: React.FC<CandidateListProps> = ({
                 positions={positions}
                 questionTemplates={questionTemplates}
                 candidates={candidates}
+            />
+
+            <EditCandidateModal
+                isOpen={showEditModal}
+                onClose={() => {
+                    setShowEditModal(false);
+                    setCandidateToEdit(null);
+                }}
+                onUpdateCandidate={onUpdateCandidate}
+                candidate={candidateToEdit}
             />
 
             <ManagePositionsModal
