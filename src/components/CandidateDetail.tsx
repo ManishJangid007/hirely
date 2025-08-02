@@ -63,11 +63,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         );
     }
 
-    const addQuestion = (questionText: string, section: string) => {
+    const addQuestion = (questionText: string, section: string, answer?: string) => {
         const newQuestion: Question = {
             id: Date.now().toString(),
             text: questionText,
             section: section || 'Other',
+            answer: answer,
             isAnswered: false
         };
         setQuestions(prev => [...prev, newQuestion]);

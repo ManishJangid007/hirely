@@ -5,7 +5,7 @@ import { QuestionTemplate } from '../types';
 interface AddQuestionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onAddQuestion: (questionText: string, section: string) => void;
+    onAddQuestion: (questionText: string, section: string, answer?: string) => void;
     questionTemplates: QuestionTemplate[];
 }
 
@@ -16,6 +16,7 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
     questionTemplates
 }) => {
     const [questionText, setQuestionText] = useState('');
+    const [answer, setAnswer] = useState('');
     const [selectedSection, setSelectedSection] = useState('');
     const [customSection, setCustomSection] = useState('');
     const [showCustomSection, setShowCustomSection] = useState(false);
@@ -36,10 +37,11 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
         if (!questionText.trim()) return;
 
         const section = showCustomSection ? customSection : selectedSection;
-        onAddQuestion(questionText.trim(), section || 'Other');
+        onAddQuestion(questionText.trim(), section || 'Other', answer.trim() || undefined);
 
         // Reset form
         setQuestionText('');
+        setAnswer('');
         setSelectedSection('');
         setCustomSection('');
         setShowCustomSection(false);
@@ -88,6 +90,20 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
                                 className="form-textarea"
                                 rows={4}
                                 required
+                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="answer" className="form-label">
+                                Answer (Optional)
+                            </label>
+                            <textarea
+                                id="answer"
+                                value={answer}
+                                onChange={(e) => setAnswer(e.target.value)}
+                                placeholder="Enter the expected answer..."
+                                className="form-textarea"
+                                rows={3}
                             />
                         </div>
 

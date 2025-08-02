@@ -10,6 +10,8 @@ import {
 import { QuestionTemplate, QuestionSection } from '../types';
 import AddTemplateModal from './AddTemplateModal';
 import AddSectionModal from './AddSectionModal';
+import AddQuestionModal from './AddQuestionModal';
+import ConfirmationModal from './ConfirmationModal';
 
 interface QuestionTemplatesProps {
     templates: QuestionTemplate[];
@@ -27,6 +29,16 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
     const [showAddTemplateModal, setShowAddTemplateModal] = useState(false);
     const [showAddSectionModal, setShowAddSectionModal] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<QuestionTemplate | null>(null);
+    const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
+    const [questionModalData, setQuestionModalData] = useState<{
+        templateId: string;
+        sectionId: string;
+    } | null>(null);
+    const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+    const [deleteConfirmData, setDeleteConfirmData] = useState<{
+        templateId: string;
+        templateName: string;
+    } | null>(null);
 
     const handleAddSection = (templateId: string, section: Omit<QuestionSection, 'id'>) => {
         const newSection: QuestionSection = {
@@ -55,7 +67,7 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
         }
     };
 
-    const handleAddQuestion = (templateId: string, sectionId: string, questionText: string) => {
+    const handleAddQuestion = (templateId: string, sectionId: string, questionText: string, answer?: string) => {
         const template = templates.find(t => t.id === templateId);
         if (template) {
             const updatedSections = template.sections.map(section => {
@@ -68,6 +80,7 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                                 id: Date.now().toString(),
                                 text: questionText,
                                 section: section.name,
+                                answer: answer,
                                 isAnswered: false
                             }
                         ]
@@ -182,9 +195,11 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                                             </button>
                                             <button
                                                 onClick={() => {
-                                                    if (window.confirm(`Are you sure you want to delete "${template.name}"?`)) {
-                                                        onDeleteTemplate(template.id);
-                                                    }
+                                                    setDeleteConfirmData({
+                                                        templateId: template.id,
+                                                        templateName: template.name
+                                                    });
+                                                    setShowDeleteConfirmModal(true);
                                                 }}
                                                 className="inline-flex items-center px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg shadow-sm text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                                             >
@@ -236,10 +251,11 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                                                         ))}
                                                         <button
                                                             onClick={() => {
-                                                                const questionText = prompt('Enter question text:');
-                                                                if (questionText) {
-                                                                    handleAddQuestion(template.id, section.id, questionText);
-                                                                }
+                                                                setQuestionModalData({
+                                                                    templateId: template.id,
+                                                                    sectionId: section.id
+                                                                });
+                                                                setShowAddQuestionModal(true);
                                                             }}
                                                             className="w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                                                         >
@@ -274,6 +290,39 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                     }
                 }}
                 template={selectedTemplate}
+            />
+
+            {/* Add Question Modal */}
+            {showAddQuestionModal && questionModalData && (
+                <AddQuestionModal
+                    isOpen={showAddQuestionModal}
+                    onClose={() => {
+                        setShowAddQuestionModal(false);
+                        setQuestionModalData(null);
+                    }}
+                    onAddQuestion={(questionText, section, answer) => {
+                        handleAddQuestion(questionModalData.templateId, questionModalData.sectionId, questionText, answer);
+                    }}
+                    questionTemplates={templates}
+                />
+            )}
+
+            {/* Delete Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={showDeleteConfirmModal}
+                onClose={() => {
+                    setShowDeleteConfirmModal(false);
+                    setDeleteConfirmData(null);
+                }}
+                onConfirm={() => {
+                    if (deleteConfirmData) {
+                        onDeleteTemplate(deleteConfirmData.templateId);
+                    }
+                }}
+                title="Delete Template"
+                message={deleteConfirmData ? `Are you sure you want to delete "${deleteConfirmData.templateName}"?` : ''}
+                confirmText="Delete"
+                cancelText="Cancel"
             />
         </div>
     );

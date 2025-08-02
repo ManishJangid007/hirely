@@ -5,6 +5,7 @@ import CandidateDetail from './components/CandidateDetail';
 import QuestionTemplates from './components/QuestionTemplates';
 import BackupManager from './components/BackupManager';
 import ThemeToggle from './components/ThemeToggle';
+import ConfirmationModal from './components/ConfirmationModal';
 import { Candidate, QuestionTemplate, AppState } from './types';
 import { databaseService } from './services/database';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -17,6 +18,7 @@ function App() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [showBackupManager, setShowBackupManager] = useState(false);
+  const [showRestoreConfirmModal, setShowRestoreConfirmModal] = useState(false);
 
   // Initialize database and load data
   useEffect(() => {
@@ -29,12 +31,7 @@ function App() {
         const candidates = await databaseService.getCandidates();
 
         if (candidates.length === 0 && backupInfo.exists) {
-          const shouldRestore = window.confirm(
-            'No data found in the database, but a backup is available. Would you like to restore from backup?'
-          );
-          if (shouldRestore) {
-            await databaseService.restoreFromBackup();
-          }
+          setShowRestoreConfirmModal(true);
         }
 
         await databaseService.migrateFromLocalStorage();
@@ -204,7 +201,7 @@ function App() {
               <div className="flex justify-between items-center h-16">
                 <div className="flex items-center">
                   <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                    Interview App
+                    Hirely
                   </h1>
                 </div>
 
@@ -270,6 +267,21 @@ function App() {
           <BackupManager
             isOpen={showBackupManager}
             onClose={() => setShowBackupManager(false)}
+          />
+
+          {/* Restore Confirmation Modal */}
+          <ConfirmationModal
+            isOpen={showRestoreConfirmModal}
+            onClose={() => setShowRestoreConfirmModal(false)}
+            onConfirm={async () => {
+              await databaseService.restoreFromBackup();
+              setShowRestoreConfirmModal(false);
+            }}
+            title="Restore from Backup"
+            message="No data found in the database, but a backup is available. Would you like to restore from backup?"
+            confirmText="Restore"
+            cancelText="Skip"
+            confirmButtonClass="bg-blue-600 hover:bg-blue-700"
           />
         </div>
       </Router>
