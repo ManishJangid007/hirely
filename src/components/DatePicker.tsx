@@ -6,9 +6,10 @@ interface DatePickerProps {
   onChange: (date: string) => void;
   placeholder?: string;
   className?: string;
+  disableClickOutside?: boolean;
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = "Select date", className = "" }) => {
+const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = "Select date", className = "", disableClickOutside = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
@@ -30,6 +31,8 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (disableClickOutside) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -38,7 +41,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [disableClickOutside]);
 
   const formatDate = (date: Date): string => {
     // Format date in local timezone to avoid timezone issues
@@ -96,21 +99,25 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
     return date.getMonth() === currentMonth.getMonth();
   };
 
-  const handleDateSelect = (date: Date) => {
+  const handleDateSelect = (date: Date, e: React.MouseEvent) => {
+    e.stopPropagation();
     setSelectedDate(date);
     onChange(formatDateForInput(date));
     setIsOpen(false);
   };
 
-  const goToPreviousMonth = () => {
+  const goToPreviousMonth = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
   };
 
-  const goToNextMonth = () => {
+  const goToNextMonth = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
-  const goToToday = () => {
+  const goToToday = (e: React.MouseEvent) => {
+    e.stopPropagation();
     const today = new Date();
     setCurrentMonth(today);
     setSelectedDate(today);
@@ -122,7 +129,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <div className={`relative ${className}`} ref={dropdownRef}>
+    <div className={`relative date-picker-container ${className}`} ref={dropdownRef}>
       <div className="relative">
         <input
           type="text"
@@ -182,7 +189,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
               {days.map((date, index) => (
                 <button
                   key={index}
-                  onClick={() => handleDateSelect(date)}
+                  onClick={(e) => handleDateSelect(date, e)}
                   className={`
                     h-8 w-8 rounded-lg text-sm font-medium transition-colors
                     ${isToday(date) ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200' : ''}

@@ -73,7 +73,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="mt-3">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white">Edit Candidate</h3>
@@ -127,10 +127,10 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                                 Interview Date
                             </label>
                             <DatePicker
-                                key={candidate?.id || 'new'} // Force re-render when candidate changes
                                 value={interviewDate}
                                 onChange={setInterviewDate}
                                 placeholder="Select interview date"
+                                disableClickOutside={true}
                             />
                         </div>
 
