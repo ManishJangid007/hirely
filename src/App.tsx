@@ -4,6 +4,7 @@ import CandidateList from './components/CandidateList';
 import CandidateDetail from './components/CandidateDetail';
 import QuestionTemplates from './components/QuestionTemplates';
 import { Candidate, QuestionTemplate, AppState } from './types';
+import { databaseService } from './services/database';
 
 function App() {
   const [appState, setAppState] = useState<AppState>({
@@ -11,112 +12,169 @@ function App() {
     questionTemplates: [],
     positions: ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist']
   });
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load data from localStorage on app start
+  // Initialize database and load data
   useEffect(() => {
-    const savedCandidates = localStorage.getItem('candidates');
-    const savedTemplates = localStorage.getItem('questionTemplates');
-    const savedPositions = localStorage.getItem('positions');
+    const initializeApp = async () => {
+      try {
+        await databaseService.init();
+        await databaseService.migrateFromLocalStorage();
 
-    if (savedCandidates) {
-      setAppState(prev => ({
-        ...prev,
-        candidates: JSON.parse(savedCandidates)
-      }));
-    }
+        const [candidates, templates, positions] = await Promise.all([
+          databaseService.getCandidates(),
+          databaseService.getQuestionTemplates(),
+          databaseService.getPositions()
+        ]);
 
-    if (savedTemplates) {
-      setAppState(prev => ({
-        ...prev,
-        questionTemplates: JSON.parse(savedTemplates)
-      }));
-    }
+        setAppState({
+          candidates,
+          questionTemplates: templates,
+          positions: positions.length > 0 ? positions : ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist']
+        });
+      } catch (error) {
+        console.error('Failed to initialize app:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    if (savedPositions) {
-      setAppState(prev => ({
-        ...prev,
-        positions: JSON.parse(savedPositions)
-      }));
-    }
+    initializeApp();
   }, []);
 
-  // Save data to localStorage whenever state changes
-  useEffect(() => {
-    localStorage.setItem('candidates', JSON.stringify(appState.candidates));
-    localStorage.setItem('questionTemplates', JSON.stringify(appState.questionTemplates));
-    localStorage.setItem('positions', JSON.stringify(appState.positions));
-  }, [appState]);
-
-  const addCandidate = (candidate: Omit<Candidate, 'id' | 'createdAt'>) => {
+  const addCandidate = async (candidate: Omit<Candidate, 'id' | 'createdAt'>) => {
     const newCandidate: Candidate = {
       ...candidate,
       id: Date.now().toString(),
       createdAt: new Date().toISOString()
     };
-    setAppState(prev => ({
-      ...prev,
-      candidates: [...prev.candidates, newCandidate]
-    }));
-  };
 
-  const updateCandidate = (id: string, updates: Partial<Candidate>) => {
-    setAppState(prev => ({
-      ...prev,
-      candidates: prev.candidates.map(candidate =>
-        candidate.id === id ? { ...candidate, ...updates } : candidate
-      )
-    }));
-  };
-
-  const deleteCandidate = (id: string) => {
-    setAppState(prev => ({
-      ...prev,
-      candidates: prev.candidates.filter(candidate => candidate.id !== id)
-    }));
-  };
-
-  const addPosition = (position: string) => {
-    if (!appState.positions.includes(position)) {
+    try {
+      await databaseService.addCandidate(newCandidate);
       setAppState(prev => ({
         ...prev,
-        positions: [...prev.positions, position]
+        candidates: [...prev.candidates, newCandidate]
       }));
+    } catch (error) {
+      console.error('Failed to add candidate:', error);
     }
   };
 
-  const removePosition = (position: string) => {
-    setAppState(prev => ({
-      ...prev,
-      positions: prev.positions.filter(p => p !== position)
-    }));
+  const updateCandidate = async (id: string, updates: Partial<Candidate>) => {
+    try {
+      const updatedCandidate = appState.candidates.find(c => c.id === id);
+      if (updatedCandidate) {
+        const newCandidate = { ...updatedCandidate, ...updates };
+        await databaseService.updateCandidate(newCandidate);
+        setAppState(prev => ({
+          ...prev,
+          candidates: prev.candidates.map(candidate =>
+            candidate.id === id ? newCandidate : candidate
+          )
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to update candidate:', error);
+    }
   };
 
-  const addQuestionTemplate = (template: Omit<QuestionTemplate, 'id'>) => {
+  const deleteCandidate = async (id: string) => {
+    try {
+      await databaseService.deleteCandidate(id);
+      setAppState(prev => ({
+        ...prev,
+        candidates: prev.candidates.filter(candidate => candidate.id !== id)
+      }));
+    } catch (error) {
+      console.error('Failed to delete candidate:', error);
+    }
+  };
+
+  const addPosition = async (position: string) => {
+    if (!appState.positions.includes(position)) {
+      const newPositions = [...appState.positions, position];
+      try {
+        await databaseService.setPositions(newPositions);
+        setAppState(prev => ({
+          ...prev,
+          positions: newPositions
+        }));
+      } catch (error) {
+        console.error('Failed to add position:', error);
+      }
+    }
+  };
+
+  const removePosition = async (position: string) => {
+    const newPositions = appState.positions.filter(p => p !== position);
+    try {
+      await databaseService.setPositions(newPositions);
+      setAppState(prev => ({
+        ...prev,
+        positions: newPositions
+      }));
+    } catch (error) {
+      console.error('Failed to remove position:', error);
+    }
+  };
+
+  const addQuestionTemplate = async (template: Omit<QuestionTemplate, 'id'>) => {
     const newTemplate: QuestionTemplate = {
       ...template,
       id: Date.now().toString()
     };
-    setAppState(prev => ({
-      ...prev,
-      questionTemplates: [...prev.questionTemplates, newTemplate]
-    }));
+
+    try {
+      await databaseService.addQuestionTemplate(newTemplate);
+      setAppState(prev => ({
+        ...prev,
+        questionTemplates: [...prev.questionTemplates, newTemplate]
+      }));
+    } catch (error) {
+      console.error('Failed to add question template:', error);
+    }
   };
 
-  const updateQuestionTemplate = (id: string, updates: Partial<QuestionTemplate>) => {
-    setAppState(prev => ({
-      ...prev,
-      questionTemplates: prev.questionTemplates.map(template =>
-        template.id === id ? { ...template, ...updates } : template
-      )
-    }));
+  const updateQuestionTemplate = async (id: string, updates: Partial<QuestionTemplate>) => {
+    try {
+      const updatedTemplate = appState.questionTemplates.find(t => t.id === id);
+      if (updatedTemplate) {
+        const newTemplate = { ...updatedTemplate, ...updates };
+        await databaseService.updateQuestionTemplate(newTemplate);
+        setAppState(prev => ({
+          ...prev,
+          questionTemplates: prev.questionTemplates.map(template =>
+            template.id === id ? newTemplate : template
+          )
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to update question template:', error);
+    }
   };
 
-  const deleteQuestionTemplate = (id: string) => {
-    setAppState(prev => ({
-      ...prev,
-      questionTemplates: prev.questionTemplates.filter(template => template.id !== id)
-    }));
+  const deleteQuestionTemplate = async (id: string) => {
+    try {
+      await databaseService.deleteQuestionTemplate(id);
+      setAppState(prev => ({
+        ...prev,
+        questionTemplates: prev.questionTemplates.filter(template => template.id !== id)
+      }));
+    } catch (error) {
+      console.error('Failed to delete question template:', error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router>

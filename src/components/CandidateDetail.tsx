@@ -128,11 +128,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const getStatusColor = (status: Candidate['status']) => {
         switch (status) {
             case 'Passed':
-                return 'bg-success-500 text-white';
+                return 'bg-green-500 text-white';
             case 'Rejected':
-                return 'bg-danger-500 text-white';
+                return 'bg-red-500 text-white';
             case 'Maybe':
-                return 'bg-warning-500 text-white';
+                return 'bg-yellow-500 text-white';
             default:
                 return 'bg-gray-500 text-white';
         }
@@ -147,7 +147,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={() => navigate('/')}
-                                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
                             >
                                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                                 Back
@@ -164,7 +164,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             {candidate.status !== 'Not Interviewed' && (
                                 <button
                                     onClick={() => setShowResultSummaryModal(true)}
-                                    className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                                    className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200"
                                 >
                                     <ClipboardDocumentIcon className="w-4 h-4 mr-2" />
                                     View Summary
@@ -181,11 +181,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     <div className="flex justify-between items-center py-4">
                         <div className="flex space-x-6">
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-success-600">{getCorrectCount()}</div>
+                                <div className="text-2xl font-bold text-green-600">{getCorrectCount()}</div>
                                 <div className="text-xs text-gray-500">Correct</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-danger-600">{getWrongCount()}</div>
+                                <div className="text-2xl font-bold text-red-600">{getWrongCount()}</div>
                                 <div className="text-xs text-gray-500">Wrong</div>
                             </div>
                             <div className="text-center">
@@ -196,7 +196,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         <div className="flex space-x-3">
                             <button
                                 onClick={() => setShowAddQuestionModal(true)}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
+                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
                             >
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Question
@@ -204,7 +204,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             {questions.length > 0 && (
                                 <button
                                     onClick={() => setShowSaveResultModal(true)}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-success-600 hover:bg-success-700"
+                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-all duration-200"
                                 >
                                     <DocumentTextIcon className="w-4 h-4 mr-2" />
                                     Save Result
@@ -225,7 +225,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         <div className="mt-6">
                             <button
                                 onClick={() => setShowAddQuestionModal(true)}
-                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
                             >
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Question
@@ -362,14 +362,14 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
         <div className="bg-white rounded-lg shadow border p-6">
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 bg-primary-100 text-primary-800 text-sm font-medium rounded-full mr-3">
+                    <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 text-sm font-medium rounded-full mr-3">
                         {questionNumber}
                     </span>
                     <h3 className="text-lg font-medium text-gray-900">{question.text}</h3>
                 </div>
                 <button
                     onClick={onDelete}
-                    className="text-gray-400 hover:text-danger-600"
+                    className="text-gray-400 hover:text-red-600 transition-colors duration-200"
                 >
                     <TrashIcon className="w-5 h-5" />
                 </button>
@@ -377,14 +377,14 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
 
             <div className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="form-label">
                         Answer
                     </label>
                     <textarea
                         value={question.answer || ''}
                         onChange={(e) => onUpdateAnswer(e.target.value)}
                         placeholder="Enter the candidate's answer..."
-                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                        className="form-textarea"
                         rows={3}
                     />
                 </div>
@@ -394,14 +394,14 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                         <>
                             <button
                                 onClick={onMarkCorrect}
-                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-success-600 hover:bg-success-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-success-500"
+                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
                             >
                                 <CheckIcon className="w-4 h-4 mr-1" />
                                 Correct
                             </button>
                             <button
                                 onClick={onMarkWrong}
-                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-danger-600 hover:bg-danger-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-danger-500"
+                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
                             >
                                 <XMarkIcon className="w-4 h-4 mr-1" />
                                 Wrong
@@ -411,7 +411,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     {showUndo && onUndo && (
                         <button
                             onClick={onUndo}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm leading-4 font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                         >
                             Undo
                         </button>
