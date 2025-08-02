@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { Candidate, QuestionTemplate } from '../types';
-import { databaseService } from '../services/database';
 import AddCandidateModal from './AddCandidateModal';
 import EditCandidateModal from './EditCandidateModal';
 import ManagePositionsModal from './ManagePositionsModal';
 import ResultSummaryModal from './ResultSummaryModal';
+import CandidateFilters from './CandidateFilters';
 
 interface CandidateListProps {
     candidates: Candidate[];
@@ -36,7 +36,21 @@ const CandidateList: React.FC<CandidateListProps> = ({
     const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
     const [candidateToEdit, setCandidateToEdit] = useState<Candidate | null>(null);
     const [candidateForSummary, setCandidateForSummary] = useState<Candidate | null>(null);
-    const [candidatesWithResults, setCandidatesWithResults] = useState<Set<string>>(new Set());
+    const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>(candidates);
+
+    useEffect(() => {
+        setFilteredCandidates(candidates);
+    }, [candidates]);
+
+    const formatInterviewDate = (dateString?: string): string => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
 
     const getStatusColor = (status: Candidate['status']) => {
         switch (status) {
@@ -119,26 +133,39 @@ const CandidateList: React.FC<CandidateListProps> = ({
                 </div>
             </div>
 
+            {/* Filters */}
+            <CandidateFilters
+                candidates={candidates}
+                positions={positions}
+                onFiltersChange={setFilteredCandidates}
+            />
+
             {/* Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {candidates.length === 0 ? (
+                {filteredCandidates.length === 0 ? (
                     <div className="text-center py-12">
                         <UserIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
-                        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No candidates</h3>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by adding your first candidate.</p>
-                        <div className="mt-6">
-                            <button
-                                onClick={() => setShowAddModal(true)}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-                            >
-                                <PlusIcon className="w-4 h-4 mr-2" />
-                                Add Candidate
-                            </button>
-                        </div>
+                        <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+                            {candidates.length === 0 ? 'No candidates' : 'No candidates match your filters'}
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            {candidates.length === 0 ? 'Get started by adding your first candidate.' : 'Try adjusting your search or filter criteria.'}
+                        </p>
+                        {candidates.length === 0 && (
+                            <div className="mt-6">
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                                >
+                                    <PlusIcon className="w-4 h-4 mr-2" />
+                                    Add Candidate
+                                </button>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {candidates.map((candidate) => (
+                        {filteredCandidates.map((candidate) => (
                             <div
                                 key={candidate.id}
                                 className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 card-hover animate-fade-in"
@@ -152,10 +179,16 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                                                 {candidate.position}
                                             </p>
-                                            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
                                                 <ClockIcon className="w-4 h-4 mr-1" />
                                                 {candidate.experience.years} years, {candidate.experience.months} months
                                             </div>
+                                            {candidate.interviewDate && (
+                                                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                                    <CalendarIcon className="w-4 h-4 mr-1" />
+                                                    {formatInterviewDate(candidate.interviewDate)}
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex space-x-2">
                                             <button

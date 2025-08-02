@@ -182,6 +182,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             <div className="text-center sm:text-left">
                                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{candidate.fullName}</h1>
                                 <p className="text-sm text-gray-500 dark:text-gray-400">{candidate.position}</p>
+                                {candidate.interviewDate && (
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Interview Date: {new Date(candidate.interviewDate).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })}
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3">

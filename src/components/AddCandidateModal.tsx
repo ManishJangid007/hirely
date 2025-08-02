@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { XMarkIcon, DocumentDuplicateIcon, UserIcon } from '@heroicons/react/24/outline';
 import { Candidate, QuestionTemplate } from '../types';
+import DatePicker from './DatePicker';
 
 interface AddCandidateModalProps {
     isOpen: boolean;
@@ -23,7 +24,8 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
         fullName: '',
         position: '',
         experienceYears: 0,
-        experienceMonths: 0
+        experienceMonths: 0,
+        interviewDate: ''
     });
     const [showQuestionImport, setShowQuestionImport] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<string>('');
@@ -69,6 +71,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                 years: formData.experienceYears,
                 months: formData.experienceMonths
             },
+            interviewDate: formData.interviewDate || undefined,
             questions: importedQuestions
         });
 
@@ -77,7 +80,8 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
             fullName: '',
             position: '',
             experienceYears: 0,
-            experienceMonths: 0
+            experienceMonths: 0,
+            interviewDate: ''
         });
         setShowQuestionImport(false);
         setSelectedTemplate('');
@@ -143,6 +147,17 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                     </option>
                                 ))}
                             </select>
+                        </div>
+
+                        <div>
+                            <label htmlFor="interviewDate" className="form-label">
+                                Interview Date
+                            </label>
+                            <DatePicker
+                                value={formData.interviewDate}
+                                onChange={(date) => handleInputChange('interviewDate', date)}
+                                placeholder="Select interview date"
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">

@@ -14,6 +14,7 @@ export interface Candidate {
     years: number;
     months: number;
   };
+  interviewDate?: string; // ISO string format for the interview date
   questions: Question[];
   createdAt: string;
 }
@@ -58,7 +59,7 @@ export interface BackupData {
 
 class DatabaseService {
   private dbName = 'InterviewAppDB';
-  private version = 2; // Increment version since we added questions field to Candidate
+  private version = 3; // Increment version since we added interviewDate field to Candidate
   private db: IDBDatabase | null = null;
   private backupKey = 'interview_app_backup';
 

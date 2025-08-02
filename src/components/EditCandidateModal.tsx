@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Candidate } from '../types';
+import DatePicker from './DatePicker';
 
 interface EditCandidateModalProps {
     isOpen: boolean;
@@ -21,6 +22,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
     const [position, setPosition] = useState('');
     const [experienceYears, setExperienceYears] = useState(0);
     const [experienceMonths, setExperienceMonths] = useState(0);
+    const [interviewDate, setInterviewDate] = useState('');
 
     useEffect(() => {
         if (candidate) {
@@ -28,6 +30,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
             setPosition(candidate.position);
             setExperienceYears(candidate.experience.years);
             setExperienceMonths(candidate.experience.months);
+            setInterviewDate(candidate.interviewDate || '');
         }
     }, [candidate]);
 
@@ -41,7 +44,8 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
             experience: {
                 years: experienceYears,
                 months: experienceMonths
-            }
+            },
+            interviewDate: interviewDate || undefined
         });
         onClose();
     };
@@ -52,6 +56,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
             setPosition(candidate.position);
             setExperienceYears(candidate.experience.years);
             setExperienceMonths(candidate.experience.months);
+            setInterviewDate(candidate.interviewDate || '');
         }
         onClose();
     };
@@ -107,6 +112,17 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                                     </option>
                                 ))}
                             </select>
+                        </div>
+
+                        <div>
+                            <label htmlFor="interviewDate" className="form-label">
+                                Interview Date
+                            </label>
+                            <DatePicker
+                                value={interviewDate}
+                                onChange={setInterviewDate}
+                                placeholder="Select interview date"
+                            />
                         </div>
 
                         <div>

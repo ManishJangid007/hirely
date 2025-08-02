@@ -7,6 +7,7 @@ export interface Candidate {
         years: number;
         months: number;
     };
+    interviewDate?: string; // ISO string format for the interview date
     questions: Question[];
     createdAt: string;
 }
