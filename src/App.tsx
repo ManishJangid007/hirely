@@ -43,7 +43,9 @@ function App() {
         ]);
 
         setAppState({
-          candidates: candidatesAfterRestore,
+          candidates: candidatesAfterRestore.sort((a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          ),
           questionTemplates: templates,
           positions: positions.length > 0 ? positions : ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist']
         });
@@ -57,7 +59,7 @@ function App() {
     initializeApp();
   }, []);
 
-  const addCandidate = async (candidate: Omit<Candidate, 'id' | 'createdAt'>) => {
+  const addCandidate = async (candidate: Omit<Candidate, 'id' | 'createdAt'>, importedQuestions?: any[]) => {
     const newCandidate: Candidate = {
       ...candidate,
       id: Date.now().toString(),
@@ -66,9 +68,23 @@ function App() {
 
     try {
       await databaseService.addCandidate(newCandidate);
+
+      // If questions were imported, save them to localStorage for the new candidate
+      if (importedQuestions && importedQuestions.length > 0) {
+        console.log('Saving imported questions:', importedQuestions);
+        console.log('Candidate ID:', newCandidate.id);
+        localStorage.setItem(`questions_${newCandidate.id}`, JSON.stringify(importedQuestions));
+
+        // Verify the questions were saved
+        const savedQuestions = localStorage.getItem(`questions_${newCandidate.id}`);
+        console.log('Saved questions verification:', savedQuestions);
+      }
+
       setAppState(prev => ({
         ...prev,
-        candidates: [...prev.candidates, newCandidate]
+        candidates: [...prev.candidates, newCandidate].sort((a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
       }));
     } catch (error) {
       console.error('Failed to add candidate:', error);

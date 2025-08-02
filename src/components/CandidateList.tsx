@@ -9,7 +9,7 @@ interface CandidateListProps {
     candidates: Candidate[];
     positions: string[];
     questionTemplates: QuestionTemplate[];
-    onAddCandidate: (candidate: Omit<Candidate, 'id' | 'createdAt'>) => void;
+    onAddCandidate: (candidate: Omit<Candidate, 'id' | 'createdAt'>, importedQuestions?: any[]) => void;
     onUpdateCandidate: (id: string, updates: Partial<Candidate>) => void;
     onDeleteCandidate: (id: string) => void;
     onAddPosition: (position: string) => void;
@@ -173,6 +173,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                 onAddCandidate={onAddCandidate}
                 positions={positions}
                 questionTemplates={questionTemplates}
+                candidates={candidates}
             />
 
             <ManagePositionsModal

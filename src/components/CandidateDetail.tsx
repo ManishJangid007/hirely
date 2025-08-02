@@ -40,8 +40,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     useEffect(() => {
         // Load questions from localStorage
         const savedQuestions = localStorage.getItem(`questions_${id}`);
+        console.log('Loading questions for candidate:', id);
+        console.log('Saved questions from localStorage:', savedQuestions);
         if (savedQuestions) {
-            setQuestions(JSON.parse(savedQuestions));
+            const parsedQuestions = JSON.parse(savedQuestions);
+            console.log('Parsed questions:', parsedQuestions);
+            console.log('Number of questions loaded:', parsedQuestions.length);
+            setQuestions(parsedQuestions);
+        } else {
+            console.log('No saved questions found for candidate:', id);
         }
     }, [id]);
 
@@ -243,54 +250,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     </div>
                 ) : (
                     <div className="space-y-8">
-                        {/* Correct Answers Section */}
-                        {questions.filter(q => q.isCorrect === true).length > 0 && (
-                            <div>
-                                <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                                    <CheckIcon className="w-5 h-5 text-success-600 mr-2" />
-                                    Correct Answers
-                                </h2>
-                                <div className="space-y-4">
-                                    {questions.filter(q => q.isCorrect === true).map((question, index) => (
-                                        <QuestionCard
-                                            key={question.id}
-                                            question={question}
-                                            questionNumber={index + 1}
-                                            onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
-                                            onUndo={() => undoQuestion(question.id)}
-                                            onDelete={() => handleDeleteQuestion(question)}
-                                            showUndo={true}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Wrong/Unanswered Section */}
-                        {questions.filter(q => q.isCorrect === false || !q.isAnswered).length > 0 && (
-                            <div>
-                                <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                                    <XMarkIcon className="w-5 h-5 text-danger-600 mr-2" />
-                                    Wrong/Unanswered Questions
-                                </h2>
-                                <div className="space-y-4">
-                                    {questions.filter(q => q.isCorrect === false || !q.isAnswered).map((question, index) => (
-                                        <QuestionCard
-                                            key={question.id}
-                                            question={question}
-                                            questionNumber={index + 1}
-                                            onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
-                                            onMarkCorrect={() => markQuestionCorrect(question.id)}
-                                            onMarkWrong={() => markQuestionWrong(question.id)}
-                                            onUndo={() => undoQuestion(question.id)}
-                                            onDelete={() => handleDeleteQuestion(question)}
-                                            showUndo={question.isAnswered}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
                         {/* Questions by Section */}
                         {Object.entries(getQuestionsBySection()).map(([sectionName, sectionQuestions]) => (
                             <div key={sectionName}>
