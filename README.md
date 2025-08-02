@@ -559,7 +559,9 @@ Exported JSON files contain:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under The Unlicense - see the [LICENSE](LICENSE) file for details.
+
+The Unlicense is a license with no conditions whatsoever which dedicates works to the public domain. Unlicensed works, modifications, and larger works may be distributed under different terms and without source code.
 
 ## 🙏 Acknowledgments
 
