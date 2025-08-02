@@ -368,8 +368,9 @@ async function seedDatabase() {
 // Export for use in other files
 export { seedDatabase };
 
-// If this file is run directly, seed the database
+// Make seedDatabase available globally for console access
 if (typeof window !== 'undefined') {
   // This will be called from the browser
   (window as any).seedDatabase = seedDatabase;
+  console.log('seedDatabase function is now available. Run: window.seedDatabase()');
 } 

@@ -9,6 +9,8 @@ import Header from './components/Header';
 import { Candidate, QuestionTemplate, AppState } from './types';
 import { databaseService } from './services/database';
 import { ThemeProvider } from './contexts/ThemeContext';
+// Import seeder to make it available globally
+import './scripts/seeder';
 
 function App() {
   const [appState, setAppState] = useState<AppState>({

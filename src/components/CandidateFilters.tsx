@@ -58,10 +58,10 @@ const CandidateFilters: React.FC<CandidateFiltersProps> = ({
         if (newFilters.interviewDate) {
             filtered = filtered.filter(candidate => {
                 if (!candidate.interviewDate) return false;
-                // Compare dates in local timezone to avoid timezone issues
-                const candidateDate = new Date(candidate.interviewDate + 'T00:00:00');
-                const filterDate = new Date(newFilters.interviewDate + 'T00:00:00');
-                return candidateDate.getTime() === filterDate.getTime();
+                // Compare dates by converting to YYYY-MM-DD format
+                const candidateDateStr = candidate.interviewDate.split('T')[0];
+                const filterDateStr = newFilters.interviewDate;
+                return candidateDateStr === filterDateStr;
             });
         }
 
@@ -108,11 +108,10 @@ const CandidateFilters: React.FC<CandidateFiltersProps> = ({
                     <div className="flex gap-2">
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
-                            className={`inline-flex items-center px-4 py-2 border rounded-lg shadow-sm text-sm font-medium transition-all duration-200 ${
-                                hasActiveFilters
-                                    ? 'border-blue-500 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900'
-                                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
-                            }`}
+                            className={`inline-flex items-center px-4 py-2 border rounded-lg shadow-sm text-sm font-medium transition-all duration-200 ${hasActiveFilters
+                                ? 'border-blue-500 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900'
+                                : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                }`}
                         >
                             <FunnelIcon className="w-4 h-4 mr-2" />
                             Filters
