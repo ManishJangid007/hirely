@@ -4,8 +4,10 @@ import CandidateList from './components/CandidateList';
 import CandidateDetail from './components/CandidateDetail';
 import QuestionTemplates from './components/QuestionTemplates';
 import BackupManager from './components/BackupManager';
+import ThemeToggle from './components/ThemeToggle';
 import { Candidate, QuestionTemplate, AppState } from './types';
 import { databaseService } from './services/database';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   const [appState, setAppState] = useState<AppState>({
@@ -183,77 +185,95 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
-        {/* Global Backup Button */}
-        <div className="fixed top-4 right-4 z-40">
-          <button
-            onClick={() => setShowBackupManager(true)}
-            className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
-            </svg>
-            Backup
-          </button>
+    <ThemeProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+          {/* Global Navigation Bar */}
+          <div className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center h-16">
+                <div className="flex items-center">
+                  <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                    Interview App
+                  </h1>
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <ThemeToggle />
+                  <button
+                    onClick={() => setShowBackupManager(true)}
+                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    <span className="hidden sm:inline">Backup</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content with top padding for fixed nav */}
+          <div className="pt-16">
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <CandidateList
+                    candidates={appState.candidates}
+                    positions={appState.positions}
+                    questionTemplates={appState.questionTemplates}
+                    onAddCandidate={addCandidate}
+                    onUpdateCandidate={updateCandidate}
+                    onDeleteCandidate={deleteCandidate}
+                    onAddPosition={addPosition}
+                    onRemovePosition={removePosition}
+                  />
+                }
+              />
+              <Route
+                path="/candidate/:id"
+                element={
+                  <CandidateDetail
+                    candidates={appState.candidates}
+                    questionTemplates={appState.questionTemplates}
+                    onUpdateCandidate={updateCandidate}
+                  />
+                }
+              />
+              <Route
+                path="/templates"
+                element={
+                  <QuestionTemplates
+                    templates={appState.questionTemplates}
+                    onAddTemplate={addQuestionTemplate}
+                    onUpdateTemplate={updateQuestionTemplate}
+                    onDeleteTemplate={deleteQuestionTemplate}
+                  />
+                }
+              />
+            </Routes>
+          </div>
+
+          {/* Backup Manager Modal */}
+          <BackupManager
+            isOpen={showBackupManager}
+            onClose={() => setShowBackupManager(false)}
+          />
         </div>
-
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <CandidateList
-                candidates={appState.candidates}
-                positions={appState.positions}
-                questionTemplates={appState.questionTemplates}
-                onAddCandidate={addCandidate}
-                onUpdateCandidate={updateCandidate}
-                onDeleteCandidate={deleteCandidate}
-                onAddPosition={addPosition}
-                onRemovePosition={removePosition}
-              />
-            }
-          />
-          <Route
-            path="/candidate/:id"
-            element={
-              <CandidateDetail
-                candidates={appState.candidates}
-                questionTemplates={appState.questionTemplates}
-                onUpdateCandidate={updateCandidate}
-              />
-            }
-          />
-          <Route
-            path="/templates"
-            element={
-              <QuestionTemplates
-                templates={appState.questionTemplates}
-                onAddTemplate={addQuestionTemplate}
-                onUpdateTemplate={updateQuestionTemplate}
-                onDeleteTemplate={deleteQuestionTemplate}
-              />
-            }
-          />
-        </Routes>
-
-        {/* Backup Manager Modal */}
-        <BackupManager
-          isOpen={showBackupManager}
-          onClose={() => setShowBackupManager(false)}
-        />
-      </div>
-    </Router>
+      </Router>
+    </ThemeProvider>
   );
 }
 
