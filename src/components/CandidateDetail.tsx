@@ -7,10 +7,12 @@ import {
     XMarkIcon,
     TrashIcon,
     ClipboardDocumentIcon,
-    DocumentTextIcon
+    DocumentTextIcon,
+    PencilIcon
 } from '@heroicons/react/24/outline';
 import { Candidate, Question, QuestionTemplate } from '../types';
 import AddQuestionModal from './AddQuestionModal';
+import EditQuestionModal from './EditQuestionModal';
 import SaveResultModal from './SaveResultModal';
 import ResultSummaryModal from './ResultSummaryModal';
 import ConfirmationModal from './ConfirmationModal';
@@ -32,10 +34,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
     const [questions, setQuestions] = useState<Question[]>(candidate?.questions || []);
     const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
+    const [showEditQuestionModal, setShowEditQuestionModal] = useState(false);
     const [showSaveResultModal, setShowSaveResultModal] = useState(false);
     const [showResultSummaryModal, setShowResultSummaryModal] = useState(false);
     const [showDeleteQuestionConfirmModal, setShowDeleteQuestionConfirmModal] = useState(false);
     const [questionToDelete, setQuestionToDelete] = useState<Question | null>(null);
+    const [questionToEdit, setQuestionToEdit] = useState<Question | null>(null);
 
     // Update questions when candidate changes
     useEffect(() => {
@@ -245,12 +249,42 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     </div>
                 ) : (
                     <div className="space-y-8">
-                        {/* Questions by Section */}
-                        {Object.entries(getQuestionsBySection()).map(([sectionName, sectionQuestions]) => (
-                            <div key={sectionName}>
-                                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{sectionName}</h2>
+                        {/* Correct Answers Section */}
+                        {questions.filter(q => q.isCorrect === true).length > 0 && (
+                            <div>
+                                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                                    <CheckIcon className="w-5 h-5 text-green-600 mr-2" />
+                                    Correct Answers
+                                </h2>
                                 <div className="space-y-4">
-                                    {sectionQuestions.map((question, index) => (
+                                    {questions.filter(q => q.isCorrect === true).map((question, index) => (
+                                        <QuestionCard
+                                            key={question.id}
+                                            question={question}
+                                            questionNumber={index + 1}
+                                            onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
+                                            onUndo={() => undoQuestion(question.id)}
+                                            onDelete={() => handleDeleteQuestion(question)}
+                                            onEdit={() => {
+                                                setQuestionToEdit(question);
+                                                setShowEditQuestionModal(true);
+                                            }}
+                                            showUndo={true}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Wrong/Unanswered Section */}
+                        {questions.filter(q => q.isCorrect === false || !q.isAnswered).length > 0 && (
+                            <div>
+                                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
+                                    <XMarkIcon className="w-5 h-5 text-red-600 mr-2" />
+                                    Wrong/Unanswered Questions
+                                </h2>
+                                <div className="space-y-4">
+                                    {questions.filter(q => q.isCorrect === false || !q.isAnswered).map((question, index) => (
                                         <QuestionCard
                                             key={question.id}
                                             question={question}
@@ -260,12 +294,47 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                             onMarkWrong={() => markQuestionWrong(question.id)}
                                             onUndo={() => undoQuestion(question.id)}
                                             onDelete={() => handleDeleteQuestion(question)}
+                                            onEdit={() => {
+                                                setQuestionToEdit(question);
+                                                setShowEditQuestionModal(true);
+                                            }}
                                             showUndo={question.isAnswered}
                                         />
                                     ))}
                                 </div>
                             </div>
-                        ))}
+                        )}
+
+                        {/* Questions by Section (only unanswered questions) */}
+                        {Object.entries(getQuestionsBySection()).map(([sectionName, sectionQuestions]) => {
+                            const unansweredQuestions = sectionQuestions.filter(q => !q.isAnswered);
+                            if (unansweredQuestions.length === 0) return null;
+
+                            return (
+                                <div key={sectionName}>
+                                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{sectionName}</h2>
+                                    <div className="space-y-4">
+                                        {unansweredQuestions.map((question, index) => (
+                                            <QuestionCard
+                                                key={question.id}
+                                                question={question}
+                                                questionNumber={index + 1}
+                                                onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
+                                                onMarkCorrect={() => markQuestionCorrect(question.id)}
+                                                onMarkWrong={() => markQuestionWrong(question.id)}
+                                                onUndo={() => undoQuestion(question.id)}
+                                                onDelete={() => handleDeleteQuestion(question)}
+                                                onEdit={() => {
+                                                    setQuestionToEdit(question);
+                                                    setShowEditQuestionModal(true);
+                                                }}
+                                                showUndo={question.isAnswered}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>
@@ -276,6 +345,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 onClose={() => setShowAddQuestionModal(false)}
                 onAddQuestion={addQuestion}
                 questionTemplates={questionTemplates}
+            />
+
+            <EditQuestionModal
+                isOpen={showEditQuestionModal}
+                onClose={() => {
+                    setShowEditQuestionModal(false);
+                    setQuestionToEdit(null);
+                }}
+                onUpdateQuestion={updateQuestion}
+                question={questionToEdit}
             />
 
             <SaveResultModal
@@ -323,6 +402,7 @@ interface QuestionCardProps {
     onMarkWrong?: () => void;
     onUndo?: () => void;
     onDelete: () => void;
+    onEdit: () => void;
     showUndo?: boolean;
 }
 
@@ -334,6 +414,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
     onMarkWrong,
     onUndo,
     onDelete,
+    onEdit,
     showUndo = false
 }) => {
     return (
@@ -345,12 +426,20 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     </span>
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white">{question.text}</h3>
                 </div>
-                <button
-                    onClick={onDelete}
-                    className="text-gray-400 hover:text-red-600 transition-colors duration-200"
-                >
-                    <TrashIcon className="w-5 h-5" />
-                </button>
+                <div className="flex space-x-2">
+                    <button
+                        onClick={onEdit}
+                        className="text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                    >
+                        <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                        onClick={onDelete}
+                        className="text-gray-400 hover:text-red-600 transition-colors duration-200"
+                    >
+                        <TrashIcon className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
             <div className="space-y-4">
@@ -364,18 +453,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                         </div>
                     </div>
                 )}
-                <div>
-                    <label className="form-label">
-                        Candidate's Answer
-                    </label>
-                    <textarea
-                        value={question.answer || ''}
-                        onChange={(e) => onUpdateAnswer(e.target.value)}
-                        placeholder="Enter the candidate's answer..."
-                        className="form-textarea"
-                        rows={3}
-                    />
-                </div>
 
                 <div className="flex items-center space-x-3">
                     {onMarkCorrect && onMarkWrong && !question.isAnswered && (

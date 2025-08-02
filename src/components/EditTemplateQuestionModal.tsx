@@ -1,50 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { Question } from '../types';
+import { QuestionTemplate } from '../types';
 
-interface EditQuestionModalProps {
+interface EditTemplateQuestionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onUpdateQuestion: (questionId: string, updates: Partial<Question>) => void;
-    question: Question | null;
+    onEditQuestion: (templateId: string, sectionId: string, questionId: string, questionText: string, answer?: string) => void;
+    questionTemplates: QuestionTemplate[];
+    templateId: string;
+    sectionId: string;
+    questionId: string;
+    currentQuestionText: string;
+    currentAnswer?: string;
 }
 
-const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
+const EditTemplateQuestionModal: React.FC<EditTemplateQuestionModalProps> = ({
     isOpen,
     onClose,
-    onUpdateQuestion,
-    question
+    onEditQuestion,
+    questionTemplates,
+    templateId,
+    sectionId,
+    questionId,
+    currentQuestionText,
+    currentAnswer
 }) => {
     const [questionText, setQuestionText] = useState('');
     const [answer, setAnswer] = useState('');
 
     useEffect(() => {
-        if (question) {
-            setQuestionText(question.text);
-            setAnswer(question.answer || '');
+        if (isOpen) {
+            setQuestionText(currentQuestionText);
+            setAnswer(currentAnswer || '');
         }
-    }, [question]);
+    }, [isOpen, currentQuestionText, currentAnswer]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!question || !questionText.trim()) return;
+        if (!questionText.trim()) return;
 
-        onUpdateQuestion(question.id, { 
-            text: questionText.trim(),
-            answer: answer.trim() || undefined
-        });
+        onEditQuestion(templateId, sectionId, questionId, questionText.trim(), answer.trim() || undefined);
         onClose();
     };
 
-    const handleClose = () => {
-        if (question) {
-            setQuestionText(question.text);
-            setAnswer(question.answer || '');
-        }
-        onClose();
-    };
-
-    if (!isOpen || !question) return null;
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -53,7 +52,7 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white">Edit Question</h3>
                         <button
-                            onClick={handleClose}
+                            onClick={onClose}
                             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
                         >
                             <XMarkIcon className="w-6 h-6" />
@@ -63,15 +62,15 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label htmlFor="questionText" className="form-label required">
-                                Question
+                                Question Text
                             </label>
                             <textarea
                                 id="questionText"
                                 value={questionText}
                                 onChange={(e) => setQuestionText(e.target.value)}
+                                placeholder="Enter your question..."
                                 className="form-textarea"
-                                placeholder="Enter the question..."
-                                rows={3}
+                                rows={4}
                                 required
                                 autoFocus
                             />
@@ -79,14 +78,14 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
 
                         <div>
                             <label htmlFor="answer" className="form-label">
-                                Expected Answer (Optional)
+                                Answer (Optional)
                             </label>
                             <textarea
                                 id="answer"
                                 value={answer}
                                 onChange={(e) => setAnswer(e.target.value)}
-                                className="form-textarea"
                                 placeholder="Enter the expected answer..."
+                                className="form-textarea"
                                 rows={3}
                             />
                         </div>
@@ -94,7 +93,7 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
                         <div className="flex justify-end space-x-3 pt-6">
                             <button
                                 type="button"
-                                onClick={handleClose}
+                                onClick={onClose}
                                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                             >
                                 Cancel
@@ -103,7 +102,7 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
                                 type="submit"
                                 className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                             >
-                                Save Changes
+                                Update Question
                             </button>
                         </div>
                     </form>
@@ -113,4 +112,4 @@ const EditQuestionModal: React.FC<EditQuestionModalProps> = ({
     );
 };
 
-export default EditQuestionModal; 
+export default EditTemplateQuestionModal; 

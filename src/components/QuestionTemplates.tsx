@@ -16,7 +16,7 @@ import AddSectionModal from './AddSectionModal';
 import AddQuestionModal from './AddQuestionModal';
 import EditTemplateModal from './EditTemplateModal';
 import EditSectionModal from './EditSectionModal';
-import EditQuestionModal from './EditQuestionModal';
+import EditTemplateQuestionModal from './EditTemplateQuestionModal';
 import ConfirmationModal from './ConfirmationModal';
 
 interface QuestionTemplatesProps {
@@ -583,7 +583,7 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
 
                 {/* Edit Question Modal */}
                 {showEditQuestionModal && editQuestionData && (
-                    <EditQuestionModal
+                    <EditTemplateQuestionModal
                         isOpen={showEditQuestionModal}
                         onClose={() => {
                             setShowEditQuestionModal(false);
