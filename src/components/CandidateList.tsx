@@ -226,6 +226,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                 }}
                 onUpdateCandidate={onUpdateCandidate}
                 candidate={candidateToEdit}
+                positions={positions}
             />
 
             <ManagePositionsModal

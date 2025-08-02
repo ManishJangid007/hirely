@@ -7,13 +7,15 @@ interface EditCandidateModalProps {
     onClose: () => void;
     onUpdateCandidate: (id: string, updates: Partial<Candidate>) => void;
     candidate: Candidate | null;
+    positions: string[];
 }
 
 const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
     isOpen,
     onClose,
     onUpdateCandidate,
-    candidate
+    candidate,
+    positions
 }) => {
     const [fullName, setFullName] = useState('');
     const [position, setPosition] = useState('');
@@ -91,15 +93,20 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                             <label htmlFor="position" className="form-label required">
                                 Position
                             </label>
-                            <input
-                                type="text"
+                            <select
                                 id="position"
                                 value={position}
                                 onChange={(e) => setPosition(e.target.value)}
-                                className="form-input"
-                                placeholder="Enter candidate's position"
+                                className="form-select"
                                 required
-                            />
+                            >
+                                <option value="">Select a position</option>
+                                {positions.map((pos) => (
+                                    <option key={pos} value={pos}>
+                                        {pos}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div>
