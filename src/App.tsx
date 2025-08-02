@@ -24,7 +24,9 @@ function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        console.log('Starting app initialization...');
         await databaseService.init();
+        console.log('Database initialized, loading data...');
 
         // Try to restore from backup if IndexedDB is empty
         const backupInfo = databaseService.getBackupInfo();
@@ -41,6 +43,12 @@ function App() {
           databaseService.getQuestionTemplates(),
           databaseService.getPositions()
         ]);
+
+        console.log('Data loaded successfully:', {
+          candidates: candidatesAfterRestore.length,
+          templates: templates.length,
+          positions: positions.length
+        });
 
         setAppState({
           candidates: candidatesAfterRestore.sort((a, b) =>
@@ -59,7 +67,12 @@ function App() {
     initializeApp();
   }, []);
 
-  const addCandidate = async (candidate: Omit<Candidate, 'id' | 'createdAt'>, importedQuestions?: any[]) => {
+  const addCandidate = async (candidate: Omit<Candidate, 'id' | 'createdAt'>) => {
+    if (!databaseService.isInitialized()) {
+      console.error('Database not initialized, cannot add candidate');
+      return;
+    }
+
     const newCandidate: Candidate = {
       ...candidate,
       id: Date.now().toString(),
@@ -68,17 +81,6 @@ function App() {
 
     try {
       await databaseService.addCandidate(newCandidate);
-
-      // If questions were imported, save them to localStorage for the new candidate
-      if (importedQuestions && importedQuestions.length > 0) {
-        console.log('Saving imported questions:', importedQuestions);
-        console.log('Candidate ID:', newCandidate.id);
-        localStorage.setItem(`questions_${newCandidate.id}`, JSON.stringify(importedQuestions));
-
-        // Verify the questions were saved
-        const savedQuestions = localStorage.getItem(`questions_${newCandidate.id}`);
-        console.log('Saved questions verification:', savedQuestions);
-      }
 
       setAppState(prev => ({
         ...prev,
@@ -150,6 +152,11 @@ function App() {
   };
 
   const addQuestionTemplate = async (template: Omit<QuestionTemplate, 'id'>) => {
+    if (!databaseService.isInitialized()) {
+      console.error('Database not initialized, cannot add question template');
+      return;
+    }
+
     const newTemplate: QuestionTemplate = {
       ...template,
       id: Date.now().toString()

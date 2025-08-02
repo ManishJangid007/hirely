@@ -5,7 +5,7 @@ import { Candidate, QuestionTemplate } from '../types';
 interface AddCandidateModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onAddCandidate: (candidate: Omit<Candidate, 'id' | 'createdAt'>, importedQuestions?: any[]) => void;
+    onAddCandidate: (candidate: Omit<Candidate, 'id' | 'createdAt'>) => void;
     positions: string[];
     questionTemplates: QuestionTemplate[];
     candidates: Candidate[];
@@ -47,19 +47,17 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                         isCorrect: undefined
                     }))
                 );
-                console.log('Imported questions from template:', importedQuestions);
             }
         } else if (importType === 'candidate' && selectedCandidate) {
-            const savedQuestions = localStorage.getItem(`questions_${selectedCandidate}`);
-            if (savedQuestions) {
-                const parsedQuestions = JSON.parse(savedQuestions);
-                // Ensure all questions have the correct structure
-                importedQuestions = parsedQuestions.map((q: any) => ({
+            const sourceCandidate = candidates.find(c => c.id === selectedCandidate);
+            if (sourceCandidate && sourceCandidate.questions) {
+                // Copy questions from the source candidate
+                importedQuestions = sourceCandidate.questions.map((q: any) => ({
                     ...q,
-                    isAnswered: q.isAnswered || false,
-                    isCorrect: q.isCorrect !== undefined ? q.isCorrect : undefined
+                    id: Date.now().toString() + Math.random(), // Generate new ID
+                    isAnswered: false,
+                    isCorrect: undefined
                 }));
-                console.log('Imported questions from candidate:', importedQuestions);
             }
         }
 
@@ -70,8 +68,9 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
             experience: {
                 years: formData.experienceYears,
                 months: formData.experienceMonths
-            }
-        }, importedQuestions);
+            },
+            questions: importedQuestions
+        });
 
         // Reset form
         setFormData({

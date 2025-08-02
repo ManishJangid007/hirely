@@ -14,6 +14,7 @@ export interface Candidate {
     years: number;
     months: number;
   };
+  questions: Question[];
   createdAt: string;
 }
 
@@ -57,21 +58,28 @@ export interface BackupData {
 
 class DatabaseService {
   private dbName = 'InterviewAppDB';
-  private version = 1;
+  private version = 2; // Increment version since we added questions field to Candidate
   private db: IDBDatabase | null = null;
   private backupKey = 'interview_app_backup';
 
   async init(): Promise<void> {
     return new Promise((resolve, reject) => {
+      console.log('Initializing database...');
       const request = indexedDB.open(this.dbName, this.version);
 
-      request.onerror = () => reject(request.error);
+      request.onerror = () => {
+        console.error('Database initialization failed:', request.error);
+        reject(request.error);
+      };
+
       request.onsuccess = () => {
         this.db = request.result;
+        console.log('Database initialized successfully');
         resolve();
       };
 
       request.onupgradeneeded = (event) => {
+        console.log('Database upgrade needed, version:', this.version);
         const db = (event.target as IDBOpenDBRequest).result;
 
         // Create object stores
@@ -99,9 +107,17 @@ class DatabaseService {
   }
 
   private getStore(storeName: string, mode: IDBTransactionMode = 'readonly'): IDBObjectStore {
-    if (!this.db) throw new Error('Database not initialized');
+    if (!this.db) {
+      console.error('Database not initialized. Current state:', { db: this.db });
+      throw new Error('Database not initialized');
+    }
     const transaction = this.db.transaction(storeName, mode);
     return transaction.objectStore(storeName);
+  }
+
+  // Check if database is initialized
+  isInitialized(): boolean {
+    return this.db !== null;
   }
 
   // Backup and Recovery Methods

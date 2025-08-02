@@ -7,6 +7,7 @@ export interface Candidate {
         years: number;
         months: number;
     };
+    questions: Question[];
     createdAt: string;
 }
 

@@ -30,32 +30,19 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const navigate = useNavigate();
     const candidate = candidates.find(c => c.id === id);
 
-    const [questions, setQuestions] = useState<Question[]>([]);
+    const [questions, setQuestions] = useState<Question[]>(candidate?.questions || []);
     const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
     const [showSaveResultModal, setShowSaveResultModal] = useState(false);
     const [showResultSummaryModal, setShowResultSummaryModal] = useState(false);
     const [showDeleteQuestionConfirmModal, setShowDeleteQuestionConfirmModal] = useState(false);
     const [questionToDelete, setQuestionToDelete] = useState<Question | null>(null);
 
+    // Update questions when candidate changes
     useEffect(() => {
-        // Load questions from localStorage
-        const savedQuestions = localStorage.getItem(`questions_${id}`);
-        console.log('Loading questions for candidate:', id);
-        console.log('Saved questions from localStorage:', savedQuestions);
-        if (savedQuestions) {
-            const parsedQuestions = JSON.parse(savedQuestions);
-            console.log('Parsed questions:', parsedQuestions);
-            console.log('Number of questions loaded:', parsedQuestions.length);
-            setQuestions(parsedQuestions);
-        } else {
-            console.log('No saved questions found for candidate:', id);
+        if (candidate) {
+            setQuestions(candidate.questions || []);
         }
-    }, [id]);
-
-    useEffect(() => {
-        // Save questions to localStorage
-        localStorage.setItem(`questions_${id}`, JSON.stringify(questions));
-    }, [questions, id]);
+    }, [candidate]);
 
     if (!candidate) {
         return (
@@ -81,17 +68,23 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             answer: answer,
             isAnswered: false
         };
-        setQuestions(prev => [...prev, newQuestion]);
+        const updatedQuestions = [...questions, newQuestion];
+        setQuestions(updatedQuestions);
+        onUpdateCandidate(candidate.id, { questions: updatedQuestions });
     };
 
     const updateQuestion = (questionId: string, updates: Partial<Question>) => {
-        setQuestions(prev => prev.map(q =>
+        const updatedQuestions = questions.map(q =>
             q.id === questionId ? { ...q, ...updates } : q
-        ));
+        );
+        setQuestions(updatedQuestions);
+        onUpdateCandidate(candidate.id, { questions: updatedQuestions });
     };
 
     const deleteQuestion = (questionId: string) => {
-        setQuestions(prev => prev.filter(q => q.id !== questionId));
+        const updatedQuestions = questions.filter(q => q.id !== questionId);
+        setQuestions(updatedQuestions);
+        onUpdateCandidate(candidate.id, { questions: updatedQuestions });
     };
 
     const handleDeleteQuestion = (question: Question) => {
@@ -127,7 +120,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     };
 
     const handleSaveResult = (description: string, result: 'Passed' | 'Rejected' | 'Maybe') => {
-        onUpdateCandidate(candidate.id, { status: result });
+        // Update candidate with current questions and status
+        onUpdateCandidate(candidate.id, { status: result, questions });
+
         // Save interview result to localStorage
         const interviewResult = {
             id: Date.now().toString(),

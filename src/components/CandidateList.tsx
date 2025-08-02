@@ -9,7 +9,7 @@ interface CandidateListProps {
     candidates: Candidate[];
     positions: string[];
     questionTemplates: QuestionTemplate[];
-    onAddCandidate: (candidate: Omit<Candidate, 'id' | 'createdAt'>, importedQuestions?: any[]) => void;
+    onAddCandidate: (candidate: Omit<Candidate, 'id' | 'createdAt'>) => void;
     onUpdateCandidate: (id: string, updates: Partial<Candidate>) => void;
     onDeleteCandidate: (id: string) => void;
     onAddPosition: (position: string) => void;
