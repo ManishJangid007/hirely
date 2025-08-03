@@ -309,50 +309,44 @@ function App() {
           {/* Global Navigation Bar */}
           <Header onBackupClick={() => setShowBackupManager(true)} />
 
-          {/* Main Content without top padding - header is fixed */}
+          {/* Main Content without any top padding */}
           <div className="h-full">
             <Routes>
               <Route
                 path="/"
                 element={
-                  <div className="pt-16">
-                    <CandidateList
-                      candidates={appState.candidates}
-                      positions={appState.positions}
-                      questionTemplates={appState.questionTemplates}
-                      onAddCandidate={addCandidate}
-                      onUpdateCandidate={updateCandidate}
-                      onDeleteCandidate={deleteCandidate}
-                      onAddPosition={addPosition}
-                      onRemovePosition={removePosition}
-                    />
-                  </div>
+                  <CandidateList
+                    candidates={appState.candidates}
+                    positions={appState.positions}
+                    questionTemplates={appState.questionTemplates}
+                    onAddCandidate={addCandidate}
+                    onUpdateCandidate={updateCandidate}
+                    onDeleteCandidate={deleteCandidate}
+                    onAddPosition={addPosition}
+                    onRemovePosition={removePosition}
+                  />
                 }
               />
               <Route
                 path="/candidate/:id"
                 element={
-                  <div className="pt-16">
-                    <CandidateDetail
-                      candidates={appState.candidates}
-                      questionTemplates={appState.questionTemplates}
-                      onUpdateCandidate={updateCandidate}
-                    />
-                  </div>
+                  <CandidateDetail
+                    candidates={appState.candidates}
+                    questionTemplates={appState.questionTemplates}
+                    onUpdateCandidate={updateCandidate}
+                  />
                 }
               />
               <Route
                 path="/templates"
                 element={
-                  <div className="pt-16">
-                    <QuestionTemplates
-                      templates={appState.questionTemplates}
-                      onAddTemplate={addQuestionTemplate}
-                      onUpdateTemplate={updateQuestionTemplate}
-                      onDeleteTemplate={deleteQuestionTemplate}
-                      isLoading={isLoading}
-                    />
-                  </div>
+                  <QuestionTemplates
+                    templates={appState.questionTemplates}
+                    onAddTemplate={addQuestionTemplate}
+                    onUpdateTemplate={updateQuestionTemplate}
+                    onDeleteTemplate={deleteQuestionTemplate}
+                    isLoading={isLoading}
+                  />
                 }
               />
             </Routes>
