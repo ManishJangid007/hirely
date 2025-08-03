@@ -40,13 +40,24 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useEffect(() => {
     // Update localStorage
     localStorage.setItem('theme', theme);
-
+    
     // Update document class
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');
+    }
+
+    // Update CSS variables for header colors
+    if (theme === 'dark') {
+      root.style.setProperty('--header-bg', '#1f2937');
+      root.style.setProperty('--header-text', '#ffffff');
+      root.style.setProperty('--header-border', '#374151');
+    } else {
+      root.style.setProperty('--header-bg', '#ffffff');
+      root.style.setProperty('--header-text', '#111827');
+      root.style.setProperty('--header-border', '#e5e7eb');
     }
 
     // Update PWA theme colors

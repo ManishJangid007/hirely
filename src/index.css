@@ -5,6 +5,19 @@
 /* Import custom input styles */
 @import './styles/inputs.css';
 
+/* CSS Variables for consistent theming */
+:root {
+  --header-bg: #ffffff;
+  --header-text: #111827;
+  --header-border: #e5e7eb;
+}
+
+.dark {
+  --header-bg: #1f2937;
+  --header-text: #ffffff;
+  --header-border: #374151;
+}
+
 /* Base styles */
 body {
   margin: 0;
