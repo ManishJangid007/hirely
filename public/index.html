@@ -9,19 +9,52 @@
   <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#1f2937" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Hirely - Interview Management" />
   <meta name="description"
     content="Hirely - Modern Candidate Interview Management App - Manage interviews, questions, and results" />
   <meta name="mobile-web-app-capable" content="yes" />
-  
+
   <!-- Additional PWA theme support -->
-  <meta name="msapplication-TileColor" content="#ffffff" />
+  <meta name="msapplication-TileColor" content="#1f2937" />
   <meta name="msapplication-config" content="%PUBLIC_URL%/browserconfig.xml" />
   <meta name="color-scheme" content="light dark" />
-  
+
+  <!-- Immediate theme color initialization to prevent black header flash -->
+  <script>
+    (function () {
+      // Get saved theme or system preference immediately
+      var savedTheme = localStorage.getItem('theme');
+      var systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+
+      // Update theme color meta tag immediately
+      var metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', theme === 'dark' ? '#1f2937' : '#ffffff');
+      }
+
+      // Update iOS status bar style immediately
+      var appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+      if (appleStatusBar) {
+        appleStatusBar.setAttribute('content', theme === 'dark' ? 'black-translucent' : 'default');
+      }
+
+      // Update Windows tile color immediately
+      var msTileColor = document.querySelector('meta[name="msapplication-TileColor"]');
+      if (msTileColor) {
+        msTileColor.setAttribute('content', theme === 'dark' ? '#1f2937' : '#ffffff');
+      }
+
+      // Add dark class to html element if needed
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
   <title>Hirely - Interview Management</title>
 </head>
 

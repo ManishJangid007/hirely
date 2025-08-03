@@ -10,35 +10,35 @@ const initializePWATheme = () => {
   const savedTheme = localStorage.getItem('theme');
   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-  
-  // Update meta theme-color immediately
-  let metaThemeColor = document.querySelector('meta[name="theme-color"]');
-  if (!metaThemeColor) {
-    metaThemeColor = document.createElement('meta');
-    metaThemeColor.setAttribute('name', 'theme-color');
-    document.head.appendChild(metaThemeColor);
+
+  // Only update if the theme color is not already set correctly
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  const expectedColor = theme === 'dark' ? '#1f2937' : '#ffffff';
+
+  if (metaThemeColor && metaThemeColor.getAttribute('content') !== expectedColor) {
+    metaThemeColor.setAttribute('content', expectedColor);
   }
-  
-  if (theme === 'dark') {
-    metaThemeColor.setAttribute('content', '#1f2937');
-    document.documentElement.classList.add('dark');
-  } else {
-    metaThemeColor.setAttribute('content', '#ffffff');
-    document.documentElement.classList.remove('dark');
+
+  // Update document class if needed
+  const root = document.documentElement;
+  if (theme === 'dark' && !root.classList.contains('dark')) {
+    root.classList.add('dark');
+  } else if (theme === 'light' && root.classList.contains('dark')) {
+    root.classList.remove('dark');
   }
-  
-  // Update iOS status bar style
-  let appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-  if (!appleStatusBar) {
-    appleStatusBar = document.createElement('meta');
-    appleStatusBar.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-    document.head.appendChild(appleStatusBar);
+
+  // Update iOS status bar style if needed
+  const appleStatusBar = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  const expectedStatusBarStyle = theme === 'dark' ? 'black-translucent' : 'default';
+
+  if (appleStatusBar && appleStatusBar.getAttribute('content') !== expectedStatusBarStyle) {
+    appleStatusBar.setAttribute('content', expectedStatusBarStyle);
   }
-  
-  if (theme === 'dark') {
-    appleStatusBar.setAttribute('content', 'black-translucent');
-  } else {
-    appleStatusBar.setAttribute('content', 'default');
+
+  // Update Windows tile color if needed
+  const msTileColor = document.querySelector('meta[name="msapplication-TileColor"]');
+  if (msTileColor && msTileColor.getAttribute('content') !== expectedColor) {
+    msTileColor.setAttribute('content', expectedColor);
   }
 };
 

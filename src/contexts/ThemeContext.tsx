@@ -62,11 +62,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       document.head.appendChild(metaThemeColor);
     }
 
-    // Update theme color based on current theme
-    if (currentTheme === 'dark') {
-      metaThemeColor.setAttribute('content', '#1f2937'); // Dark gray
-    } else {
-      metaThemeColor.setAttribute('content', '#ffffff'); // White
+    const newThemeColor = currentTheme === 'dark' ? '#1f2937' : '#ffffff';
+    if (metaThemeColor.getAttribute('content') !== newThemeColor) {
+      metaThemeColor.setAttribute('content', newThemeColor);
     }
 
     // Update apple-mobile-web-app-status-bar-style for iOS
@@ -77,10 +75,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       document.head.appendChild(appleStatusBar);
     }
 
-    if (currentTheme === 'dark') {
-      appleStatusBar.setAttribute('content', 'black-translucent');
-    } else {
-      appleStatusBar.setAttribute('content', 'default');
+    const newStatusBarStyle = currentTheme === 'dark' ? 'black-translucent' : 'default';
+    if (appleStatusBar.getAttribute('content') !== newStatusBarStyle) {
+      appleStatusBar.setAttribute('content', newStatusBarStyle);
     }
 
     // Update Windows tile color
@@ -91,10 +88,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       document.head.appendChild(msTileColor);
     }
 
-    if (currentTheme === 'dark') {
-      msTileColor.setAttribute('content', '#1f2937');
-    } else {
-      msTileColor.setAttribute('content', '#ffffff');
+    if (msTileColor.getAttribute('content') !== newThemeColor) {
+      msTileColor.setAttribute('content', newThemeColor);
     }
 
     // Update manifest theme color dynamically
