@@ -18,6 +18,22 @@
   --header-border: #374151;
 }
 
+/* PWA-specific styles to prevent unwanted scrolling */
+@media (display-mode: standalone) {
+  body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ensure header stays consistent in PWA mode */
+  .fixed {
+    position: fixed !important;
+    background-color: var(--header-bg) !important;
+    border-color: var(--header-border) !important;
+    color: var(--header-text) !important;
+  }
+}
+
 /* Base styles */
 body {
   margin: 0;

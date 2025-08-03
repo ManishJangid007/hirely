@@ -18,7 +18,12 @@ const Header: React.FC<HeaderProps> = ({ onBackupClick }) => {
       style={{
         backgroundColor: 'var(--header-bg)',
         borderColor: 'var(--header-border)',
-        color: 'var(--header-text)'
+        color: 'var(--header-text)',
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        right: '0',
+        zIndex: '50'
       }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
