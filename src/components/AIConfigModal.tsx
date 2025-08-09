@@ -38,12 +38,28 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       if (!databaseService.isInitialized()) {
         try { await databaseService.init(); } catch { }
       }
-      await databaseService.setGeminiApiKey(geminiApiKey.trim());
-      if (testStatus === 'success') {
-        await databaseService.setGeminiConnected(true);
+      const key = geminiApiKey.trim();
+      await databaseService.setGeminiApiKey(key);
+
+      if (!key) {
+        // Empty key disables AI
+        await databaseService.setGeminiConnected(false);
+        // redirect to home page
+        window.location.href = '/';
+        return;
       }
+
+      // If there is a key, validate it via a quick test call and update connection flag accordingly
+      try {
+        const res = await generateContent({ prompt: 'Hi', overrideApiKey: key, timeoutMs: 10000 });
+        const ok = !!(res && res.candidates && res.candidates.length > 0);
+        await databaseService.setGeminiConnected(ok);
+      } catch {
+        await databaseService.setGeminiConnected(false);
+      }
+
       // Refresh the page to reflect AI connectivity state across the app
-      window.location.reload();
+      window.location.href = '/';
     } catch (err) {
       setTestStatus('error');
       setTestMessage('Failed to save');
