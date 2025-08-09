@@ -8,7 +8,9 @@ import {
     TrashIcon,
     ClipboardDocumentIcon,
     DocumentTextIcon,
-    PencilIcon
+    PencilIcon,
+    ChevronDownIcon,
+    ChevronRightIcon
 } from '@heroicons/react/24/outline';
 import { Candidate, Question, QuestionTemplate } from '../types';
 import { databaseService } from '../services/database';
@@ -43,6 +45,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [questionToEdit, setQuestionToEdit] = useState<Question | null>(null);
     const [showDeleteSectionConfirmModal, setShowDeleteSectionConfirmModal] = useState(false);
     const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
+    const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
 
     // Update questions when candidate changes
     useEffect(() => {
@@ -328,7 +331,28 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             return (
                                 <div key={sectionName}>
                                     <div className="flex items-center justify-between mb-4">
-                                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{sectionName}</h2>
+                                        <div className="flex items-center">
+                                            <button
+                                                onClick={() => {
+                                                    const updated = new Set(collapsedSections);
+                                                    if (updated.has(sectionName)) {
+                                                        updated.delete(sectionName);
+                                                    } else {
+                                                        updated.add(sectionName);
+                                                    }
+                                                    setCollapsedSections(updated);
+                                                }}
+                                                className="mr-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+                                                aria-label={collapsedSections.has(sectionName) ? 'Expand section' : 'Collapse section'}
+                                            >
+                                                {collapsedSections.has(sectionName) ? (
+                                                    <ChevronRightIcon className="w-5 h-5" />
+                                                ) : (
+                                                    <ChevronDownIcon className="w-5 h-5" />
+                                                )}
+                                            </button>
+                                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{sectionName}</h2>
+                                        </div>
                                         <button
                                             onClick={() => handleDeleteSection(sectionName)}
                                             className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
@@ -337,6 +361,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                             <TrashIcon className="w-5 h-5" />
                                         </button>
                                     </div>
+                                    {!collapsedSections.has(sectionName) && (
                                     <div className="space-y-4">
                                         {unansweredQuestions.map((question, index) => (
                                             <QuestionCard
@@ -356,6 +381,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                             />
                                         ))}
                                     </div>
+                                    )}
                                 </div>
                             );
                         })}
@@ -371,10 +397,33 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         {/* Correct Answers Section */}
                         {questions.filter(q => q.isCorrect === true).length > 0 && (
                             <div>
-                                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-                                    <CheckIcon className="w-5 h-5 text-green-600 mr-2" />
-                                    Correct Answers
-                                </h2>
+                                <div className="flex items-center mb-4">
+                                    <button
+                                        onClick={() => {
+                                            const key = '__correct__';
+                                            const updated = new Set(collapsedSections);
+                                            if (updated.has(key)) {
+                                                updated.delete(key);
+                                            } else {
+                                                updated.add(key);
+                                            }
+                                            setCollapsedSections(updated);
+                                        }}
+                                        className="mr-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+                                        aria-label={collapsedSections.has('__correct__') ? 'Expand section' : 'Collapse section'}
+                                    >
+                                        {collapsedSections.has('__correct__') ? (
+                                            <ChevronRightIcon className="w-5 h-5" />
+                                        ) : (
+                                            <ChevronDownIcon className="w-5 h-5" />
+                                        )}
+                                    </button>
+                                    <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                                        <CheckIcon className="w-5 h-5 text-green-600 mr-2" />
+                                        Correct Answers
+                                    </h2>
+                                </div>
+                                {!collapsedSections.has('__correct__') && (
                                 <div className="space-y-4">
                                     {questions.filter(q => q.isCorrect === true).map((question, index) => (
                                         <QuestionCard
@@ -392,6 +441,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                         />
                                     ))}
                                 </div>
+                                )}
                             </div>
                         )}
 
@@ -404,10 +454,33 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         {/* Wrong/Unanswered Section */}
                         {questions.filter(q => q.isCorrect === false).length > 0 && (
                             <div>
-                                <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-                                    <XMarkIcon className="w-5 h-5 text-red-600 mr-2" />
-                                    Wrong/Unanswered Questions
-                                </h2>
+                                <div className="flex items-center mb-4">
+                                    <button
+                                        onClick={() => {
+                                            const key = '__wrong__';
+                                            const updated = new Set(collapsedSections);
+                                            if (updated.has(key)) {
+                                                updated.delete(key);
+                                            } else {
+                                                updated.add(key);
+                                            }
+                                            setCollapsedSections(updated);
+                                        }}
+                                        className="mr-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+                                        aria-label={collapsedSections.has('__wrong__') ? 'Expand section' : 'Collapse section'}
+                                    >
+                                        {collapsedSections.has('__wrong__') ? (
+                                            <ChevronRightIcon className="w-5 h-5" />
+                                        ) : (
+                                            <ChevronDownIcon className="w-5 h-5" />
+                                        )}
+                                    </button>
+                                    <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                                        <XMarkIcon className="w-5 h-5 text-red-600 mr-2" />
+                                        Wrong/Unanswered Questions
+                                    </h2>
+                                </div>
+                                {!collapsedSections.has('__wrong__') && (
                                 <div className="space-y-4">
                                     {questions.filter(q => q.isCorrect === false).map((question, index) => (
                                         <QuestionCard
@@ -427,6 +500,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                         />
                                     ))}
                                 </div>
+                                )}
                             </div>
                         )}
                     </div>
