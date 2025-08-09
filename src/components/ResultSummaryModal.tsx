@@ -58,7 +58,13 @@ const ResultSummaryModal: React.FC<ResultSummaryModalProps> = ({
 
   const generateSummaryText = () => {
     const sections = getQuestionsBySection();
-    let summary = `${candidate.fullName} - ${candidate.experience.years}+ Years of Experience\n\n`;
+    const years = candidate.experience.years || 0;
+    const months = candidate.experience.months || 0;
+    let experienceText = `${years} year${years === 1 ? '' : 's'}`;
+    if (months > 0) {
+      experienceText += `, ${months} month${months === 1 ? '' : 's'}`;
+    }
+    let summary = `${candidate.fullName} - ${experienceText} of experience\n\n`;
 
     if (interviewResult?.description) {
       summary += `${interviewResult.description}\n\n`;
@@ -104,6 +110,8 @@ const ResultSummaryModal: React.FC<ResultSummaryModalProps> = ({
   if (!isOpen) return null;
 
   const sections = getQuestionsBySection();
+  const displayYears = candidate.experience.years || 0;
+  const displayMonths = candidate.experience.months || 0;
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -131,11 +139,11 @@ const ResultSummaryModal: React.FC<ResultSummaryModalProps> = ({
           {/* Candidate Info */}
           <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              {candidate.fullName} - {candidate.experience.years}+ Years of Experience
+              {candidate.fullName} - {displayYears} year{displayYears === 1 ? '' : 's'}{displayMonths > 0 ? `, ${displayMonths} month${displayMonths === 1 ? '' : 's'}` : ''} of experience
             </h4>
             <p className="text-sm text-gray-600 dark:text-gray-400">{candidate.position}</p>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {candidate.experience.years} years, {candidate.experience.months} months experience
+              {displayYears} year{displayYears === 1 ? '' : 's'}{displayMonths > 0 ? `, ${displayMonths} month${displayMonths === 1 ? '' : 's'}` : ''} experience
             </p>
           </div>
 
