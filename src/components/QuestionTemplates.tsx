@@ -116,7 +116,7 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
             setAiMessageIndex((i) => (i + 1) % aiMessages.length);
         }, 3000);
         return () => clearInterval(id);
-    }, [isAIGenerating]);
+    }, [isAIGenerating, aiMessages.length]);
 
     // Load Gemini connection state to control AI buttons visibility
     useEffect(() => {
