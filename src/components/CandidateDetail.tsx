@@ -254,8 +254,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                     Back
                                 </button>
                                 <div className="text-center sm:text-left">
-                                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{candidate.fullName}</h1>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">{candidate.position}</p>
+                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{candidate.fullName}</h1>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{candidate.position}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {candidate.experience.years} years, {candidate.experience.months} months experience
+                                </p>
                                     {candidate.interviewDate && (
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                             Interview Date: {(() => {
