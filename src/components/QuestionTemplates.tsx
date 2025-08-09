@@ -460,11 +460,11 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                                                                         >
                                                                             <div className="flex justify-between items-start">
                                                                                 <div className="flex-1">
-                                                                                    <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                                                                    <div className="text-sm text-gray-700 dark:text-gray-300 font-medium whitespace-pre-wrap break-words">
                                                                                         {question.text}
                                                                                     </div>
                                                                                     {question.answer && (
-                                                                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                                                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 whitespace-pre-wrap break-words">
                                                                                             <span className="font-medium">Answer:</span> {question.answer}
                                                                                         </div>
                                                                                     )}

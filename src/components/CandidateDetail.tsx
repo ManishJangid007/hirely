@@ -663,7 +663,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     <span className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-800 text-sm font-medium rounded-full mr-3">
                         {questionNumber}
                     </span>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{question.text}</h3>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white whitespace-pre-wrap break-words">{question.text}</h3>
                 </div>
                 <div className="flex space-x-2">
                     <button
@@ -687,7 +687,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                         <label className="form-label">
                             Expected Answer
                         </label>
-                        <div className="p-3 bg-gray-50 dark:bg-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300">
+                        <div className="p-3 bg-gray-50 dark:bg-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
                             {question.answer}
                         </div>
                     </div>
