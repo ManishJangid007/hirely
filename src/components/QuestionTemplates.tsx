@@ -23,6 +23,7 @@ import ConfirmationModal from './ConfirmationModal';
 import CopyTemplateModal from './CopyTemplateModal';
 import AIAddTemplateModal from './AIAddTemplateModal';
 import AIAddSectionModal from './AIAddSectionModal';
+import AIAddQuestionModal from './AIAddQuestionModal';
 import { generateContent, extractFirstText } from '../services/ai';
 import { databaseService } from '../services/database';
 
@@ -92,6 +93,12 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
     const [copyTemplateData, setCopyTemplateData] = useState<{ templateId: string; templateName: string } | null>(null);
     const [showAIAddTemplateModal, setShowAIAddTemplateModal] = useState(false);
     const [showAIAddSectionModal, setShowAIAddSectionModal] = useState<{ open: boolean; templateId?: string } | null>(null);
+    const [showAIAddQuestionModal, setShowAIAddQuestionModal] = useState<{
+        open: boolean;
+        templateId?: string;
+        sectionId?: string;
+        sectionName?: string;
+    } | null>(null);
     const [isAIGenerating, setIsAIGenerating] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
     const aiMessages = [
@@ -573,6 +580,20 @@ ${jsonExample}
                                                                     >
                                                                         <TrashIcon className="w-4 h-4" />
                                                                     </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setShowAIAddQuestionModal({
+                                                                                open: true,
+                                                                                templateId: template.id,
+                                                                                sectionId: section.id,
+                                                                                sectionName: section.name
+                                                                            });
+                                                                        }}
+                                                                        className="text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 transition-colors duration-200"
+                                                                        title="AI Question"
+                                                                    >
+                                                                        <SparklesIcon className="w-4 h-4" />
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                             {!collapsedSections.has(section.id) && (
@@ -845,7 +866,7 @@ Requirements:
 - Output must be only valid JSON (no extra text) following this schema exactly:
 {
   "name": "Section Name",
-  "questions": [ { "text": "Question text", "answer"?: "Expected answer" } ]
+  "questions": [ { "text": "Question text", "answer": "Expected answer" } ]
 }
 `);
 
@@ -879,6 +900,67 @@ Requirements:
                                 onUpdateTemplate(targetTemplate.id, updatedTemplate);
                             } catch (err: any) {
                                 setAiError(err?.message || 'Failed to generate section');
+                            } finally {
+                                setIsAIGenerating(false);
+                            }
+                        }}
+                    />
+                )}
+
+                {/* AI Add Question Modal */}
+                {showAIAddQuestionModal?.open && (
+                    <AIAddQuestionModal
+                        isOpen={showAIAddQuestionModal.open}
+                        onClose={() => setShowAIAddQuestionModal(null)}
+                        sectionName={showAIAddQuestionModal.sectionName}
+                        onStart={async ({ prompt }) => {
+                            const targetTemplate = templates.find(t => t.id === showAIAddQuestionModal?.templateId);
+                            const targetSection = targetTemplate?.sections.find(s => s.id === showAIAddQuestionModal?.sectionId);
+                            setShowAIAddQuestionModal(null);
+                            setAiError(null);
+                            setIsAIGenerating(true);
+                            try {
+                                if (!databaseService.isInitialized()) {
+                                    try { await databaseService.init(); } catch { }
+                                }
+                                const connected = await databaseService.getGeminiConnected();
+                                if (!connected) {
+                                    throw new Error('AI is not connected. Configure Gemini API key in Settings.');
+                                }
+
+                                const baseSectionName = targetSection?.name || 'General';
+                                const aiPrompt = `You are an expert interviewer. Given this instruction, generate only JSON with an array of questions for the section "${baseSectionName}".\nInstruction: ${prompt}\n\nExpected JSON schema:\n{ "questions": [ { "text": "Question text", "answer": "Expected answer" } ] }`;
+
+                                const res = await generateContent({ prompt: aiPrompt, timeoutMs: 25000 });
+                                const text = extractFirstText(res) || '';
+                                const cleaned = sanitizeJson(text);
+                                const parsed = JSON.parse(cleaned);
+                                if (!parsed || !Array.isArray(parsed.questions)) {
+                                    throw new Error('AI response missing questions array');
+                                }
+
+                                if (!targetTemplate || !targetSection) throw new Error('Section not found');
+
+                                const newQuestions = parsed.questions.map((q: any, idx: number) => ({
+                                    id: Date.now().toString() + Math.random() + idx,
+                                    text: String(q.text || '').trim(),
+                                    section: baseSectionName,
+                                    answer: q.answer ? String(q.answer) : undefined,
+                                    isAnswered: false
+                                }));
+
+                                const updatedSection = {
+                                    ...targetSection,
+                                    questions: [...targetSection.questions, ...newQuestions]
+                                };
+
+                                const updatedTemplate: QuestionTemplate = {
+                                    ...targetTemplate,
+                                    sections: targetTemplate.sections.map(s => s.id === targetSection.id ? updatedSection : s)
+                                };
+                                onUpdateTemplate(targetTemplate.id, updatedTemplate);
+                            } catch (err: any) {
+                                setAiError(err?.message || 'Failed to generate questions');
                             } finally {
                                 setIsAIGenerating(false);
                             }
