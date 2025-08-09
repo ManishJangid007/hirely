@@ -8,7 +8,8 @@ import {
     DocumentTextIcon,
     FolderIcon,
     ChevronDownIcon,
-    ChevronRightIcon
+    ChevronRightIcon,
+    DocumentDuplicateIcon
 } from '@heroicons/react/24/outline';
 import { QuestionTemplate, QuestionSection } from '../types';
 import AddTemplateModal from './AddTemplateModal';
@@ -18,6 +19,7 @@ import EditTemplateModal from './EditTemplateModal';
 import EditSectionModal from './EditSectionModal';
 import EditTemplateQuestionModal from './EditTemplateQuestionModal';
 import ConfirmationModal from './ConfirmationModal';
+import CopyTemplateModal from './CopyTemplateModal';
 
 interface QuestionTemplatesProps {
     templates: QuestionTemplate[];
@@ -81,6 +83,8 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
         questionId: string;
         questionText: string;
     } | null>(null);
+    const [showCopyTemplateModal, setShowCopyTemplateModal] = useState(false);
+    const [copyTemplateData, setCopyTemplateData] = useState<{ templateId: string; templateName: string } | null>(null);
 
     const handleAddSection = (templateId: string, section: Omit<QuestionSection, 'id'>) => {
         const template = templates.find(t => t.id === templateId);
@@ -322,6 +326,16 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                                             >
                                                 <PlusIcon className="w-4 h-4 mr-2" />
                                                 Add Section
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setCopyTemplateData({ templateId: template.id, templateName: template.name });
+                                                    setShowCopyTemplateModal(true);
+                                                }}
+                                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                            >
+                                                <DocumentDuplicateIcon className="w-4 h-4 mr-2" />
+                                                Make a copy
                                             </button>
                                             <button
                                                 onClick={() => {
@@ -586,6 +600,41 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                         onEditTemplate={handleEditTemplate}
                         templateId={editTemplateData.templateId}
                         currentTemplateName={editTemplateData.templateName}
+                    />
+                )}
+
+                {/* Copy Template Modal */}
+                {showCopyTemplateModal && copyTemplateData && (
+                    <CopyTemplateModal
+                        isOpen={showCopyTemplateModal}
+                        onClose={() => {
+                            setShowCopyTemplateModal(false);
+                            setCopyTemplateData(null);
+                        }}
+                        onConfirm={(newTemplateName) => {
+                            const source = templates.find(t => t.id === copyTemplateData.templateId);
+                            if (!source) return;
+                            const deepCopiedSections = source.sections.map((section) => {
+                                const newSectionId = Date.now().toString() + Math.random();
+                                return {
+                                    id: newSectionId,
+                                    name: section.name,
+                                    questions: section.questions.map((q, index) => ({
+                                        id: Date.now().toString() + Math.random() + index,
+                                        text: q.text,
+                                        section: section.name,
+                                        answer: q.answer,
+                                        isAnswered: false
+                                    }))
+                                } as QuestionSection;
+                            });
+                            onAddTemplate({
+                                name: newTemplateName,
+                                sections: deepCopiedSections
+                            });
+                        }}
+                        existingTemplateNames={templates.map(t => t.name)}
+                        sourceTemplateName={copyTemplateData.templateName}
                     />
                 )}
 
