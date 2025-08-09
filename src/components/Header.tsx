@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import ThemeToggle from './ThemeToggle';
 import logo from '../assets/logo.png';
 import { Cog6ToothIcon } from '@heroicons/react/24/outline';
 import SettingsModal from './SettingsModal';
