@@ -103,10 +103,9 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
     const [aiError, setAiError] = useState<string | null>(null);
     const [isGeminiConnected, setIsGeminiConnected] = useState<boolean>(false);
     const aiMessages = [
-        'Creating your template…',
-        'AI is cooking…',
-        'Asking the expert interviewer…',
-        'Organizing questions into sections…'
+        'AI is cooking up something special…',
+        'Consulting the expert interviewer…',
+        'Sorting questions into neat sections…'
     ];
     const [aiMessageIndex, setAiMessageIndex] = useState(0);
 
