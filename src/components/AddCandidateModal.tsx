@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { XMarkIcon, DocumentDuplicateIcon, UserIcon } from '@heroicons/react/24/outline';
 import { Candidate, QuestionTemplate } from '../types';
 import DatePicker from './DatePicker';
+import Select from './Select';
 
 interface AddCandidateModalProps {
     isOpen: boolean;
@@ -138,23 +139,13 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                         </div>
 
                         <div>
-                            <label htmlFor="position" className="form-label required">
-                                Position
-                            </label>
-                            <select
-                                id="position"
+                            <label className="form-label required">Position</label>
+                            <Select
                                 value={formData.position}
-                                onChange={(e) => handleInputChange('position', e.target.value)}
-                                className="form-select"
-                                required
-                            >
-                                <option value="">Select a position</option>
-                                {positions.map((position) => (
-                                    <option key={position} value={position}>
-                                        {position}
-                                    </option>
-                                ))}
-                            </select>
+                                onChange={(val) => handleInputChange('position', val)}
+                                options={[{ value: '', label: 'Select a position' }, ...positions.map(p => ({ value: p, label: p }))]}
+                                placeholder="Select a position"
+                            />
                         </div>
 
                         <div>
@@ -250,19 +241,12 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                 <label htmlFor="template" className="form-label">
                                                     Select Question Template
                                                 </label>
-                                                <select
-                                                    id="template"
+                                                <Select
                                                     value={selectedTemplate}
-                                                    onChange={(e) => setSelectedTemplate(e.target.value)}
-                                                    className="form-select"
-                                                >
-                                                    <option value="">Choose a template</option>
-                                                    {questionTemplates.map((template) => (
-                                                        <option key={template.id} value={template.id}>
-                                                            {template.name}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    onChange={setSelectedTemplate}
+                                                    options={[{ value: '', label: 'Choose a template' }, ...questionTemplates.map(t => ({ value: t.id, label: t.name }))]}
+                                                    placeholder="Choose a template"
+                                                />
                                             </div>
                                         )}
 
@@ -271,19 +255,12 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                 <label htmlFor="candidate" className="form-label">
                                                     Select Candidate
                                                 </label>
-                                                <select
-                                                    id="candidate"
+                                                <Select
                                                     value={selectedCandidate}
-                                                    onChange={(e) => setSelectedCandidate(e.target.value)}
-                                                    className="form-select"
-                                                >
-                                                    <option value="">Choose a candidate</option>
-                                                    {candidates.map((candidate) => (
-                                                        <option key={candidate.id} value={candidate.id}>
-                                                            {candidate.fullName} - {candidate.position}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    onChange={setSelectedCandidate}
+                                                    options={[{ value: '', label: 'Choose a candidate' }, ...candidates.map(c => ({ value: c.id, label: `${c.fullName} - ${c.position}` }))]}
+                                                    placeholder="Choose a candidate"
+                                                />
                                             </div>
                                         )}
                                     </div>

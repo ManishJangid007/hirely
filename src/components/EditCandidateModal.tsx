@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Candidate } from '../types';
 import DatePicker from './DatePicker';
+import Select from './Select';
 
 interface EditCandidateModalProps {
     isOpen: boolean;
@@ -103,23 +104,13 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                         </div>
 
                         <div>
-                            <label htmlFor="position" className="form-label required">
-                                Position
-                            </label>
-                            <select
-                                id="position"
+                            <label className="form-label required">Position</label>
+                            <Select
                                 value={position}
-                                onChange={(e) => setPosition(e.target.value)}
-                                className="form-select"
-                                required
-                            >
-                                <option value="">Select a position</option>
-                                {positions.map((pos) => (
-                                    <option key={pos} value={pos}>
-                                        {pos}
-                                    </option>
-                                ))}
-                            </select>
+                                onChange={setPosition}
+                                options={[{ value: '', label: 'Select a position' }, ...positions.map(p => ({ value: p, label: p }))]}
+                                placeholder="Select a position"
+                            />
                         </div>
 
                         <div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MagnifyingGlassIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Candidate } from '../types';
 import DatePicker from './DatePicker';
+import Select from './Select';
 
 interface CandidateFiltersProps {
     candidates: Candidate[];
@@ -141,19 +142,12 @@ const CandidateFilters: React.FC<CandidateFiltersProps> = ({
                                 <label htmlFor="position-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Position
                                 </label>
-                                <select
-                                    id="position-filter"
+                                <Select
                                     value={filters.position}
-                                    onChange={(e) => handleFilterChange('position', e.target.value)}
-                                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
-                                >
-                                    <option value="">All Positions</option>
-                                    {positions.map((position) => (
-                                        <option key={position} value={position}>
-                                            {position}
-                                        </option>
-                                    ))}
-                                </select>
+                                    onChange={(val) => handleFilterChange('position', val)}
+                                    options={[{ value: '', label: 'All Positions' }, ...positions.map(p => ({ value: p, label: p }))]}
+                                    placeholder="All Positions"
+                                />
                             </div>
 
                             {/* Status Filter */}
@@ -161,18 +155,18 @@ const CandidateFilters: React.FC<CandidateFiltersProps> = ({
                                 <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Status
                                 </label>
-                                <select
-                                    id="status-filter"
+                                <Select
                                     value={filters.status}
-                                    onChange={(e) => handleFilterChange('status', e.target.value)}
-                                    className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
-                                >
-                                    <option value="">All Statuses</option>
-                                    <option value="Not Interviewed">Not Interviewed</option>
-                                    <option value="Passed">Passed</option>
-                                    <option value="Rejected">Rejected</option>
-                                    <option value="Maybe">Maybe</option>
-                                </select>
+                                    onChange={(val) => handleFilterChange('status', val)}
+                                    options={[
+                                        { value: '', label: 'All Statuses' },
+                                        { value: 'Not Interviewed', label: 'Not Interviewed' },
+                                        { value: 'Passed', label: 'Passed' },
+                                        { value: 'Rejected', label: 'Rejected' },
+                                        { value: 'Maybe', label: 'Maybe' }
+                                    ]}
+                                    placeholder="All Statuses"
+                                />
                             </div>
 
                             {/* Interview Date Filter */}
