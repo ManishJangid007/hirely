@@ -3,6 +3,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import Select from './Select';
 import { Candidate, Question } from '../types';
 import { databaseService } from '../services/database';
+import { generateContent, extractFirstText } from '../services/ai';
 
 interface SaveResultModalProps {
     isOpen: boolean;
@@ -21,6 +22,11 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
 }) => {
     const [description, setDescription] = useState('');
     const [result, setResult] = useState<'Passed' | 'Rejected' | 'Maybe'>('Passed');
+    const [isGeminiConnected, setIsGeminiConnected] = useState(false);
+    const [isAIGenerating, setIsAIGenerating] = useState(false);
+    const [aiError, setAiError] = useState<string | null>(null);
+    const aiMessages = ['Judging the candidate', 'Evaluating the responses'];
+    const [aiMessageIndex, setAiMessageIndex] = useState(0);
 
     // Prefill from existing interview result if any
     useEffect(() => {
@@ -52,6 +58,29 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
             loadExisting();
         }
     }, [isOpen, candidate.id]);
+
+    // Load AI connection flag when modal opens
+    useEffect(() => {
+        const loadAI = async () => {
+            try {
+                const connected = await databaseService.getGeminiConnected();
+                setIsGeminiConnected(!!connected);
+            } catch {
+                setIsGeminiConnected(false);
+            }
+        };
+        if (isOpen) loadAI();
+    }, [isOpen]);
+
+    // Rotate loader messages while generating
+    useEffect(() => {
+        if (!isAIGenerating) return;
+        setAiMessageIndex(0);
+        const id = setInterval(() => {
+            setAiMessageIndex((i) => (i + 1) % aiMessages.length);
+        }, 3000);
+        return () => clearInterval(id);
+    }, [isAIGenerating, aiMessages.length]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -111,9 +140,49 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="description" className="form-label">
-                                Interview Description
-                            </label>
+                            <div className="flex items-center justify-between">
+                                <label htmlFor="description" className="form-label">
+                                    Interview Description
+                                </label>
+                                {(isGeminiConnected && (getCorrectCount() > 0 || getWrongCount() > 0)) && (
+                                    <span
+                                        className="text-xs font-medium text-blue-600 dark:text-blue-400 cursor-pointer"
+                                        title="AI summary"
+                                        onClick={async () => {
+                                            setAiError(null);
+                                            setIsAIGenerating(true);
+                                            try {
+                                                // Build knows/doesn't know lists excluding unanswered
+                                                const knows = questions.filter(q => q.isAnswered && q.isCorrect === true);
+                                                const doesntKnow = questions.filter(q => q.isAnswered && q.isCorrect === false);
+
+                                                const header = `Candidate Position: ${candidate.position}\nExperience: ${candidate.experience.years} years, ${candidate.experience.months} months`;
+                                                const knowsBlock = knows.length > 0
+                                                    ? `Knows (answered correctly):\n${knows.map(q => `- Q: ${q.text}${q.answer ? `\n  Expected: ${q.answer}` : ''}`).join('\n')}`
+                                                    : 'Knows: (none)';
+                                                const doesntKnowBlock = doesntKnow.length > 0
+                                                    ? `Doesn\'t know (answered wrong):\n${doesntKnow.map(q => `- Q: ${q.text}${q.answer ? `\n  Expected: ${q.answer}` : ''}`).join('\n')}`
+                                                    : `Doesn\'t know: (none)`;
+
+                                                const formatSpec = `Respond ONLY in the following format (plain text, no markdown fences):\nPassed / Rejected\n  - Pros\n     - point 1\n     - point 2\n  - Cons\n     - point 1\n     - point 2\nNotes:\n- Pros/Cons sections are optional.\n- The first line MUST clearly be either 'Passed' or 'Rejected'.`;
+
+                                                const prompt = `You are an experienced interviewer. Using the information below, produce a concise evaluation.\n${header}\n\n${knowsBlock}\n\n${doesntKnowBlock}\n\n${formatSpec}`;
+
+                                                const res = await generateContent({ prompt, timeoutMs: 25000 });
+                                                const text = (extractFirstText(res) || '').trim();
+                                                if (!text) throw new Error('Empty AI response');
+                                                setDescription(text);
+                                            } catch (err: any) {
+                                                setAiError(err?.message || 'Failed to generate summary');
+                                            } finally {
+                                                setIsAIGenerating(false);
+                                            }
+                                        }}
+                                    >
+                                        AI summary
+                                    </span>
+                                )}
+                            </div>
                             <textarea
                                 id="description"
                                 value={description}
@@ -158,6 +227,21 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
                     </form>
                 </div>
             </div>
+
+            {/* AI Generating Overlay */}
+            {isAIGenerating && (
+                <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[60] flex items-center justify-center px-4">
+                    <div className="w-full max-w-sm p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg text-center">
+                        <div className="mx-auto mb-4 h-12 w-12 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin" />
+                        <p className="text-sm text-gray-700 dark:text-gray-300 animate-pulse min-h-[1.5rem]">
+                            {aiMessages[aiMessageIndex]}
+                        </p>
+                        {aiError && (
+                            <p className="mt-3 text-xs text-red-600 dark:text-red-400">{aiError}</p>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
