@@ -22,15 +22,13 @@ const ResultSummaryModal: React.FC<ResultSummaryModalProps> = ({
   // Load interview result from database or localStorage
   useEffect(() => {
     const loadInterviewResult = async () => {
-      try {
-        // Try to get from database first
+    try {
         const dbResult = await databaseService.getInterviewResultByCandidateId(candidate.id);
         if (dbResult) {
           setInterviewResult(dbResult);
           return;
         }
       } catch (error) {
-        console.log('Database query failed, trying localStorage');
       }
 
       // Fallback to localStorage

@@ -71,12 +71,12 @@ class DatabaseService {
 
   async init(): Promise<void> {
     return new Promise((resolve, reject) => {
-      console.log('Initializing database...');
+      
 
       // Check if IndexedDB is supported
       if (!window.indexedDB) {
         const error = new Error('IndexedDB is not supported in this browser');
-        console.error('IndexedDB not supported:', error);
+        
         reject(error);
         return;
       }
@@ -84,18 +84,18 @@ class DatabaseService {
       const request = indexedDB.open(this.dbName, this.version);
 
       request.onerror = () => {
-        console.error('Database initialization failed:', request.error);
+        
         reject(request.error);
       };
 
       request.onsuccess = () => {
         this.db = request.result;
-        console.log('Database initialized successfully, db object:', this.db);
+        
         resolve();
       };
 
       request.onupgradeneeded = (event) => {
-        console.log('Database upgrade needed, version:', this.version);
+        
         const db = (event.target as IDBOpenDBRequest).result;
 
         // Create object stores
@@ -128,7 +128,7 @@ class DatabaseService {
 
   private getStore(storeName: string, mode: IDBTransactionMode = 'readonly'): IDBObjectStore {
     if (!this.db) {
-      console.error('Database not initialized. Current state:', { db: this.db });
+      
       throw new Error('Database not initialized');
     }
     const transaction = this.db.transaction(storeName, mode);
@@ -138,7 +138,7 @@ class DatabaseService {
   // Check if database is initialized
   isInitialized(): boolean {
     const initialized = this.db !== null;
-    console.log('Database initialization check:', { db: this.db, initialized });
+    
     return initialized;
   }
 
@@ -163,9 +163,9 @@ class DatabaseService {
       };
 
       localStorage.setItem(this.backupKey, JSON.stringify(backupData));
-      console.log('Backup created successfully');
+      
     } catch (error) {
-      console.error('Failed to create backup:', error);
+      
     }
   }
 
@@ -173,7 +173,7 @@ class DatabaseService {
     try {
       const backupData = localStorage.getItem(this.backupKey);
       if (!backupData) {
-        console.log('No backup found');
+        
         return false;
       }
 
@@ -201,10 +201,10 @@ class DatabaseService {
         await this.setSettings(backup.settings);
       }
 
-      console.log('Backup restored successfully');
+      
       return true;
     } catch (error) {
-      console.error('Failed to restore backup:', error);
+      
       return false;
     }
   }
@@ -516,7 +516,7 @@ class DatabaseService {
         localStorage.removeItem('positions');
       }
     } catch (error) {
-      console.error('Migration failed:', error);
+      
     }
   }
 }

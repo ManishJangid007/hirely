@@ -280,7 +280,7 @@ function generateRandomQuestionTemplate(): Omit<QuestionTemplate, 'id'> {
 
 async function seedDatabase() {
   try {
-    console.log('Starting database seeding...');
+  
 
     // Initialize database
     await databaseService.init();
@@ -316,19 +316,19 @@ async function seedDatabase() {
     }
 
     // Add candidates to database
-    console.log(`Adding ${candidates.length} candidates...`);
+  
     for (const candidate of candidates) {
       await databaseService.addCandidate(candidate);
     }
 
     // Add templates to database
-    console.log(`Adding ${templates.length} question templates...`);
+  
     for (const template of templates) {
       await databaseService.addQuestionTemplate(template);
     }
 
     // Add interview results for candidates who have been interviewed
-    console.log('Adding interview results...');
+  
     const interviewedCandidates = candidates.filter(c => c.status !== 'Not Interviewed');
     for (const candidate of interviewedCandidates) {
       const resultDescriptions = [
@@ -361,11 +361,10 @@ async function seedDatabase() {
     ];
     await databaseService.setPositions(defaultPositions);
 
-    console.log('Database seeding completed successfully!');
-    console.log(`Generated ${candidates.length} candidates, ${templates.length} question templates, and ${interviewedCandidates.length} interview results.`);
+  
 
   } catch (error) {
-    console.error('Error seeding database:', error);
+  
   }
 }
 
@@ -376,5 +375,5 @@ export { seedDatabase };
 if (typeof window !== 'undefined') {
   // This will be called from the browser
   (window as any).seedDatabase = seedDatabase;
-  console.log('seedDatabase function is now available. Run: window.seedDatabase()');
+// seed helper registered
 } 

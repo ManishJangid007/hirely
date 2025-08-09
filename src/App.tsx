@@ -26,7 +26,7 @@ function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        console.log('Starting app initialization...');
+        
 
         // Retry database initialization up to 3 times
         let initAttempts = 0;
@@ -36,10 +36,10 @@ function App() {
           try {
             await databaseService.init();
             initSuccess = true;
-            console.log('Database initialized successfully on attempt', initAttempts + 1);
+            
           } catch (error) {
             initAttempts++;
-            console.error(`Database initialization attempt ${initAttempts} failed:`, error);
+            
             if (initAttempts < 3) {
               await new Promise(resolve => setTimeout(resolve, 1000));
             }
@@ -50,7 +50,7 @@ function App() {
           throw new Error('Database failed to initialize after 3 attempts');
         }
 
-        console.log('Database initialized, loading data...');
+        
 
         // Verify database is initialized
         if (!databaseService.isInitialized()) {
@@ -73,11 +73,7 @@ function App() {
           databaseService.getPositions()
         ]);
 
-        console.log('Data loaded successfully:', {
-          candidates: candidatesAfterRestore.length,
-          templates: templates.length,
-          positions: positions.length
-        });
+        
 
         // Small delay to ensure database is fully ready
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -90,7 +86,7 @@ function App() {
           positions: positions.length > 0 ? positions : ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist']
         });
       } catch (error) {
-        console.error('Failed to initialize app:', error);
+        
         // Set loading to false even on error so app doesn't hang
         setIsLoading(false);
       } finally {
@@ -103,7 +99,7 @@ function App() {
 
   const addCandidate = async (candidate: Omit<Candidate, 'id' | 'createdAt'>) => {
     if (isLoading) {
-      console.error('App is still loading, please wait');
+      
       return;
     }
 
@@ -115,7 +111,7 @@ function App() {
     }
 
     if (!databaseService.isInitialized()) {
-      console.error('Database not initialized, cannot add candidate');
+      
       return;
     }
 
@@ -135,7 +131,7 @@ function App() {
         )
       }));
     } catch (error) {
-      console.error('Failed to add candidate:', error);
+      
     }
   };
 
@@ -153,7 +149,7 @@ function App() {
         }));
       }
     } catch (error) {
-      console.error('Failed to update candidate:', error);
+      
     }
   };
 
@@ -165,7 +161,7 @@ function App() {
         candidates: prev.candidates.filter(candidate => candidate.id !== id)
       }));
     } catch (error) {
-      console.error('Failed to delete candidate:', error);
+      
     }
   };
 
@@ -179,7 +175,7 @@ function App() {
           positions: newPositions
         }));
       } catch (error) {
-        console.error('Failed to add position:', error);
+        
       }
     }
   };
@@ -193,30 +189,30 @@ function App() {
         positions: newPositions
       }));
     } catch (error) {
-      console.error('Failed to remove position:', error);
+      
     }
   };
 
   const addQuestionTemplate = async (template: Omit<QuestionTemplate, 'id'>) => {
     if (isLoading) {
-      console.error('App is still loading, please wait');
+      
       return;
     }
 
-    console.log('Attempting to add question template, database initialized:', databaseService.isInitialized());
+    
 
     // Wait for database to be initialized
     let attempts = 0;
     while (!databaseService.isInitialized() && attempts < 20) {
-      console.log(`Database not ready, attempt ${attempts + 1}/20`);
+      
       await new Promise(resolve => setTimeout(resolve, 200));
       attempts++;
     }
 
     if (!databaseService.isInitialized()) {
-      console.error('Database not initialized after 20 attempts, cannot add question template');
+      
       // Fallback to localStorage for critical operations
-      console.log('Using localStorage fallback for template addition');
+      
       const newTemplate: QuestionTemplate = {
         ...template,
         id: Date.now().toString()
@@ -234,7 +230,7 @@ function App() {
       return;
     }
 
-    console.log('Database is ready, proceeding with template addition');
+    
 
     const newTemplate: QuestionTemplate = {
       ...template,
@@ -248,7 +244,7 @@ function App() {
         questionTemplates: [...prev.questionTemplates, newTemplate]
       }));
     } catch (error) {
-      console.error('Failed to add question template:', error);
+      
       // Fallback to localStorage
       const existingTemplates = JSON.parse(localStorage.getItem('questionTemplates') || '[]');
       existingTemplates.push(newTemplate);
@@ -263,31 +259,78 @@ function App() {
 
   const updateQuestionTemplate = async (id: string, updates: Partial<QuestionTemplate>) => {
     try {
+      // Ensure database is initialized (retry then attempt on-demand init)
+      let attempts = 0;
+      while (!databaseService.isInitialized() && attempts < 10) {
+        await new Promise(resolve => setTimeout(resolve, 150));
+        attempts++;
+      }
+      if (!databaseService.isInitialized()) {
+        try { await databaseService.init(); } catch { }
+      }
+
       const updatedTemplate = appState.questionTemplates.find(t => t.id === id);
-      if (updatedTemplate) {
-        const newTemplate = { ...updatedTemplate, ...updates };
-        await databaseService.updateQuestionTemplate(newTemplate);
+      if (!updatedTemplate) return;
+
+      const newTemplate = { ...updatedTemplate, ...updates };
+
+      if (!databaseService.isInitialized()) {
+        
+        // Fallback to localStorage
+        const existingTemplates: QuestionTemplate[] = JSON.parse(localStorage.getItem('questionTemplates') || '[]');
+        const idx = existingTemplates.findIndex(t => t.id === id);
+        if (idx >= 0) {
+          existingTemplates[idx] = newTemplate as QuestionTemplate;
+        } else {
+          existingTemplates.push(newTemplate as QuestionTemplate);
+        }
+        localStorage.setItem('questionTemplates', JSON.stringify(existingTemplates));
         setAppState(prev => ({
           ...prev,
           questionTemplates: prev.questionTemplates.map(template =>
-            template.id === id ? newTemplate : template
+            template.id === id ? (newTemplate as QuestionTemplate) : template
           )
         }));
+        return;
       }
+      await databaseService.updateQuestionTemplate(newTemplate);
+      setAppState(prev => ({
+        ...prev,
+        questionTemplates: prev.questionTemplates.map(template =>
+          template.id === id ? (newTemplate as QuestionTemplate) : template
+        )
+      }));
     } catch (error) {
-      console.error('Failed to update question template:', error);
+      
     }
   };
 
   const deleteQuestionTemplate = async (id: string) => {
     try {
-      await databaseService.deleteQuestionTemplate(id);
+      // Ensure database is initialized before delete
+      let attempts = 0;
+      while (!databaseService.isInitialized() && attempts < 10) {
+        await new Promise(resolve => setTimeout(resolve, 150));
+        attempts++;
+      }
+      if (!databaseService.isInitialized()) {
+        try { await databaseService.init(); } catch { }
+      }
+
+      if (!databaseService.isInitialized()) {
+        
+        const existingTemplates: QuestionTemplate[] = JSON.parse(localStorage.getItem('questionTemplates') || '[]');
+        const filtered = existingTemplates.filter(t => t.id !== id);
+        localStorage.setItem('questionTemplates', JSON.stringify(filtered));
+      } else {
+        await databaseService.deleteQuestionTemplate(id);
+      }
       setAppState(prev => ({
         ...prev,
         questionTemplates: prev.questionTemplates.filter(template => template.id !== id)
       }));
     } catch (error) {
-      console.error('Failed to delete question template:', error);
+      
     }
   };
 
