@@ -99,48 +99,51 @@ const CandidateList: React.FC<CandidateListProps> = ({
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
-            {/* Header */}
-            <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 space-y-4 sm:space-y-0">
-                        <div>
-                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Candidate Interviews</h1>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your interview candidates</p>
-                        </div>
-                        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
-                            <button
-                                onClick={() => setShowPositionsModal(true)}
-                                className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                            >
-                                <BriefcaseIcon className="w-4 h-4 mr-2" />
-                                <span className="hidden sm:inline">Manage Positions</span>
-                                <span className="sm:hidden">Positions</span>
-                            </button>
-                            <Link
-                                to="/templates"
-                                className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                            >
-                                <span className="hidden sm:inline">Question Templates</span>
-                                <span className="sm:hidden">Templates</span>
-                            </Link>
-                            <button
-                                onClick={() => setShowAddModal(true)}
-                                className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-                            >
-                                <PlusIcon className="w-4 h-4 mr-2" />
-                                Add Candidate
-                            </button>
+            {/* Actions + Filters sticky group */}
+            <div className="sticky top-16 z-40">
+                {/* Header */}
+                <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-6 space-y-4 sm:space-y-0">
+                            <div>
+                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Candidate Interviews</h1>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage your interview candidates</p>
+                            </div>
+                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+                                <button
+                                    onClick={() => setShowPositionsModal(true)}
+                                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                >
+                                    <BriefcaseIcon className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">Manage Positions</span>
+                                    <span className="sm:hidden">Positions</span>
+                                </button>
+                                <Link
+                                    to="/templates"
+                                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                >
+                                    <span className="hidden sm:inline">Question Templates</span>
+                                    <span className="sm:hidden">Templates</span>
+                                </Link>
+                                <button
+                                    onClick={() => setShowAddModal(true)}
+                                    className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                                >
+                                    <PlusIcon className="w-4 h-4 mr-2" />
+                                    Add Candidate
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Filters */}
-            <CandidateFilters
-                candidates={candidates}
-                positions={positions}
-                onFiltersChange={setFilteredCandidates}
-            />
+                {/* Filters */}
+                <CandidateFilters
+                    candidates={candidates}
+                    positions={positions}
+                    onFiltersChange={setFilteredCandidates}
+                />
+            </div>
 
             {/* Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
