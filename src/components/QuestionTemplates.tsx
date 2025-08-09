@@ -22,6 +22,7 @@ import EditTemplateQuestionModal from './EditTemplateQuestionModal';
 import ConfirmationModal from './ConfirmationModal';
 import CopyTemplateModal from './CopyTemplateModal';
 import AIAddTemplateModal from './AIAddTemplateModal';
+import AIAddSectionModal from './AIAddSectionModal';
 import { generateContent, extractFirstText } from '../services/ai';
 import { databaseService } from '../services/database';
 
@@ -90,6 +91,7 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
     const [showCopyTemplateModal, setShowCopyTemplateModal] = useState(false);
     const [copyTemplateData, setCopyTemplateData] = useState<{ templateId: string; templateName: string } | null>(null);
     const [showAIAddTemplateModal, setShowAIAddTemplateModal] = useState(false);
+    const [showAIAddSectionModal, setShowAIAddSectionModal] = useState<{ open: boolean; templateId?: string } | null>(null);
     const [isAIGenerating, setIsAIGenerating] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
     const aiMessages = [
@@ -126,7 +128,7 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
     {
       "name": "Section Name",
       "questions": [
-        { "text": "Question text", "answer": "Expected answer (optional)" }
+        { "text": "Question text", "answer": "Expected answer" }
       ]
     }
   ]
@@ -484,6 +486,13 @@ ${jsonExample}
                                                 Make a copy
                                             </button>
                                             <button
+                                                onClick={() => setShowAIAddSectionModal({ open: true, templateId: template.id })}
+                                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                            >
+                                                <SparklesIcon className="w-4 h-4 mr-2" />
+                                                AI Section
+                                            </button>
+                                            <button
                                                 onClick={() => {
                                                     setDeleteConfirmData({
                                                         templateId: template.id,
@@ -806,6 +815,75 @@ ${jsonExample}
                             )}
                         </div>
                     </div>
+                )}
+
+                {/* AI Add Section Modal */}
+                {showAIAddSectionModal?.open && (
+                    <AIAddSectionModal
+                        isOpen={showAIAddSectionModal.open}
+                        onClose={() => setShowAIAddSectionModal(null)}
+                        onStart={async ({ sectionName, experienceYears, description }) => {
+                            setShowAIAddSectionModal(null);
+                            setAiError(null);
+                            setIsAIGenerating(true);
+                            try {
+                                if (!databaseService.isInitialized()) {
+                                    try { await databaseService.init(); } catch { }
+                                }
+                                const connected = await databaseService.getGeminiConnected();
+                                if (!connected) {
+                                    throw new Error('AI is not connected. Configure Gemini API key in Settings.');
+                                }
+
+                                const prompt = (
+                                    `You are an interviewer with 20+ years of experience.
+Generate a single interview section named "${sectionName}" for a candidate with ${experienceYears}+ years of experience.
+${description ? `Additional context: ${description}` : ''}
+
+Requirements:
+- Generate exactly 5 questions for this section.
+- Output must be only valid JSON (no extra text) following this schema exactly:
+{
+  "name": "Section Name",
+  "questions": [ { "text": "Question text", "answer"?: "Expected answer" } ]
+}
+`);
+
+                                const res = await generateContent({ prompt, timeoutMs: 25000 });
+                                const text = extractFirstText(res) || '';
+                                const cleaned = sanitizeJson(text);
+                                const parsed = JSON.parse(cleaned);
+                                if (!parsed || !parsed.name || !Array.isArray(parsed.questions)) {
+                                    throw new Error('AI response missing section structure');
+                                }
+
+                                const targetTemplate = templates.find(t => t.id === showAIAddSectionModal?.templateId);
+                                if (!targetTemplate) throw new Error('Template not found');
+
+                                const newSection: QuestionSection = {
+                                    id: Date.now().toString() + Math.random(),
+                                    name: String(parsed.name),
+                                    questions: parsed.questions.map((q: any, idx: number) => ({
+                                        id: Date.now().toString() + Math.random() + idx,
+                                        text: String(q.text || '').trim(),
+                                        section: String(parsed.name),
+                                        answer: q.answer ? String(q.answer) : undefined,
+                                        isAnswered: false
+                                    }))
+                                };
+
+                                const updatedTemplate: QuestionTemplate = {
+                                    ...targetTemplate,
+                                    sections: [...targetTemplate.sections, newSection]
+                                };
+                                onUpdateTemplate(targetTemplate.id, updatedTemplate);
+                            } catch (err: any) {
+                                setAiError(err?.message || 'Failed to generate section');
+                            } finally {
+                                setIsAIGenerating(false);
+                            }
+                        }}
+                    />
                 )}
 
                 {/* Edit Section Modal */}
