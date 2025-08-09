@@ -131,23 +131,48 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         // Update candidate with current questions and status
         onUpdateCandidate(candidate.id, { status: result, questions });
 
-        // Save interview result to database
-        const interviewResult = {
-            id: Date.now().toString(),
-            candidateId: candidate.id,
-            description,
-            result,
-            questions,
-            createdAt: new Date().toISOString()
-        };
-
         try {
-            await databaseService.addInterviewResult(interviewResult);
+            // Check if an interview result already exists for this candidate
+            const existing = await databaseService.getInterviewResultByCandidateId(candidate.id);
+            if (existing) {
+                const updated = {
+                    ...existing,
+                    description,
+                    result,
+                    questions
+                };
+                await databaseService.updateInterviewResult(updated);
+            } else {
+                const interviewResult = {
+                    id: Date.now().toString(),
+                    candidateId: candidate.id,
+                    description,
+                    result,
+                    questions,
+                    createdAt: new Date().toISOString()
+                };
+                await databaseService.addInterviewResult(interviewResult);
+            }
             navigate('/');
         } catch (error) {
             console.error('Failed to save interview result:', error);
             // Fallback to localStorage if database fails
-            localStorage.setItem(`interview_result_${candidate.id}`, JSON.stringify(interviewResult));
+            const localExisting = localStorage.getItem(`interview_result_${candidate.id}`);
+            if (localExisting) {
+                const parsed = JSON.parse(localExisting);
+                const updated = { ...parsed, description, result, questions };
+                localStorage.setItem(`interview_result_${candidate.id}`, JSON.stringify(updated));
+            } else {
+                const interviewResult = {
+                    id: Date.now().toString(),
+                    candidateId: candidate.id,
+                    description,
+                    result,
+                    questions,
+                    createdAt: new Date().toISOString()
+                };
+                localStorage.setItem(`interview_result_${candidate.id}`, JSON.stringify(interviewResult));
+            }
             navigate('/');
         }
     };

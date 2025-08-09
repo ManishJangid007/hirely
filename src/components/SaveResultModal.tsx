@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Candidate, Question } from '../types';
+import { databaseService } from '../services/database';
 
 interface SaveResultModalProps {
     isOpen: boolean;
@@ -19,6 +20,37 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
 }) => {
     const [description, setDescription] = useState('');
     const [result, setResult] = useState<'Passed' | 'Rejected' | 'Maybe'>('Passed');
+
+    // Prefill from existing interview result if any
+    useEffect(() => {
+        const loadExisting = async () => {
+            try {
+                const existing = await databaseService.getInterviewResultByCandidateId(candidate.id);
+                if (existing) {
+                    setDescription(existing.description || '');
+                    setResult(existing.result);
+                    return;
+                }
+            } catch (error) {
+                // ignore and fallback to localStorage
+            }
+
+            const saved = localStorage.getItem(`interview_result_${candidate.id}`);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    setDescription(parsed.description || '');
+                    setResult(parsed.result as 'Passed' | 'Rejected' | 'Maybe');
+                } catch {
+                    // ignore
+                }
+            }
+        };
+
+        if (isOpen) {
+            loadExisting();
+        }
+    }, [isOpen, candidate.id]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
