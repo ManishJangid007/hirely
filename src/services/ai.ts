@@ -7,7 +7,7 @@ export interface GenerateContentOptions {
     safetySettings?: unknown;
     generationConfig?: unknown;
     timeoutMs?: number;
-  overrideApiKey?: string;
+    overrideApiKey?: string;
 }
 
 export interface GeminiCandidatePart {
@@ -41,7 +41,7 @@ export function extractFirstText(response: GeminiResponse): string | undefined {
  * Throws if API key is missing or request fails.
  */
 export async function generateContent(options: GenerateContentOptions): Promise<GeminiResponse> {
-  const apiKey = options.overrideApiKey ?? (await databaseService.getGeminiApiKey());
+    const apiKey = options.overrideApiKey ?? (await databaseService.getGeminiApiKey());
     if (!apiKey) {
         throw new Error('Missing Gemini API key. Configure it in Settings → AI Configuration.');
     }

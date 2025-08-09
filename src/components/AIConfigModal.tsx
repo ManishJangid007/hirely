@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, SparklesIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { databaseService } from '../services/database';
 import { generateContent } from '../services/ai';
 
@@ -10,9 +10,10 @@ interface AIConfigModalProps {
 
 const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
+  const [testMessage, setTestMessage] = useState<string | null>(null);
+  const [showKey, setShowKey] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -24,7 +25,8 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       }
     };
     if (isOpen) {
-      setMessage(null);
+      setTestStatus('idle');
+      setTestMessage(null);
       load();
     }
   }, [isOpen]);
@@ -32,13 +34,18 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setMessage(null);
     try {
+      if (!databaseService.isInitialized()) {
+        try { await databaseService.init(); } catch { }
+      }
       await databaseService.setGeminiApiKey(geminiApiKey.trim());
-      setMessage('Saved');
+      if (testStatus === 'success') {
+        await databaseService.setGeminiConnected(true);
+      }
       setTimeout(onClose, 800);
     } catch (err) {
-      setMessage('Failed to save.');
+      setTestStatus('error');
+      setTestMessage('Failed to save');
     } finally {
       setSaving(false);
     }
@@ -47,16 +54,28 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   const handleTest = async () => {
     if (!geminiApiKey.trim()) return;
     setTestStatus('testing');
-    setMessage(null);
+    setTestMessage(null);
     try {
+      if (!databaseService.isInitialized()) {
+        try { await databaseService.init(); } catch { }
+      }
       const res = await generateContent({ prompt: 'Hi', overrideApiKey: geminiApiKey.trim(), timeoutMs: 10000 });
       if (res && res.candidates && res.candidates.length > 0) {
         setTestStatus('success');
+        setTestMessage('Linked to Gemini');
+        try {
+          await databaseService.setGeminiApiKey(geminiApiKey.trim());
+          await databaseService.setGeminiConnected(true);
+        } catch { }
       } else {
         setTestStatus('error');
+        setTestMessage('Unable to verify key');
+        try { await databaseService.setGeminiConnected(false); } catch { }
       }
     } catch (e) {
       setTestStatus('error');
+      setTestMessage('Verification failed');
+      try { await databaseService.setGeminiConnected(false); } catch { }
     }
   };
 
@@ -82,35 +101,51 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
               <div className="flex items-center mb-3">
                 {/* Google logo SVG */}
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 48 48" aria-hidden="true">
-                  <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.593 32.91 29.195 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.157 7.957 3.043l5.657-5.657C33.64 6.053 28.993 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20c10.493 0 19-8.507 19-19 0-1.262-.13-2.493-.389-3.667z"/>
-                  <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.464 15.548 18.845 12 24 12c3.059 0 5.842 1.157 7.957 3.043l5.657-5.657C33.64 6.053 28.993 4 24 4 16.318 4 9.641 8.337 6.306 14.691z"/>
-                  <path fill="#4CAF50" d="M24 44c5.136 0 9.75-1.969 13.261-5.177l-6.091-5.155C29.112 35.426 26.671 36 24 36c-5.176 0-9.566-3.106-11.29-7.48l-6.533 5.034C9.476 39.74 16.227 44 24 44z"/>
-                  <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-1.55 4.085-5.598 7-11.303 7-5.176 0-9.566-3.106-11.29-7.48l-6.533 5.034C9.476 39.74 16.227 44 24 44c10.493 0 19-8.507 19-19 0-1.262-.13-2.493-.389-3.667z"/>
+                  <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.593 32.91 29.195 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.157 7.957 3.043l5.657-5.657C33.64 6.053 28.993 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20c10.493 0 19-8.507 19-19 0-1.262-.13-2.493-.389-3.667z" />
+                  <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.464 15.548 18.845 12 24 12c3.059 0 5.842 1.157 7.957 3.043l5.657-5.657C33.64 6.053 28.993 4 24 4 16.318 4 9.641 8.337 6.306 14.691z" />
+                  <path fill="#4CAF50" d="M24 44c5.136 0 9.75-1.969 13.261-5.177l-6.091-5.155C29.112 35.426 26.671 36 24 36c-5.176 0-9.566-3.106-11.29-7.48l-6.533 5.034C9.476 39.74 16.227 44 24 44z" />
+                  <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-1.55 4.085-5.598 7-11.303 7-5.176 0-9.566-3.106-11.29-7.48l-6.533 5.034C9.476 39.74 16.227 44 24 44c10.493 0 19-8.507 19-19 0-1.262-.13-2.493-.389-3.667z" />
                 </svg>
                 <h4 className="text-sm font-medium text-gray-900 dark:text-white">Google Gemini</h4>
               </div>
               <label htmlFor="geminiKey" className="form-label">Gemini API Key</label>
-              <input
-                id="geminiKey"
-                type="password"
-                className={`form-input ${testStatus === 'success' ? 'border-green-500 focus:ring-green-500' : testStatus === 'error' ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
-                placeholder="Enter your Gemini API key"
-                value={geminiApiKey}
-                onChange={(e) => setGeminiApiKey(e.target.value)}
-              />
-              {geminiApiKey && (
-                <button
-                  type="button"
-                  onClick={handleTest}
-                  disabled={testStatus === 'testing'}
-                  className={`mt-2 inline-flex items-center px-3 py-1.5 rounded-md text-sm border ${
-                    testStatus === 'success' ? 'border-green-600 text-green-700 dark:text-green-400' :
-                    testStatus === 'error' ? 'border-red-600 text-red-700 dark:text-red-400' :
-                    'border-gray-300 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  {testStatus === 'testing' ? 'Testing…' : 'Test'}
-                </button>
+              <div className="flex items-center space-x-2">
+                <div className="relative flex-1">
+                  <input
+                    id="geminiKey"
+                    type={showKey ? 'text' : 'password'}
+                    className={`form-input pr-10 ${testStatus === 'success' ? 'border-green-500 focus:ring-green-500' : testStatus === 'error' ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
+                    placeholder="Enter your Gemini API key"
+                    value={geminiApiKey}
+                    onChange={(e) => setGeminiApiKey(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowKey(v => !v)}
+                    className="absolute inset-y-0 right-2 flex items-center text-gray-500 dark:text-gray-300"
+                    aria-label={showKey ? 'Hide key' : 'Show key'}
+                  >
+                    {showKey ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                  </button>
+                </div>
+                {geminiApiKey && (
+                  <button
+                    type="button"
+                    onClick={handleTest}
+                    disabled={testStatus === 'testing'}
+                    className={`inline-flex items-center px-3 py-2 rounded-md text-sm border whitespace-nowrap ${testStatus === 'success' ? 'border-green-600 text-green-700 dark:text-green-400' :
+                      testStatus === 'error' ? 'border-red-600 text-red-700 dark:text-red-400' :
+                        'border-gray-300 text-gray-700 dark:text-gray-300'
+                      }`}
+                  >
+                    {testStatus === 'testing' ? 'Testing…' : 'Test'}
+                  </button>
+                )}
+              </div>
+              {testMessage && (
+                <p className={`mt-2 text-sm ${testStatus === 'success' ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                  {testMessage}
+                </p>
               )}
             </div>
 
@@ -130,9 +165,7 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
                 {saving ? 'Saving...' : 'Save'}
               </button>
             </div>
-            {message && (
-              <p className="text-sm text-green-600 dark:text-green-400">{message}</p>
-            )}
+            {/* No global success toast */}
           </form>
         </div>
       </div>

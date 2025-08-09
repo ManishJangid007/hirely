@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     PlusIcon,
@@ -9,7 +9,8 @@ import {
     FolderIcon,
     ChevronDownIcon,
     ChevronRightIcon,
-    DocumentDuplicateIcon
+    DocumentDuplicateIcon,
+    SparklesIcon
 } from '@heroicons/react/24/outline';
 import { QuestionTemplate, QuestionSection } from '../types';
 import AddTemplateModal from './AddTemplateModal';
@@ -20,6 +21,9 @@ import EditSectionModal from './EditSectionModal';
 import EditTemplateQuestionModal from './EditTemplateQuestionModal';
 import ConfirmationModal from './ConfirmationModal';
 import CopyTemplateModal from './CopyTemplateModal';
+import AIAddTemplateModal from './AIAddTemplateModal';
+import { generateContent, extractFirstText } from '../services/ai';
+import { databaseService } from '../services/database';
 
 interface QuestionTemplatesProps {
     templates: QuestionTemplate[];
@@ -85,6 +89,110 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
     } | null>(null);
     const [showCopyTemplateModal, setShowCopyTemplateModal] = useState(false);
     const [copyTemplateData, setCopyTemplateData] = useState<{ templateId: string; templateName: string } | null>(null);
+    const [showAIAddTemplateModal, setShowAIAddTemplateModal] = useState(false);
+    const [isAIGenerating, setIsAIGenerating] = useState(false);
+    const [aiError, setAiError] = useState<string | null>(null);
+    const aiMessages = [
+        'Creating your template…',
+        'AI is cooking…',
+        'Asking the expert interviewer…',
+        'Organizing questions into sections…'
+    ];
+    const [aiMessageIndex, setAiMessageIndex] = useState(0);
+
+    useEffect(() => {
+        if (!isAIGenerating) return;
+        setAiMessageIndex(0);
+        const id = setInterval(() => {
+            setAiMessageIndex((i) => (i + 1) % aiMessages.length);
+        }, 3000);
+        return () => clearInterval(id);
+    }, [isAIGenerating]);
+
+    const sanitizeJson = (raw: string): string => {
+        // Trim any markdown fences or extra text
+        const firstBrace = raw.indexOf('{');
+        const lastBrace = raw.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            return raw.substring(firstBrace, lastBrace + 1);
+        }
+        return raw.trim();
+    };
+
+    const composePrompt = (templateName: string, years: number, description?: string) => {
+        const extra = description ? `\n- Additional context: ${description}` : '';
+        const jsonExample = `{
+  "sections": [
+    {
+      "name": "Section Name",
+      "questions": [
+        { "text": "Question text", "answer": "Expected answer (optional)" }
+      ]
+    }
+  ]
+}`;
+        return (
+            `You are an interviewer with 20+ years of experience in ${templateName}.
+Generate an interview question set organized by sections for a candidate with ${years}+ years of experience.
+${extra}
+
+Requirements:
+- Generate 10 sections, each with 5 questions.
+- Output must be only valid JSON (no extra text) following this schema exactly:
+${jsonExample}
+`
+        );
+    };
+
+    const handleAIStart = async ({ templateName, experienceYears, description }: { templateName: string; experienceYears: number; description?: string; }) => {
+        setShowAIAddTemplateModal(false);
+        setAiError(null);
+        setIsAIGenerating(true);
+        try {
+            // Ensure AI is configured
+            if (!databaseService.isInitialized()) {
+                try { await databaseService.init(); } catch { }
+            }
+            const connected = await databaseService.getGeminiConnected();
+            if (!connected) {
+                throw new Error('AI is not connected. Configure Gemini API key in Settings.');
+            }
+
+            const prompt = composePrompt(templateName, experienceYears, description);
+            const res = await generateContent({ prompt, timeoutMs: 30000 });
+            const text = extractFirstText(res) || '';
+            const cleaned = sanitizeJson(text);
+            const parsed = JSON.parse(cleaned);
+
+            if (!parsed || !Array.isArray(parsed.sections)) {
+                throw new Error('AI response missing sections array');
+            }
+
+            // Map AI response to our template structure
+            const sections = parsed.sections.map((s: any) => {
+                const sectionName = String(s.name || '').trim();
+                const questions = Array.isArray(s.questions) ? s.questions : [];
+                return {
+                    id: Date.now().toString() + Math.random(),
+                    name: sectionName || 'General',
+                    questions: questions.map((q: any, idx: number) => ({
+                        id: Date.now().toString() + Math.random() + idx,
+                        text: String(q.text || '').trim(),
+                        section: sectionName || 'General',
+                        answer: q.answer ? String(q.answer) : undefined,
+                        isAnswered: false
+                    }))
+                } as QuestionSection;
+            });
+
+            const newTemplate = { name: templateName, sections };
+            onAddTemplate(newTemplate);
+        } catch (err: any) {
+            setAiError(err?.message || 'Failed to generate template');
+        } finally {
+            setIsAIGenerating(false);
+        }
+    };
 
     const handleAddSection = (templateId: string, section: Omit<QuestionSection, 'id'>) => {
         const template = templates.find(t => t.id === templateId);
@@ -223,7 +331,7 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
             {/* Header */}
             <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-16 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6 space-y-4 sm:space-y-0">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6 space-y-4 sm:space-y-0">
                         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                             <Link
                                 to="/"
@@ -273,6 +381,13 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                             >
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Template
+                            </button>
+                            <button
+                                onClick={() => setShowAIAddTemplateModal(true)}
+                                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200 w-fit sm:w-auto"
+                            >
+                                <SparklesIcon className="w-4 h-4 mr-2" />
+                                AI Template
                             </button>
                         </div>
                     </div>
@@ -634,6 +749,15 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                     />
                 )}
 
+                {/* AI Add Template Modal */}
+                {showAIAddTemplateModal && (
+                    <AIAddTemplateModal
+                        isOpen={showAIAddTemplateModal}
+                        onClose={() => setShowAIAddTemplateModal(false)}
+                        onStart={handleAIStart}
+                    />
+                )}
+
                 {/* Copy Template Modal */}
                 {showCopyTemplateModal && copyTemplateData && (
                     <CopyTemplateModal
@@ -667,6 +791,21 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                         existingTemplateNames={templates.map(t => t.name)}
                         sourceTemplateName={copyTemplateData.templateName}
                     />
+                )}
+
+                {/* AI Generating Overlay */}
+                {isAIGenerating && (
+                    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex items-center justify-center px-4">
+                        <div className="w-full max-w-sm p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg text-center">
+                            <div className="mx-auto mb-4 h-12 w-12 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin" />
+                            <p className="text-sm text-gray-700 dark:text-gray-300 animate-pulse min-h-[1.5rem]">
+                                {aiMessages[aiMessageIndex]}
+                            </p>
+                            {aiError && (
+                                <p className="mt-3 text-xs text-red-600 dark:text-red-400">{aiError}</p>
+                            )}
+                        </div>
+                    </div>
                 )}
 
                 {/* Edit Section Modal */}

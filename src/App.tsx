@@ -26,7 +26,7 @@ function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        
+
 
         // Retry database initialization up to 3 times
         let initAttempts = 0;
@@ -36,10 +36,10 @@ function App() {
           try {
             await databaseService.init();
             initSuccess = true;
-            
+
           } catch (error) {
             initAttempts++;
-            
+
             if (initAttempts < 3) {
               await new Promise(resolve => setTimeout(resolve, 1000));
             }
@@ -50,7 +50,7 @@ function App() {
           throw new Error('Database failed to initialize after 3 attempts');
         }
 
-        
+
 
         // Verify database is initialized
         if (!databaseService.isInitialized()) {
@@ -73,7 +73,7 @@ function App() {
           databaseService.getPositions()
         ]);
 
-        
+
 
         // Small delay to ensure database is fully ready
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -86,7 +86,7 @@ function App() {
           positions: positions.length > 0 ? positions : ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist']
         });
       } catch (error) {
-        
+
         // Set loading to false even on error so app doesn't hang
         setIsLoading(false);
       } finally {
@@ -99,7 +99,7 @@ function App() {
 
   const addCandidate = async (candidate: Omit<Candidate, 'id' | 'createdAt'>) => {
     if (isLoading) {
-      
+
       return;
     }
 
@@ -111,7 +111,7 @@ function App() {
     }
 
     if (!databaseService.isInitialized()) {
-      
+
       return;
     }
 
@@ -131,7 +131,7 @@ function App() {
         )
       }));
     } catch (error) {
-      
+
     }
   };
 
@@ -149,7 +149,7 @@ function App() {
         }));
       }
     } catch (error) {
-      
+
     }
   };
 
@@ -161,7 +161,7 @@ function App() {
         candidates: prev.candidates.filter(candidate => candidate.id !== id)
       }));
     } catch (error) {
-      
+
     }
   };
 
@@ -175,7 +175,7 @@ function App() {
           positions: newPositions
         }));
       } catch (error) {
-        
+
       }
     }
   };
@@ -189,30 +189,30 @@ function App() {
         positions: newPositions
       }));
     } catch (error) {
-      
+
     }
   };
 
   const addQuestionTemplate = async (template: Omit<QuestionTemplate, 'id'>) => {
     if (isLoading) {
-      
+
       return;
     }
 
-    
+
 
     // Wait for database to be initialized
     let attempts = 0;
     while (!databaseService.isInitialized() && attempts < 20) {
-      
+
       await new Promise(resolve => setTimeout(resolve, 200));
       attempts++;
     }
 
     if (!databaseService.isInitialized()) {
-      
+
       // Fallback to localStorage for critical operations
-      
+
       const newTemplate: QuestionTemplate = {
         ...template,
         id: Date.now().toString()
@@ -230,7 +230,7 @@ function App() {
       return;
     }
 
-    
+
 
     const newTemplate: QuestionTemplate = {
       ...template,
@@ -244,7 +244,7 @@ function App() {
         questionTemplates: [...prev.questionTemplates, newTemplate]
       }));
     } catch (error) {
-      
+
       // Fallback to localStorage
       const existingTemplates = JSON.parse(localStorage.getItem('questionTemplates') || '[]');
       existingTemplates.push(newTemplate);
@@ -275,7 +275,7 @@ function App() {
       const newTemplate = { ...updatedTemplate, ...updates };
 
       if (!databaseService.isInitialized()) {
-        
+
         // Fallback to localStorage
         const existingTemplates: QuestionTemplate[] = JSON.parse(localStorage.getItem('questionTemplates') || '[]');
         const idx = existingTemplates.findIndex(t => t.id === id);
@@ -301,7 +301,7 @@ function App() {
         )
       }));
     } catch (error) {
-      
+
     }
   };
 
@@ -318,7 +318,7 @@ function App() {
       }
 
       if (!databaseService.isInitialized()) {
-        
+
         const existingTemplates: QuestionTemplate[] = JSON.parse(localStorage.getItem('questionTemplates') || '[]');
         const filtered = existingTemplates.filter(t => t.id !== id);
         localStorage.setItem('questionTemplates', JSON.stringify(filtered));
@@ -330,7 +330,7 @@ function App() {
         questionTemplates: prev.questionTemplates.filter(template => template.id !== id)
       }));
     } catch (error) {
-      
+
     }
   };
 

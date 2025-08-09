@@ -52,6 +52,7 @@ export interface QuestionTemplate {
 export interface AppSettings {
   apiKey?: string;
   geminiApiKey?: string;
+  geminiConnected?: boolean;
 }
 
 export interface BackupData {
@@ -71,12 +72,12 @@ class DatabaseService {
 
   async init(): Promise<void> {
     return new Promise((resolve, reject) => {
-      
+
 
       // Check if IndexedDB is supported
       if (!window.indexedDB) {
         const error = new Error('IndexedDB is not supported in this browser');
-        
+
         reject(error);
         return;
       }
@@ -84,18 +85,18 @@ class DatabaseService {
       const request = indexedDB.open(this.dbName, this.version);
 
       request.onerror = () => {
-        
+
         reject(request.error);
       };
 
       request.onsuccess = () => {
         this.db = request.result;
-        
+
         resolve();
       };
 
       request.onupgradeneeded = (event) => {
-        
+
         const db = (event.target as IDBOpenDBRequest).result;
 
         // Create object stores
@@ -128,7 +129,7 @@ class DatabaseService {
 
   private getStore(storeName: string, mode: IDBTransactionMode = 'readonly'): IDBObjectStore {
     if (!this.db) {
-      
+
       throw new Error('Database not initialized');
     }
     const transaction = this.db.transaction(storeName, mode);
@@ -138,7 +139,7 @@ class DatabaseService {
   // Check if database is initialized
   isInitialized(): boolean {
     const initialized = this.db !== null;
-    
+
     return initialized;
   }
 
@@ -163,9 +164,9 @@ class DatabaseService {
       };
 
       localStorage.setItem(this.backupKey, JSON.stringify(backupData));
-      
+
     } catch (error) {
-      
+
     }
   }
 
@@ -173,7 +174,7 @@ class DatabaseService {
     try {
       const backupData = localStorage.getItem(this.backupKey);
       if (!backupData) {
-        
+
         return false;
       }
 
@@ -201,10 +202,10 @@ class DatabaseService {
         await this.setSettings(backup.settings);
       }
 
-      
+
       return true;
     } catch (error) {
-      
+
       return false;
     }
   }
@@ -257,14 +258,29 @@ class DatabaseService {
   }
 
   async setSettings(settings: AppSettings): Promise<void> {
+    // Ensure DB initialized in case caller didn't
+    if (!this.db) {
+      await this.init().catch(() => { });
+    }
     return new Promise((resolve, reject) => {
-      const store = this.getStore('settings', 'readwrite');
-      const request = store.put({ id: 'app', ...settings });
-      request.onerror = () => reject(request.error);
-      request.onsuccess = async () => {
-        await this.autoBackup();
-        resolve();
-      };
+      try {
+        const store = this.getStore('settings', 'readwrite');
+        // Read current settings to merge new values, avoiding overwrites
+        const getReq = store.get('app');
+        getReq.onerror = () => reject(getReq.error);
+        getReq.onsuccess = () => {
+          const current = (getReq.result || { id: 'app' }) as any;
+          const merged = { ...current, ...settings, id: 'app' };
+          const putReq = store.put(merged);
+          putReq.onerror = () => reject(putReq.error);
+          putReq.onsuccess = async () => {
+            await this.autoBackup();
+            resolve();
+          };
+        };
+      } catch (e) {
+        reject(e);
+      }
     });
   }
 
@@ -284,6 +300,15 @@ class DatabaseService {
 
   async setGeminiApiKey(geminiApiKey: string): Promise<void> {
     await this.setSettings({ geminiApiKey });
+  }
+
+  async getGeminiConnected(): Promise<boolean | undefined> {
+    const settings = await this.getSettings();
+    return settings.geminiConnected;
+  }
+
+  async setGeminiConnected(geminiConnected: boolean): Promise<void> {
+    await this.setSettings({ geminiConnected });
   }
 
   // Candidate operations
@@ -516,7 +541,7 @@ class DatabaseService {
         localStorage.removeItem('positions');
       }
     } catch (error) {
-      
+
     }
   }
 }
