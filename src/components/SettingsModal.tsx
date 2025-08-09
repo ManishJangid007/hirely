@@ -1,16 +1,18 @@
 import React from 'react';
-import { XMarkIcon, Cog6ToothIcon, BookOpenIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, Cog6ToothIcon, BookOpenIcon, CloudArrowUpIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import ThemeToggle from './ThemeToggle';
+// AIConfigModal is opened by parent via callback
 
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
     onBackupClick: () => void;
     onDocsClick: () => void;
+  onOpenAIConfig: () => void;
 }
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onBackupClick, onDocsClick }) => {
-    if (!isOpen) return null;
+const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onBackupClick, onDocsClick, onOpenAIConfig }) => {
+  if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
@@ -59,6 +61,18 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onBackup
                             <CloudArrowUpIcon className="w-4 h-4 mr-2" />
                             Backup & Data
                         </button>
+
+            {/* AI Configuration */}
+            <button
+              onClick={() => {
+                onClose();
+                onOpenAIConfig();
+              }}
+              className="w-full inline-flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
+            >
+              <SparklesIcon className="w-4 h-4 mr-2" />
+              AI Configuration
+            </button>
                     </div>
                 </div>
             </div>

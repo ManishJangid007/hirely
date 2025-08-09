@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import logo from '../assets/logo.png';
 import { Cog6ToothIcon } from '@heroicons/react/24/outline';
 import SettingsModal from './SettingsModal';
+import AIConfigModal from './AIConfigModal';
 
 interface HeaderProps {
   onBackupClick: () => void;
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onBackupClick }) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAIConfigOpen, setIsAIConfigOpen] = useState(false);
 
   const handleGitHubClick = () => {
     window.open('https://github.com/ManishJangid007/hirely', '_blank');
@@ -63,7 +65,9 @@ const Header: React.FC<HeaderProps> = ({ onBackupClick }) => {
         onClose={() => setIsSettingsOpen(false)}
         onBackupClick={onBackupClick}
         onDocsClick={handleGitHubClick}
+        onOpenAIConfig={() => setIsAIConfigOpen(true)}
       />
+      <AIConfigModal isOpen={isAIConfigOpen} onClose={() => setIsAIConfigOpen(false)} />
     </div>
   );
 };

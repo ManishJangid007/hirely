@@ -49,17 +49,23 @@ export interface QuestionTemplate {
   sections: QuestionSection[];
 }
 
+export interface AppSettings {
+  apiKey?: string;
+  geminiApiKey?: string;
+}
+
 export interface BackupData {
   candidates: Candidate[];
   questionTemplates: QuestionTemplate[];
   positions: string[];
   interviewResults: InterviewResult[];
+  settings?: AppSettings;
   lastBackup: string;
 }
 
 class DatabaseService {
   private dbName = 'InterviewAppDB';
-  private version = 3; // Increment version since we added interviewDate field to Candidate
+  private version = 4; // Increment version since we added settings store for AI config
   private db: IDBDatabase | null = null;
   private backupKey = 'interview_app_backup';
 
@@ -112,6 +118,10 @@ class DatabaseService {
           resultStore.createIndex('candidateId', 'candidateId', { unique: false });
           resultStore.createIndex('createdAt', 'createdAt', { unique: false });
         }
+
+        if (!db.objectStoreNames.contains('settings')) {
+          db.createObjectStore('settings', { keyPath: 'id' });
+        }
       };
     });
   }
@@ -135,11 +145,12 @@ class DatabaseService {
   // Backup and Recovery Methods
   async createBackup(): Promise<void> {
     try {
-      const [candidates, templates, positions, results] = await Promise.all([
+      const [candidates, templates, positions, results, settings] = await Promise.all([
         this.getCandidates(),
         this.getQuestionTemplates(),
         this.getPositions(),
-        this.getInterviewResults()
+        this.getInterviewResults(),
+        this.getSettings()
       ]);
 
       const backupData: BackupData = {
@@ -147,6 +158,7 @@ class DatabaseService {
         questionTemplates: templates,
         positions,
         interviewResults: results,
+        settings,
         lastBackup: new Date().toISOString()
       };
 
@@ -185,6 +197,10 @@ class DatabaseService {
         await this.addInterviewResult(result);
       }
 
+      if (backup.settings) {
+        await this.setSettings(backup.settings);
+      }
+
       console.log('Backup restored successfully');
       return true;
     } catch (error) {
@@ -194,7 +210,7 @@ class DatabaseService {
   }
 
   async clearAllData(): Promise<void> {
-    const stores = ['candidates', 'questionTemplates', 'positions', 'interviewResults'];
+    const stores = ['candidates', 'questionTemplates', 'positions', 'interviewResults', 'settings'];
 
     for (const storeName of stores) {
       const store = this.getStore(storeName, 'readwrite');
@@ -224,6 +240,50 @@ class DatabaseService {
   private async autoBackup(): Promise<void> {
     // Create backup every 5 minutes or after significant changes
     await this.createBackup();
+  }
+
+  // Settings operations
+  async getSettings(): Promise<AppSettings> {
+    return new Promise((resolve, reject) => {
+      const store = this.getStore('settings');
+      const request = store.get('app');
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const result = request.result || { id: 'app' };
+        const { id, ...settings } = result;
+        resolve(settings as AppSettings);
+      };
+    });
+  }
+
+  async setSettings(settings: AppSettings): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const store = this.getStore('settings', 'readwrite');
+      const request = store.put({ id: 'app', ...settings });
+      request.onerror = () => reject(request.error);
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
+    });
+  }
+
+  async getApiKey(): Promise<string | undefined> {
+    const settings = await this.getSettings();
+    return settings.apiKey;
+  }
+
+  async setApiKey(apiKey: string): Promise<void> {
+    await this.setSettings({ apiKey });
+  }
+
+  async getGeminiApiKey(): Promise<string | undefined> {
+    const settings = await this.getSettings();
+    return settings.geminiApiKey;
+  }
+
+  async setGeminiApiKey(geminiApiKey: string): Promise<void> {
+    await this.setSettings({ geminiApiKey });
   }
 
   // Candidate operations
