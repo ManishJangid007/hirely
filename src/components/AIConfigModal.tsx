@@ -42,7 +42,8 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       if (testStatus === 'success') {
         await databaseService.setGeminiConnected(true);
       }
-      setTimeout(onClose, 800);
+      // Refresh the page to reflect AI connectivity state across the app
+      window.location.reload();
     } catch (err) {
       setTestStatus('error');
       setTestMessage('Failed to save');

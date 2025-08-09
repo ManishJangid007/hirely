@@ -101,6 +101,7 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
     } | null>(null);
     const [isAIGenerating, setIsAIGenerating] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
+    const [isGeminiConnected, setIsGeminiConnected] = useState<boolean>(false);
     const aiMessages = [
         'Creating your template…',
         'AI is cooking…',
@@ -117,6 +118,23 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
         }, 3000);
         return () => clearInterval(id);
     }, [isAIGenerating]);
+
+    // Load Gemini connection state to control AI buttons visibility
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                if (!databaseService.isInitialized()) {
+                    try { await databaseService.init(); } catch { }
+                }
+                const connected = await databaseService.getGeminiConnected();
+                if (mounted) setIsGeminiConnected(!!connected);
+            } catch {
+                if (mounted) setIsGeminiConnected(false);
+            }
+        })();
+        return () => { mounted = false; };
+    }, []);
 
     const sanitizeJson = (raw: string): string => {
         // Trim any markdown fences or extra text
@@ -391,13 +409,15 @@ ${jsonExample}
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Template
                             </button>
-                            <button
-                                onClick={() => setShowAIAddTemplateModal(true)}
-                                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200 w-fit sm:w-auto"
-                            >
-                                <SparklesIcon className="w-4 h-4 mr-2" />
-                                AI Template
-                            </button>
+                            {isGeminiConnected && (
+                                <button
+                                    onClick={() => setShowAIAddTemplateModal(true)}
+                                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200 w-fit sm:w-auto"
+                                >
+                                    <SparklesIcon className="w-4 h-4 mr-2" />
+                                    AI Template
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -492,13 +512,15 @@ ${jsonExample}
                                                 <DocumentDuplicateIcon className="w-4 h-4 mr-2" />
                                                 Make a copy
                                             </button>
-                                            <button
-                                                onClick={() => setShowAIAddSectionModal({ open: true, templateId: template.id })}
-                                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                            >
-                                                <SparklesIcon className="w-4 h-4 mr-2" />
-                                                AI Section
-                                            </button>
+                                            {isGeminiConnected && (
+                                                <button
+                                                    onClick={() => setShowAIAddSectionModal({ open: true, templateId: template.id })}
+                                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                                >
+                                                    <SparklesIcon className="w-4 h-4 mr-2" />
+                                                    AI Section
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => {
                                                     setDeleteConfirmData({
@@ -580,20 +602,22 @@ ${jsonExample}
                                                                     >
                                                                         <TrashIcon className="w-4 h-4" />
                                                                     </button>
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setShowAIAddQuestionModal({
-                                                                                open: true,
-                                                                                templateId: template.id,
-                                                                                sectionId: section.id,
-                                                                                sectionName: section.name
-                                                                            });
-                                                                        }}
-                                                                        className="text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 transition-colors duration-200"
-                                                                        title="AI Question"
-                                                                    >
-                                                                        <SparklesIcon className="w-4 h-4" />
-                                                                    </button>
+                                                                    {isGeminiConnected && (
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setShowAIAddQuestionModal({
+                                                                                    open: true,
+                                                                                    templateId: template.id,
+                                                                                    sectionId: section.id,
+                                                                                    sectionName: section.name
+                                                                                });
+                                                                            }}
+                                                                            className="text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 transition-colors duration-200"
+                                                                            title="AI Question"
+                                                                        >
+                                                                            <SparklesIcon className="w-4 h-4" />
+                                                                        </button>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                             {!collapsedSections.has(section.id) && (
