@@ -161,8 +161,8 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
                                                     ? `Knows (answered correctly):\n${knows.map(q => `- Q: ${q.text}${q.answer ? `\n  Expected: ${q.answer}` : ''}`).join('\n')}`
                                                     : 'Knows: (none)';
                                                 const doesntKnowBlock = doesntKnow.length > 0
-                                                    ? `Doesn\'t know (answered wrong):\n${doesntKnow.map(q => `- Q: ${q.text}${q.answer ? `\n  Expected: ${q.answer}` : ''}`).join('\n')}`
-                                                    : `Doesn\'t know: (none)`;
+                                                    ? `Doesn't know (answered wrong):\n${doesntKnow.map(q => `- Q: ${q.text}${q.answer ? `\n  Expected: ${q.answer}` : ''}`).join('\n')}`
+                                                    : `Doesn't know: (none)`;
 
                                                 const formatSpec = `Respond ONLY in the following format (plain text, no markdown fences):\nPassed / Rejected\n  - Pros\n     - point 1\n     - point 2\n  - Cons\n     - point 1\n     - point 2\nNotes:\n- Pros/Cons sections are optional.\n- The first line MUST clearly be either 'Passed' or 'Rejected'.`;
 
