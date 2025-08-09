@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import Select from './Select';
 import { Candidate, Question } from '../types';
 import { databaseService } from '../services/database';
 
@@ -127,17 +128,16 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
                             <label htmlFor="result" className="form-label required">
                                 Final Result
                             </label>
-                            <select
-                                id="result"
+                            <Select
                                 value={result}
-                                onChange={(e) => setResult(e.target.value as 'Passed' | 'Rejected' | 'Maybe')}
-                                className="form-select"
-                                required
-                            >
-                                <option value="Passed">Passed</option>
-                                <option value="Rejected">Rejected</option>
-                                <option value="Maybe">Maybe</option>
-                            </select>
+                                onChange={(val) => setResult(val as 'Passed' | 'Rejected' | 'Maybe')}
+                                options={[
+                                    { value: 'Passed', label: 'Passed' },
+                                    { value: 'Rejected', label: 'Rejected' },
+                                    { value: 'Maybe', label: 'Maybe' },
+                                ]}
+                                placeholder="Select result"
+                            />
                         </div>
 
                         <div className="flex justify-end space-x-3 pt-6">

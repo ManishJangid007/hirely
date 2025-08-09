@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import Select from './Select';
 import { QuestionTemplate, Question } from '../types';
 
 interface AddQuestionModalProps {
@@ -166,20 +167,16 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
                             <label htmlFor="section" className="form-label">
                                 Section (Optional)
                             </label>
-                            <select
-                                id="section"
+                            <Select
                                 value={showCustomSection ? 'custom' : selectedSection}
-                                onChange={(e) => handleSectionChange(e.target.value)}
-                                className="form-select"
-                            >
-                                <option value="">No section (will go to "Other")</option>
-                                {allSections.map((section) => (
-                                    <option key={section} value={section}>
-                                        {section}
-                                    </option>
-                                ))}
-                                <option value="custom">+ Add new section</option>
-                            </select>
+                                onChange={(val) => handleSectionChange(val)}
+                                options={[
+                                    { value: '', label: 'No section (will go to "Other")' },
+                                    ...allSections.map(s => ({ value: s, label: s })),
+                                    { value: 'custom', label: '+ Add new section' }
+                                ]}
+                                placeholder='No section (will go to "Other")'
+                            />
                         </div>
 
                         {showCustomSection && (
@@ -206,21 +203,15 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
                             <label htmlFor="templateSelect" className="form-label">
                                 Import from Template (Optional)
                             </label>
-                            <select
-                                id="templateSelect"
+                            <Select
                                 value={selectedTemplateId}
-                                onChange={(e) => {
-                                    setSelectedTemplateId(e.target.value);
-                                    // reset section when template changes
+                                onChange={(val) => {
+                                    setSelectedTemplateId(val);
                                     setSelectedTemplateSectionName('');
                                 }}
-                                className="form-select"
-                            >
-                                <option value="">No template</option>
-                                {questionTemplates.map((t) => (
-                                    <option key={t.id} value={t.id}>{t.name}</option>
-                                ))}
-                            </select>
+                                options={[{ value: '', label: 'No template' }, ...questionTemplates.map(t => ({ value: t.id, label: t.name }))]}
+                                placeholder="No template"
+                            />
                         </div>
 
                         {selectedTemplateId && (
@@ -228,17 +219,12 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
                                 <label htmlFor="templateSectionSelect" className="form-label">
                                     Template Section (Optional)
                                 </label>
-                                <select
-                                    id="templateSectionSelect"
+                                <Select
                                     value={selectedTemplateSectionName}
-                                    onChange={(e) => setSelectedTemplateSectionName(e.target.value)}
-                                    className="form-select"
-                                >
-                                    <option value="">All sections</option>
-                                    {questionTemplates.find(t => t.id === selectedTemplateId)?.sections.map((s) => (
-                                        <option key={s.id} value={s.name}>{s.name}</option>
-                                    ))}
-                                </select>
+                                    onChange={setSelectedTemplateSectionName}
+                                    options={[{ value: '', label: 'All sections' }, ...(questionTemplates.find(t => t.id === selectedTemplateId)?.sections || []).map(s => ({ value: s.name, label: s.name }))]}
+                                    placeholder="All sections"
+                                />
                                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                     If no section is selected, all sections from the template will be imported.
                                 </p>
