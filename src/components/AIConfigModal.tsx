@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { databaseService } from '../services/database';
+import { generateContent } from '../services/ai';
 
 interface AIConfigModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     const load = async () => {
@@ -39,6 +41,22 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       setMessage('Failed to save.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleTest = async () => {
+    if (!geminiApiKey.trim()) return;
+    setTestStatus('testing');
+    setMessage(null);
+    try {
+      const res = await generateContent({ prompt: 'Hi', overrideApiKey: geminiApiKey.trim(), timeoutMs: 10000 });
+      if (res && res.candidates && res.candidates.length > 0) {
+        setTestStatus('success');
+      } else {
+        setTestStatus('error');
+      }
+    } catch (e) {
+      setTestStatus('error');
     }
   };
 
@@ -75,11 +93,25 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
               <input
                 id="geminiKey"
                 type="password"
-                className="form-input"
+                className={`form-input ${testStatus === 'success' ? 'border-green-500 focus:ring-green-500' : testStatus === 'error' ? 'border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
                 placeholder="Enter your Gemini API key"
                 value={geminiApiKey}
                 onChange={(e) => setGeminiApiKey(e.target.value)}
               />
+              {geminiApiKey && (
+                <button
+                  type="button"
+                  onClick={handleTest}
+                  disabled={testStatus === 'testing'}
+                  className={`mt-2 inline-flex items-center px-3 py-1.5 rounded-md text-sm border ${
+                    testStatus === 'success' ? 'border-green-600 text-green-700 dark:text-green-400' :
+                    testStatus === 'error' ? 'border-red-600 text-red-700 dark:text-red-400' :
+                    'border-gray-300 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {testStatus === 'testing' ? 'Testing…' : 'Test'}
+                </button>
+              )}
             </div>
 
             <div className="flex justify-end space-x-3 pt-2">
