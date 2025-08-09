@@ -151,6 +151,29 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         return sections;
     };
 
+    // Helpers to collapse/expand all visible groups
+    const getRenderedSectionKeys = (): string[] => {
+        const keys: string[] = [];
+        // Unanswered sections that are rendered
+        Object.entries(getQuestionsBySection()).forEach(([name, sectionQuestions]) => {
+            if (sectionQuestions.some(q => !q.isAnswered)) {
+                keys.push(name);
+            }
+        });
+        // Group keys for Correct and Wrong sections if they exist
+        if (questions.some(q => q.isCorrect === true)) keys.push('__correct__');
+        if (questions.some(q => q.isCorrect === false)) keys.push('__wrong__');
+        return keys;
+    };
+
+    const collapseAll = () => {
+        setCollapsedSections(new Set(getRenderedSectionKeys()));
+    };
+
+    const expandAll = () => {
+        setCollapsedSections(new Set());
+    };
+
     const handleSaveResult = async (description: string, result: 'Passed' | 'Rejected' | 'Maybe') => {
         // Update candidate with current questions and status
         onUpdateCandidate(candidate.id, { status: result, questions });
@@ -283,6 +306,31 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             </div>
                         </div>
                         <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                            {/* Toggle all button (icon only) */}
+                            <button
+                                onClick={() => {
+                                    const keys = getRenderedSectionKeys();
+                                    const allCollapsed = keys.every(k => collapsedSections.has(k));
+                                    if (allCollapsed) {
+                                        expandAll();
+                                    } else {
+                                        collapseAll();
+                                    }
+                                }}
+                                className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
+                                title="Toggle all sections"
+                                aria-label="Toggle all sections"
+                            >
+                                {(() => {
+                                    const keys = getRenderedSectionKeys();
+                                    const allCollapsed = keys.length > 0 && keys.every(k => collapsedSections.has(k));
+                                    return allCollapsed ? (
+                                        <ChevronDownIcon className="w-5 h-5" />
+                                    ) : (
+                                        <ChevronRightIcon className="w-5 h-5" />
+                                    );
+                                })()}
+                            </button>
                             <button
                                 onClick={() => setShowAddQuestionModal(true)}
                                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto"
@@ -362,25 +410,25 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                         </button>
                                     </div>
                                     {!collapsedSections.has(sectionName) && (
-                                    <div className="space-y-4">
-                                        {unansweredQuestions.map((question, index) => (
-                                            <QuestionCard
-                                                key={question.id}
-                                                question={question}
-                                                questionNumber={index + 1}
-                                                onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
-                                                onMarkCorrect={() => markQuestionCorrect(question.id)}
-                                                onMarkWrong={() => markQuestionWrong(question.id)}
-                                                onUndo={() => undoQuestion(question.id)}
-                                                onDelete={() => handleDeleteQuestion(question)}
-                                                onEdit={() => {
-                                                    setQuestionToEdit(question);
-                                                    setShowEditQuestionModal(true);
-                                                }}
-                                                showUndo={false}
-                                            />
-                                        ))}
-                                    </div>
+                                        <div className="space-y-4">
+                                            {unansweredQuestions.map((question, index) => (
+                                                <QuestionCard
+                                                    key={question.id}
+                                                    question={question}
+                                                    questionNumber={index + 1}
+                                                    onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
+                                                    onMarkCorrect={() => markQuestionCorrect(question.id)}
+                                                    onMarkWrong={() => markQuestionWrong(question.id)}
+                                                    onUndo={() => undoQuestion(question.id)}
+                                                    onDelete={() => handleDeleteQuestion(question)}
+                                                    onEdit={() => {
+                                                        setQuestionToEdit(question);
+                                                        setShowEditQuestionModal(true);
+                                                    }}
+                                                    showUndo={false}
+                                                />
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
                             );
@@ -424,23 +472,23 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                     </h2>
                                 </div>
                                 {!collapsedSections.has('__correct__') && (
-                                <div className="space-y-4">
-                                    {questions.filter(q => q.isCorrect === true).map((question, index) => (
-                                        <QuestionCard
-                                            key={question.id}
-                                            question={question}
-                                            questionNumber={index + 1}
-                                            onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
-                                            onUndo={() => undoQuestion(question.id)}
-                                            onDelete={() => handleDeleteQuestion(question)}
-                                            onEdit={() => {
-                                                setQuestionToEdit(question);
-                                                setShowEditQuestionModal(true);
-                                            }}
-                                            showUndo={true}
-                                        />
-                                    ))}
-                                </div>
+                                    <div className="space-y-4">
+                                        {questions.filter(q => q.isCorrect === true).map((question, index) => (
+                                            <QuestionCard
+                                                key={question.id}
+                                                question={question}
+                                                questionNumber={index + 1}
+                                                onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
+                                                onUndo={() => undoQuestion(question.id)}
+                                                onDelete={() => handleDeleteQuestion(question)}
+                                                onEdit={() => {
+                                                    setQuestionToEdit(question);
+                                                    setShowEditQuestionModal(true);
+                                                }}
+                                                showUndo={true}
+                                            />
+                                        ))}
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -481,25 +529,25 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                     </h2>
                                 </div>
                                 {!collapsedSections.has('__wrong__') && (
-                                <div className="space-y-4">
-                                    {questions.filter(q => q.isCorrect === false).map((question, index) => (
-                                        <QuestionCard
-                                            key={question.id}
-                                            question={question}
-                                            questionNumber={index + 1}
-                                            onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
-                                            onMarkCorrect={() => markQuestionCorrect(question.id)}
-                                            onMarkWrong={() => markQuestionWrong(question.id)}
-                                            onUndo={() => undoQuestion(question.id)}
-                                            onDelete={() => handleDeleteQuestion(question)}
-                                            onEdit={() => {
-                                                setQuestionToEdit(question);
-                                                setShowEditQuestionModal(true);
-                                            }}
-                                            showUndo={true}
-                                        />
-                                    ))}
-                                </div>
+                                    <div className="space-y-4">
+                                        {questions.filter(q => q.isCorrect === false).map((question, index) => (
+                                            <QuestionCard
+                                                key={question.id}
+                                                question={question}
+                                                questionNumber={index + 1}
+                                                onUpdateAnswer={(answer) => updateQuestion(question.id, { answer })}
+                                                onMarkCorrect={() => markQuestionCorrect(question.id)}
+                                                onMarkWrong={() => markQuestionWrong(question.id)}
+                                                onUndo={() => undoQuestion(question.id)}
+                                                onDelete={() => handleDeleteQuestion(question)}
+                                                onEdit={() => {
+                                                    setQuestionToEdit(question);
+                                                    setShowEditQuestionModal(true);
+                                                }}
+                                                showUndo={true}
+                                            />
+                                        ))}
+                                    </div>
                                 )}
                             </div>
                         )}
