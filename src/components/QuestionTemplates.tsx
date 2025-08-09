@@ -223,7 +223,7 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
             {/* Header */}
             <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6 space-y-4 sm:space-y-0">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-4 sm:py-6 space-y-4 sm:space-y-0">
                         <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                             <Link
                                 to="/"
@@ -237,13 +237,44 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
                                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Manage reusable question templates</p>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setShowAddTemplateModal(true)}
-                            className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 w-fit sm:w-auto"
-                        >
-                            <PlusIcon className="w-4 h-4 mr-2" />
-                            Add Template
-                        </button>
+                        <div className="flex items-center space-x-2">
+                            {/* Toggle all templates (icon only) */}
+                            <button
+                                onClick={() => {
+                                    const allTemplateIds = templates.map(t => t.id);
+                                    const allSectionIds = templates.flatMap(t => t.sections.map(s => s.id));
+                                    const allCollapsed = templates.length > 0 && templates.every(t => collapsedTemplates.has(t.id));
+                                    if (allCollapsed) {
+                                        // Expand all
+                                        setCollapsedTemplates(new Set());
+                                        setCollapsedSections(new Set());
+                                    } else {
+                                        // Collapse all
+                                        setCollapsedTemplates(new Set(allTemplateIds));
+                                        setCollapsedSections(new Set(allSectionIds));
+                                    }
+                                }}
+                                className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
+                                title="Toggle all"
+                                aria-label="Toggle all"
+                            >
+                                {(() => {
+                                    const allCollapsed = templates.length > 0 && templates.every(t => collapsedTemplates.has(t.id));
+                                    return allCollapsed ? (
+                                        <ChevronDownIcon className="w-5 h-5" />
+                                    ) : (
+                                        <ChevronRightIcon className="w-5 h-5" />
+                                    );
+                                })()}
+                            </button>
+                            <button
+                                onClick={() => setShowAddTemplateModal(true)}
+                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 w-fit sm:w-auto"
+                            >
+                                <PlusIcon className="w-4 h-4 mr-2" />
+                                Add Template
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
