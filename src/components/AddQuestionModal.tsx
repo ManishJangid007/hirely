@@ -25,6 +25,10 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
     const [customSection, setCustomSection] = useState('');
     const [showCustomSection, setShowCustomSection] = useState(false);
 
+    // Template import selection
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+    const [selectedTemplateSectionName, setSelectedTemplateSectionName] = useState<string>('');
+
     // Set pre-selected section when modal opens
     useEffect(() => {
         if (isOpen && preSelectedSection) {
@@ -56,8 +60,27 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!questionText.trim()) return;
+        // Priority: template selection overrides manual question
+        if (selectedTemplateId) {
+            const template = questionTemplates.find(t => t.id === selectedTemplateId);
+            if (template) {
+                const sectionsToImport = selectedTemplateSectionName
+                    ? template.sections.filter(s => s.name === selectedTemplateSectionName)
+                    : template.sections;
 
+                sectionsToImport.forEach(section => {
+                    section.questions.forEach(q => {
+                        onAddQuestion(q.text, section.name, q.answer);
+                    });
+                });
+            }
+            resetForm();
+            onClose();
+            return;
+        }
+
+        // Manual question path
+        if (!questionText.trim()) return;
         const section = showCustomSection ? customSection : selectedSection;
         onAddQuestion(questionText.trim(), section || 'Other', answer.trim() || undefined);
 
@@ -71,6 +94,8 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
         setSelectedSection('');
         setCustomSection('');
         setShowCustomSection(false);
+        setSelectedTemplateId('');
+        setSelectedTemplateSectionName('');
     };
 
     const handleClose = () => {
@@ -109,7 +134,7 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="questionText" className="form-label required">
+                            <label htmlFor="questionText" className={`form-label ${selectedTemplateId ? '' : 'required'}`}>
                                 Question Text
                             </label>
                             <textarea
@@ -119,7 +144,7 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
                                 placeholder="Enter your question..."
                                 className="form-textarea"
                                 rows={4}
-                                required
+                                required={!selectedTemplateId}
                             />
                         </div>
 
@@ -170,6 +195,53 @@ const AddQuestionModal: React.FC<AddQuestionModalProps> = ({
                                     placeholder="Enter section name..."
                                     className="form-input"
                                 />
+                            </div>
+                        )}
+
+                        {/* Divider */}
+                        <hr className="border-gray-200 dark:border-gray-700" />
+
+                        {/* Template Import */}
+                        <div>
+                            <label htmlFor="templateSelect" className="form-label">
+                                Import from Template (Optional)
+                            </label>
+                            <select
+                                id="templateSelect"
+                                value={selectedTemplateId}
+                                onChange={(e) => {
+                                    setSelectedTemplateId(e.target.value);
+                                    // reset section when template changes
+                                    setSelectedTemplateSectionName('');
+                                }}
+                                className="form-select"
+                            >
+                                <option value="">No template</option>
+                                {questionTemplates.map((t) => (
+                                    <option key={t.id} value={t.id}>{t.name}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {selectedTemplateId && (
+                            <div>
+                                <label htmlFor="templateSectionSelect" className="form-label">
+                                    Template Section (Optional)
+                                </label>
+                                <select
+                                    id="templateSectionSelect"
+                                    value={selectedTemplateSectionName}
+                                    onChange={(e) => setSelectedTemplateSectionName(e.target.value)}
+                                    className="form-select"
+                                >
+                                    <option value="">All sections</option>
+                                    {questionTemplates.find(t => t.id === selectedTemplateId)?.sections.map((s) => (
+                                        <option key={s.id} value={s.name}>{s.name}</option>
+                                    ))}
+                                </select>
+                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                    If no section is selected, all sections from the template will be imported.
+                                </p>
                             </div>
                         )}
 

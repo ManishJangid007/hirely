@@ -65,17 +65,31 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         );
     }
 
+    const generateQuestionId = (): string => {
+        try {
+            // Use secure UUID when available
+            // @ts-ignore
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                // @ts-ignore
+                return crypto.randomUUID();
+            }
+        } catch { }
+        return `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    };
+
     const addQuestion = (questionText: string, section: string, answer?: string) => {
         const newQuestion: Question = {
-            id: Date.now().toString(),
+            id: generateQuestionId(),
             text: questionText,
             section: section || 'Other',
             answer: answer,
             isAnswered: false
         };
-        const updatedQuestions = [...questions, newQuestion];
-        setQuestions(updatedQuestions);
-        onUpdateCandidate(candidate.id, { questions: updatedQuestions });
+        setQuestions(prevQuestions => {
+            const updated = [...prevQuestions, newQuestion];
+            onUpdateCandidate(candidate.id, { questions: updated });
+            return updated;
+        });
     };
 
     const updateQuestion = (questionId: string, updates: Partial<Question>) => {
