@@ -86,11 +86,38 @@ const CandidateFilters: React.FC<CandidateFiltersProps> = ({
 
     const hasActiveFilters = filters.search || filters.position || filters.status || filters.interviewDate;
 
+  // Status counts (based on all candidates passed in)
+  const statusCounts = {
+    notInterviewed: candidates.filter(c => c.status === 'Not Interviewed').length,
+    passed: candidates.filter(c => c.status === 'Passed').length,
+    rejected: candidates.filter(c => c.status === 'Rejected').length,
+    maybe: candidates.filter(c => c.status === 'Maybe').length
+  };
+
     return (
         <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 {/* Search Bar */}
                 <div className="flex flex-col sm:flex-row gap-4">
+                    {/* Status counts */}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600">
+                            {statusCounts.notInterviewed}
+                            <span className="ml-1 hidden xs:inline">Not Interviewed</span>
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800">
+                            {statusCounts.passed}
+                            <span className="ml-1 hidden xs:inline">Passed</span>
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800">
+                            {statusCounts.rejected}
+                            <span className="ml-1 hidden xs:inline">Failed</span>
+                        </span>
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-800">
+                            {statusCounts.maybe}
+                            <span className="ml-1 hidden xs:inline">Maybe</span>
+                        </span>
+                    </div>
                     <div className="flex-1 relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
