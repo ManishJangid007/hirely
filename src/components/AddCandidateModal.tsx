@@ -60,6 +60,20 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
         ...candidates.map(c => ({ value: c.id, label: `${c.fullName} - ${c.position}` }))
     ], [candidates]);
 
+    const resetForm = useCallback(() => {
+        setFormData({
+            fullName: '',
+            position: '',
+            experienceYears: 0,
+            experienceMonths: 0,
+            interviewDate: ''
+        });
+        setShowQuestionImport(false);
+        setSelectedTemplate('');
+        setSelectedCandidate('');
+        setImportType(null);
+    }, []);
+
     // Use useCallback to prevent function recreation on every render
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
@@ -106,21 +120,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
 
         resetForm();
         onClose();
-    }, [formData, importType, selectedTemplate, selectedCandidate, questionTemplates, candidates, onAddCandidate, onClose]);
-
-    const resetForm = useCallback(() => {
-        setFormData({
-            fullName: '',
-            position: '',
-            experienceYears: 0,
-            experienceMonths: 0,
-            interviewDate: ''
-        });
-        setShowQuestionImport(false);
-        setSelectedTemplate('');
-        setSelectedCandidate('');
-        setImportType(null);
-    }, []);
+    }, [formData, importType, selectedTemplate, selectedCandidate, questionTemplates, candidates, onAddCandidate, onClose, resetForm]);
 
     const handleInputChange = useCallback((field: string, value: string | number) => {
         setFormData(prev => ({
