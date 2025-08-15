@@ -12,7 +12,9 @@ import {
     ChevronRightIcon,
     DocumentDuplicateIcon,
     SparklesIcon,
-    EllipsisVerticalIcon
+    EllipsisVerticalIcon,
+    ArrowDownTrayIcon,
+    ArrowUpTrayIcon
 } from '@heroicons/react/24/outline';
 import { QuestionTemplate, QuestionSection } from '../types';
 import AddTemplateModal from './AddTemplateModal';
@@ -112,6 +114,8 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
     const [aiMessageIndex, setAiMessageIndex] = useState(0);
     const [openDropdown, setOpenDropdown] = useState<{ type: 'template' | 'section'; id: string } | null>(null);
     const [dropdownPosition, setDropdownPosition] = useState<{ x: number; y: number; width: number } | null>(null);
+    const [showImportResultModal, setShowImportResultModal] = useState(false);
+    const [importResult, setImportResult] = useState<{ success: boolean; message: string; templateName?: string } | null>(null);
 
     useEffect(() => {
         if (!isAIGenerating) return;
@@ -332,6 +336,150 @@ ${jsonExample}
         }
     };
 
+    const exportTemplate = (template: QuestionTemplate) => {
+        try {
+            // Create export data in the same format as our database
+            const exportData = {
+                id: template.id,
+                name: template.name,
+                sections: template.sections.map(section => ({
+                    id: section.id,
+                    name: section.name,
+                    questions: section.questions.map(question => ({
+                        id: question.id,
+                        text: question.text,
+                        section: question.section,
+                        answer: question.answer,
+                        isAnswered: false
+                    }))
+                }))
+            };
+
+            // Create filename with template name and current date/time
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 19).replace(/:/g, '-'); // Format: YYYY-MM-DDTHH-MM-SS
+            const filename = `${template.name.replace(/[^a-zA-Z0-9\s-]/g, '')}_${dateStr}.json`;
+
+            // Create and download the file
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Failed to export template:', error);
+        }
+    };
+
+    const importTemplate = () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const content = event.target?.result as string;
+                    const data = JSON.parse(content);
+
+                    // Validate the import format
+                    if (!isValidTemplateFormat(data)) {
+                        setImportResult({
+                            success: false,
+                            message: 'Invalid template format. Please use a valid exported template file.'
+                        });
+                        setShowImportResultModal(true);
+                        return;
+                    }
+
+                    // Generate unique template name
+                    const baseName = `${data.name} - Imported`;
+                    const uniqueName = generateUniqueTemplateName(baseName);
+
+                    // Create new template with imported data (without ID, as onAddTemplate expects Omit<QuestionTemplate, 'id'>)
+                    const newTemplate = {
+                        name: uniqueName,
+                        sections: data.sections.map((section: any) => ({
+                            id: generateId(),
+                            name: section.name,
+                            questions: section.questions.map((question: any) => ({
+                                id: generateId(),
+                                text: question.text,
+                                section: section.name,
+                                answer: question.answer || '',
+                                isAnswered: false
+                            }))
+                        }))
+                    };
+
+                    // Add the new template
+                    onAddTemplate(newTemplate);
+                    setImportResult({
+                        success: true,
+                        message: 'Template imported successfully!',
+                        templateName: uniqueName
+                    });
+                    setShowImportResultModal(true);
+                } catch (error) {
+                    setImportResult({
+                        success: false,
+                        message: 'Failed to import template. Please check if the file is a valid JSON.'
+                    });
+                    setShowImportResultModal(true);
+                    console.error('Import error:', error);
+                }
+            };
+            reader.readAsText(file);
+        };
+        input.click();
+    };
+
+    const isValidTemplateFormat = (data: any): boolean => {
+        // Check if data has required structure
+        if (!data || typeof data !== 'object') return false;
+        if (!data.name || typeof data.name !== 'string') return false;
+        if (!Array.isArray(data.sections)) return false;
+
+        // Validate sections
+        for (const section of data.sections) {
+            if (!section.id || !section.name || !Array.isArray(section.questions)) {
+                return false;
+            }
+
+            // Validate questions
+            for (const question of section.questions) {
+                if (!question.id || !question.text || !question.section) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    };
+
+    const generateUniqueTemplateName = (baseName: string): string => {
+        let name = baseName;
+        let counter = 1;
+
+        while (templates.some(t => t.name === name)) {
+            name = `${baseName} (${counter})`;
+            counter++;
+        }
+
+        return name;
+    };
+
+    const generateId = (): string => {
+        return Math.random().toString(36).substr(2, 9);
+    };
+
     const handleEditTemplate = (templateId: string, templateName: string) => {
         onUpdateTemplate(templateId, { name: templateName });
         setShowEditTemplateModal(false);
@@ -427,6 +575,13 @@ ${jsonExample}
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Template
                             </button>
+                            <button
+                                onClick={importTemplate}
+                                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200 w-fit sm:w-auto"
+                            >
+                                <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
+                                Import Template
+                            </button>
                             {isGeminiConnected && (
                                 <button
                                     onClick={() => setShowAIAddTemplateModal(true)}
@@ -448,7 +603,7 @@ ${jsonExample}
                         <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
                         <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No templates</h3>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by creating your first question template.</p>
-                        <div className="mt-6">
+                        <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
                             <button
                                 onClick={() => setShowAddTemplateModal(true)}
                                 disabled={isLoading}
@@ -456,6 +611,13 @@ ${jsonExample}
                             >
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 {isLoading ? 'Loading...' : 'Add Template'}
+                            </button>
+                            <button
+                                onClick={importTemplate}
+                                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                            >
+                                <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
+                                Import Template
                             </button>
                         </div>
                     </div>
@@ -797,6 +959,20 @@ ${jsonExample}
                                     >
                                         <DocumentDuplicateIcon className="w-4 h-4 mr-3" />
                                         Make a Copy
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const template = templates.find(t => t.id === openDropdown.id);
+                                            if (template) {
+                                                exportTemplate(template);
+                                            }
+                                            setOpenDropdown(null);
+                                            setDropdownPosition(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                    >
+                                        <ArrowDownTrayIcon className="w-4 h-4 mr-3" />
+                                        Export Template
                                     </button>
                                     {isGeminiConnected && (
                                         <button
@@ -1237,6 +1413,64 @@ Requirements:
                         currentQuestionText={editQuestionData.questionText}
                         currentAnswer={editQuestionData.answer}
                     />
+                )}
+
+                {/* Import Result Modal */}
+                {showImportResultModal && importResult && (
+                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+                        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto">
+                            <div className="p-6">
+                                <div className="flex items-center mb-4">
+                                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${importResult.success
+                                        ? 'bg-green-100 dark:bg-green-900/20'
+                                        : 'bg-red-100 dark:bg-red-900/20'
+                                        }`}>
+                                        {importResult.success ? (
+                                            <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <div className="ml-3">
+                                        <h3 className={`text-lg font-medium ${importResult.success
+                                            ? 'text-green-800 dark:text-green-200'
+                                            : 'text-red-800 dark:text-red-200'
+                                            }`}>
+                                            {importResult.success ? 'Import Successful' : 'Import Failed'}
+                                        </h3>
+                                    </div>
+                                </div>
+                                <div className="mt-2">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                                        {importResult.message}
+                                        {importResult.success && importResult.templateName && (
+                                            <span className="block mt-1 font-medium text-gray-900 dark:text-white">
+                                                Template: "{importResult.templateName}"
+                                            </span>
+                                        )}
+                                    </p>
+                                </div>
+                                <div className="mt-6">
+                                    <button
+                                        onClick={() => {
+                                            setShowImportResultModal(false);
+                                            setImportResult(null);
+                                        }}
+                                        className={`w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ${importResult.success
+                                            ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                                            : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+                                            }`}
+                                    >
+                                        {importResult.success ? 'Continue' : 'Try Again'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 )}
             </>
         </div>
