@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
@@ -29,6 +29,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
       setSelectedDate(null);
     }
   }, [value]);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
@@ -51,23 +52,23 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [disableClickOutside]);
 
-  const formatDate = (date: Date): string => {
+  const formatDate = useCallback((date: Date): string => {
     // Format date in local timezone to avoid timezone issues
     const year = date.getFullYear();
     const month = date.toLocaleDateString('en-US', { month: 'short' });
     const day = date.getDate();
     return `${month} ${day}, ${year}`;
-  };
+  }, []);
 
-  const formatDateForInput = (date: Date): string => {
+  const formatDateForInput = useCallback((date: Date): string => {
     // Format date as YYYY-MM-DD in local timezone to avoid timezone issues
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
-  };
+  }, []);
 
-  const getDaysInMonth = (date: Date): Date[] => {
+  const getDaysInMonth = useCallback((date: Date): Date[] => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
@@ -92,29 +93,29 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
     }
 
     return days;
-  };
+  }, []);
 
-  const isToday = (date: Date): boolean => {
+  const isToday = useCallback((date: Date): boolean => {
     const today = new Date();
     return date.toDateString() === today.toDateString();
-  };
+  }, []);
 
-  const isSelected = (date: Date): boolean => {
+  const isSelected = useCallback((date: Date): boolean => {
     return selectedDate ? date.toDateString() === selectedDate.toDateString() : false;
-  };
+  }, [selectedDate]);
 
-  const isCurrentMonth = (date: Date): boolean => {
+  const isCurrentMonth = useCallback((date: Date): boolean => {
     return date.getMonth() === currentMonth.getMonth();
-  };
+  }, [currentMonth]);
 
-  const handleDateSelect = (date: Date, e: React.MouseEvent) => {
+  const handleDateSelect = useCallback((date: Date, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedDate(date);
     onChange(formatDateForInput(date));
     setIsOpen(false);
-  };
+  }, [onChange, formatDateForInput]);
 
-  const updateDropdownPosition = () => {
+  const updateDropdownPosition = useCallback(() => {
     if (inputRef.current) {
       const rect = inputRef.current.getBoundingClientRect();
       setDropdownPosition({
@@ -123,36 +124,37 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
         width: rect.width
       });
     }
-  };
+  }, []);
 
-  const handleInputClick = () => {
+  const handleInputClick = useCallback(() => {
     if (!isOpen) {
       updateDropdownPosition();
     }
     setIsOpen(!isOpen);
-  };
+  }, [isOpen, updateDropdownPosition]);
 
-  const goToPreviousMonth = (e: React.MouseEvent) => {
+  const goToPreviousMonth = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  };
+  }, [currentMonth]);
 
-  const goToNextMonth = (e: React.MouseEvent) => {
+  const goToNextMonth = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-  };
+  }, [currentMonth]);
 
-  const goToToday = (e: React.MouseEvent) => {
+  const goToToday = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     const today = new Date();
     setCurrentMonth(today);
     setSelectedDate(today);
     onChange(formatDateForInput(today));
     setIsOpen(false);
-  };
+  }, [onChange, formatDateForInput]);
 
-  const days = getDaysInMonth(currentMonth);
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  // Memoize computed values to prevent unnecessary recalculations
+  const days = useMemo(() => getDaysInMonth(currentMonth), [getDaysInMonth, currentMonth]);
+  const weekDays = useMemo(() => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], []);
 
   return (
     <div className={`relative date-picker-container ${className}`} ref={dropdownRef}>

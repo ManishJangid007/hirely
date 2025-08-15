@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useMemo, memo } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline';
 
@@ -16,8 +16,12 @@ interface SelectProps {
     className?: string;
 }
 
-const Select: React.FC<SelectProps> = ({ value, onChange, options, placeholder = 'Select...', disabled = false, className = '' }) => {
-    const selectedOption = options.find(o => o.value === value) || null;
+const Select: React.FC<SelectProps> = memo(({ value, onChange, options, placeholder = 'Select...', disabled = false, className = '' }) => {
+    // Memoize the selected option to prevent unnecessary recalculations
+    const selectedOption = useMemo(() =>
+        options.find(o => o.value === value) || null,
+        [options, value]
+    );
 
     return (
         <Listbox value={value} onChange={onChange} disabled={disabled}>
@@ -67,7 +71,9 @@ const Select: React.FC<SelectProps> = ({ value, onChange, options, placeholder =
             </div>
         </Listbox>
     );
-};
+});
+
+Select.displayName = 'Select';
 
 export default Select;
 

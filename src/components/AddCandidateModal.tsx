@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { XMarkIcon, DocumentDuplicateIcon, UserIcon } from '@heroicons/react/24/outline';
 import { Candidate, QuestionTemplate } from '../types';
 import DatePicker from './DatePicker';
@@ -33,7 +33,35 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
     const [selectedCandidate, setSelectedCandidate] = useState<string>('');
     const [importType, setImportType] = useState<'template' | 'candidate' | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Debug logging to help identify any remaining issues
+    useEffect(() => {
+        if (isOpen) {
+            console.log('AddCandidateModal opened with:', {
+                positionsCount: positions.length,
+                templatesCount: questionTemplates.length,
+                candidatesCount: candidates.length
+            });
+        }
+    }, [isOpen, positions.length, questionTemplates.length, candidates.length]);
+
+    // Memoize options to prevent unnecessary re-renders
+    const positionOptions = useMemo(() => [
+        { value: '', label: 'Select a position' },
+        ...positions.map(p => ({ value: p, label: p }))
+    ], [positions]);
+
+    const templateOptions = useMemo(() => [
+        { value: '', label: 'Choose a template' },
+        ...questionTemplates.map(t => ({ value: t.id, label: t.name }))
+    ], [questionTemplates]);
+
+    const candidateOptions = useMemo(() => [
+        { value: '', label: 'Choose a candidate' },
+        ...candidates.map(c => ({ value: c.id, label: `${c.fullName} - ${c.position}` }))
+    ], [candidates]);
+
+    // Use useCallback to prevent function recreation on every render
+    const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.fullName || !formData.position) return;
 
@@ -78,9 +106,9 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
 
         resetForm();
         onClose();
-    };
+    }, [formData, importType, selectedTemplate, selectedCandidate, questionTemplates, candidates, onAddCandidate, onClose]);
 
-    const resetForm = () => {
+    const resetForm = useCallback(() => {
         setFormData({
             fullName: '',
             position: '',
@@ -92,25 +120,44 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
         setSelectedTemplate('');
         setSelectedCandidate('');
         setImportType(null);
-    };
+    }, []);
 
-    const handleInputChange = (field: string, value: string | number) => {
+    const handleInputChange = useCallback((field: string, value: string | number) => {
         setFormData(prev => ({
             ...prev,
             [field]: value
         }));
-    };
+    }, []);
 
-    const handleClose = () => {
+    const handleClose = useCallback(() => {
         resetForm();
         onClose();
-    };
+    }, [resetForm, onClose]);
+
+    const handleImportTypeChange = useCallback((type: 'template' | 'candidate' | null) => {
+        setImportType(type);
+        // Reset selections when changing import type
+        setSelectedTemplate('');
+        setSelectedCandidate('');
+    }, []);
+
+    const handleTemplateChange = useCallback((value: string) => {
+        setSelectedTemplate(value);
+    }, []);
+
+    const handleCandidateChange = useCallback((value: string) => {
+        setSelectedCandidate(value);
+    }, []);
+
+    const toggleQuestionImport = useCallback(() => {
+        setShowQuestionImport(prev => !prev);
+    }, []);
 
     if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 modal-content">
+            <div className="relative top-4 sm:top-20 mx-auto p-4 sm:p-5 border w-11/12 sm:w-96 shadow-lg rounded-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 modal-content">
                 <div className="mt-3">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add New Candidate</h3>
@@ -143,7 +190,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                             <Select
                                 value={formData.position}
                                 onChange={(val) => handleInputChange('position', val)}
-                                options={[{ value: '', label: 'Select a position' }, ...positions.map(p => ({ value: p, label: p }))]}
+                                options={positionOptions}
                                 placeholder="Select a position"
                             />
                         </div>
@@ -195,7 +242,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                             <div>
                                 <button
                                     type="button"
-                                    onClick={() => setShowQuestionImport(!showQuestionImport)}
+                                    onClick={toggleQuestionImport}
                                     className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                                 >
                                     <DocumentDuplicateIcon className="w-4 h-4 mr-2" />
@@ -210,7 +257,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                 {questionTemplates.length > 0 && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => setImportType('template')}
+                                                        onClick={() => handleImportTypeChange('template')}
                                                         className={`w-full text-left px-3 py-2 rounded-lg border ${importType === 'template'
                                                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200'
                                                             : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
@@ -223,9 +270,9 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                 {candidates.length > 0 && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => setImportType('candidate')}
+                                                        onClick={() => handleImportTypeChange('candidate')}
                                                         className={`w-full text-left px-3 py-2 rounded-lg border ${importType === 'candidate'
-                                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200'
+                                                            ? 'border-blue-500 bg-blue-900 text-blue-200'
                                                             : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
                                                             }`}
                                                     >
@@ -243,8 +290,8 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                 </label>
                                                 <Select
                                                     value={selectedTemplate}
-                                                    onChange={setSelectedTemplate}
-                                                    options={[{ value: '', label: 'Choose a template' }, ...questionTemplates.map(t => ({ value: t.id, label: t.name }))]}
+                                                    onChange={handleTemplateChange}
+                                                    options={templateOptions}
                                                     placeholder="Choose a template"
                                                 />
                                             </div>
@@ -257,8 +304,8 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                 </label>
                                                 <Select
                                                     value={selectedCandidate}
-                                                    onChange={setSelectedCandidate}
-                                                    options={[{ value: '', label: 'Choose a candidate' }, ...candidates.map(c => ({ value: c.id, label: `${c.fullName} - ${c.position}` }))]}
+                                                    onChange={handleCandidateChange}
+                                                    options={candidateOptions}
                                                     placeholder="Choose a candidate"
                                                 />
                                             </div>

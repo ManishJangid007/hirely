@@ -191,14 +191,35 @@
   @apply pointer-events-none;
 }
 
-.floating-input .form-input:focus + .floating-label,
-.floating-input .form-input:not(:placeholder-shown) + .floating-label {
+.floating-input .form-input:focus+.floating-label,
+.floating-input .form-input:not(:placeholder-shown)+.floating-label {
   @apply text-xs text-blue-600;
   @apply transform -translate-y-2;
 }
 
+/* Modal and Responsive Fixes */
+.modal-content {
+  /* Prevent layout thrashing on small screens */
+  will-change: auto;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Prevent infinite loops in modal positioning */
+@media (max-width: 640px) {
+  .modal-content {
+    position: relative;
+    top: 1rem !important;
+    margin: 0 0.5rem;
+    width: calc(100% - 1rem) !important;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+  }
+}
+
 /* Mobile Responsive Inputs */
 @media (max-width: 640px) {
+
   .form-input,
   .form-select,
   .form-textarea,
@@ -207,7 +228,7 @@
     @apply text-base;
     @apply px-3 py-2;
   }
-  
+
   .form-label {
     @apply text-base font-medium;
   }
