@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import {
     PlusIcon,
     TrashIcon,
@@ -10,7 +11,8 @@ import {
     ChevronDownIcon,
     ChevronRightIcon,
     DocumentDuplicateIcon,
-    SparklesIcon
+    SparklesIcon,
+    EllipsisVerticalIcon
 } from '@heroicons/react/24/outline';
 import { QuestionTemplate, QuestionSection } from '../types';
 import AddTemplateModal from './AddTemplateModal';
@@ -108,6 +110,8 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
         'Sorting questions into neat sections…'
     ];
     const [aiMessageIndex, setAiMessageIndex] = useState(0);
+    const [openDropdown, setOpenDropdown] = useState<{ type: 'template' | 'section'; id: string } | null>(null);
+    const [dropdownPosition, setDropdownPosition] = useState<{ x: number; y: number; width: number } | null>(null);
 
     useEffect(() => {
         if (!isAIGenerating) return;
@@ -117,6 +121,21 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
         }, 3000);
         return () => clearInterval(id);
     }, [isAIGenerating, aiMessages.length]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const target = event.target as Element;
+            // Check if click is outside any dropdown
+            if (openDropdown && !target.closest('[data-dropdown]')) {
+                setOpenDropdown(null);
+                setDropdownPosition(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [openDropdown]);
 
     // Load Gemini connection state to control AI buttons visibility
     useEffect(() => {
@@ -477,61 +496,35 @@ ${jsonExample}
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="flex space-x-2">
+                                        <div className="relative">
                                             <button
-                                                onClick={() => {
-                                                    setEditTemplateData({
-                                                        templateId: template.id,
-                                                        templateName: template.name
-                                                    });
-                                                    setShowEditTemplateModal(true);
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const newState: { type: 'template' | 'section'; id: string } | null = openDropdown?.type === 'template' && openDropdown?.id === template.id ? null : { type: 'template' as const, id: template.id };
+
+                                                    if (newState) {
+                                                        const rect = e.currentTarget.getBoundingClientRect();
+                                                        setDropdownPosition({
+                                                            x: rect.right - 224, // 224px is the dropdown width
+                                                            y: rect.bottom + 8,
+                                                            width: 224
+                                                        });
+                                                    } else {
+                                                        setDropdownPosition(null);
+                                                    }
+
+                                                    setOpenDropdown(newState);
                                                 }}
-                                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                                className={`inline-flex items-center p-2 border rounded-lg shadow-sm text-sm font-medium transition-all duration-200 ${openDropdown?.type === 'template' && openDropdown?.id === template.id
+                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                                                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
+                                                    } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800`}
+                                                title="More options"
                                             >
-                                                <PencilIcon className="w-4 h-4 mr-2" />
-                                                Edit
+                                                <EllipsisVerticalIcon className="w-5 h-5" />
                                             </button>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedTemplate(template);
-                                                    setShowAddSectionModal(true);
-                                                }}
-                                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                            >
-                                                <PlusIcon className="w-4 h-4 mr-2" />
-                                                Add Section
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setCopyTemplateData({ templateId: template.id, templateName: template.name });
-                                                    setShowCopyTemplateModal(true);
-                                                }}
-                                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                            >
-                                                <DocumentDuplicateIcon className="w-4 h-4 mr-2" />
-                                                Make a copy
-                                            </button>
-                                            {isGeminiConnected && (
-                                                <button
-                                                    onClick={() => setShowAIAddSectionModal({ open: true, templateId: template.id })}
-                                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                                >
-                                                    <SparklesIcon className="w-4 h-4 mr-2" />
-                                                    AI Section
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() => {
-                                                    setDeleteConfirmData({
-                                                        templateId: template.id,
-                                                        templateName: template.name
-                                                    });
-                                                    setShowDeleteConfirmModal(true);
-                                                }}
-                                                className="inline-flex items-center px-3 py-2 border border-red-300 dark:border-red-600 rounded-lg shadow-sm text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
-                                            </button>
+
+
                                         </div>
                                     </div>
 
@@ -574,48 +567,88 @@ ${jsonExample}
                                                                         {section.name}
                                                                     </h3>
                                                                 </div>
-                                                                <div className="flex items-center space-x-2">
+                                                                <div className="relative">
                                                                     <button
-                                                                        onClick={() => {
-                                                                            setEditSectionData({
-                                                                                templateId: template.id,
-                                                                                sectionId: section.id,
-                                                                                sectionName: section.name
-                                                                            });
-                                                                            setShowEditSectionModal(true);
-                                                                        }}
-                                                                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
-                                                                    >
-                                                                        <PencilIcon className="w-4 h-4" />
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setDeleteSectionConfirmData({
-                                                                                templateId: template.id,
-                                                                                sectionId: section.id,
-                                                                                sectionName: section.name
-                                                                            });
-                                                                            setShowDeleteSectionConfirmModal(true);
-                                                                        }}
-                                                                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
-                                                                    >
-                                                                        <TrashIcon className="w-4 h-4" />
-                                                                    </button>
-                                                                    {isGeminiConnected && (
-                                                                        <button
-                                                                            onClick={() => {
-                                                                                setShowAIAddQuestionModal({
-                                                                                    open: true,
-                                                                                    templateId: template.id,
-                                                                                    sectionId: section.id,
-                                                                                    sectionName: section.name
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const newState: { type: 'template' | 'section'; id: string } | null = openDropdown?.type === 'section' && openDropdown?.id === section.id ? null : { type: 'section' as const, id: section.id };
+
+                                                                            if (newState) {
+                                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                                setDropdownPosition({
+                                                                                    x: rect.right - 192, // 192px is the dropdown width
+                                                                                    y: rect.bottom + 8,
+                                                                                    width: 192
                                                                                 });
-                                                                            }}
-                                                                            className="text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 transition-colors duration-200"
-                                                                            title="AI Question"
-                                                                        >
-                                                                            <SparklesIcon className="w-4 h-4" />
-                                                                        </button>
+                                                                            } else {
+                                                                                setDropdownPosition(null);
+                                                                            }
+
+                                                                            setOpenDropdown(newState);
+                                                                        }}
+                                                                        className={`transition-colors duration-200 p-1 rounded ${openDropdown?.type === 'section' && openDropdown?.id === section.id
+                                                                            ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                                                                            : 'text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100'
+                                                                            }`}
+                                                                        title="More options"
+                                                                    >
+                                                                        <EllipsisVerticalIcon className="w-4 h-4" />
+                                                                    </button>
+
+                                                                    {/* Section Dropdown Menu */}
+                                                                    {openDropdown?.type === 'section' && openDropdown?.id === section.id && (
+                                                                        <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-[9999] shadow-xl" data-dropdown style={{ minWidth: '192px' }}>
+                                                                            <div className="py-2">
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        setEditSectionData({
+                                                                                            templateId: template.id,
+                                                                                            sectionId: section.id,
+                                                                                            sectionName: section.name
+                                                                                        });
+                                                                                        setShowEditSectionModal(true);
+                                                                                        setOpenDropdown(null);
+                                                                                    }}
+                                                                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                                                                >
+                                                                                    <PencilIcon className="w-4 h-4 mr-3" />
+                                                                                    Edit Section
+                                                                                </button>
+                                                                                {isGeminiConnected && (
+                                                                                    <button
+                                                                                        onClick={() => {
+                                                                                            setShowAIAddQuestionModal({
+                                                                                                open: true,
+                                                                                                templateId: template.id,
+                                                                                                sectionId: section.id,
+                                                                                                sectionName: section.name
+                                                                                            });
+                                                                                            setOpenDropdown(null);
+                                                                                        }}
+                                                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                                                                    >
+                                                                                        <SparklesIcon className="w-4 h-4 mr-3" />
+                                                                                        AI Question
+                                                                                    </button>
+                                                                                )}
+                                                                                <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        setDeleteSectionConfirmData({
+                                                                                            templateId: template.id,
+                                                                                            sectionId: section.id,
+                                                                                            sectionName: section.name
+                                                                                        });
+                                                                                        setShowDeleteSectionConfirmModal(true);
+                                                                                        setOpenDropdown(null);
+                                                                                    }}
+                                                                                    className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 flex items-center"
+                                                                                >
+                                                                                    <TrashIcon className="w-4 h-4 mr-3" />
+                                                                                    Delete Section
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -701,6 +734,188 @@ ${jsonExample}
 
             {/* Modals */}
             <>
+
+                {/* Portal-based Dropdowns */}
+                {openDropdown && dropdownPosition && (
+                    <>
+                        {/* Template Dropdown */}
+                        {openDropdown.type === 'template' && createPortal(
+                            <div
+                                className="fixed bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999]"
+                                style={{
+                                    left: dropdownPosition.x,
+                                    top: dropdownPosition.y,
+                                    width: dropdownPosition.width
+                                }}
+                                data-dropdown
+                            >
+                                <div className="py-2">
+                                    <button
+                                        onClick={() => {
+                                            const template = templates.find(t => t.id === openDropdown.id);
+                                            if (template) {
+                                                setEditTemplateData({
+                                                    templateId: template.id,
+                                                    templateName: template.name
+                                                });
+                                                setShowEditTemplateModal(true);
+                                            }
+                                            setOpenDropdown(null);
+                                            setDropdownPosition(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                    >
+                                        <PencilIcon className="w-4 h-4 mr-3" />
+                                        Edit Template
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const template = templates.find(t => t.id === openDropdown.id);
+                                            if (template) {
+                                                setSelectedTemplate(template);
+                                                setShowAddSectionModal(true);
+                                            }
+                                            setOpenDropdown(null);
+                                            setDropdownPosition(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                    >
+                                        <PlusIcon className="w-4 h-4 mr-3" />
+                                        Add Section
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const template = templates.find(t => t.id === openDropdown.id);
+                                            if (template) {
+                                                setCopyTemplateData({ templateId: template.id, templateName: template.name });
+                                                setShowCopyTemplateModal(true);
+                                            }
+                                            setOpenDropdown(null);
+                                            setDropdownPosition(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                    >
+                                        <DocumentDuplicateIcon className="w-4 h-4 mr-3" />
+                                        Make a Copy
+                                    </button>
+                                    {isGeminiConnected && (
+                                        <button
+                                            onClick={() => {
+                                                setShowAIAddSectionModal({ open: true, templateId: openDropdown.id });
+                                                setOpenDropdown(null);
+                                                setDropdownPosition(null);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                        >
+                                            <SparklesIcon className="w-4 h-4 mr-3" />
+                                            AI Section
+                                        </button>
+                                    )}
+                                    <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                    <button
+                                        onClick={() => {
+                                            const template = templates.find(t => t.id === openDropdown.id);
+                                            if (template) {
+                                                setDeleteConfirmData({
+                                                    templateId: template.id,
+                                                    templateName: template.name
+                                                });
+                                                setShowDeleteConfirmModal(true);
+                                            }
+                                            setOpenDropdown(null);
+                                            setDropdownPosition(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 flex items-center"
+                                    >
+                                        <TrashIcon className="w-4 h-4 mr-3" />
+                                        Delete Template
+                                    </button>
+                                </div>
+                            </div>,
+                            document.body
+                        )}
+
+                        {/* Section Dropdown */}
+                        {openDropdown.type === 'section' && createPortal(
+                            <div
+                                className="fixed bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-[9999]"
+                                style={{
+                                    left: dropdownPosition.x,
+                                    top: dropdownPosition.y,
+                                    width: dropdownPosition.width
+                                }}
+                                data-dropdown
+                            >
+                                <div className="py-2">
+                                    <button
+                                        onClick={() => {
+                                            const template = templates.find(t => t.sections.some(s => s.id === openDropdown.id));
+                                            const section = template?.sections.find(s => s.id === openDropdown.id);
+                                            if (template && section) {
+                                                setEditSectionData({
+                                                    templateId: template.id,
+                                                    sectionId: section.id,
+                                                    sectionName: section.name
+                                                });
+                                                setShowEditSectionModal(true);
+                                            }
+                                            setOpenDropdown(null);
+                                            setDropdownPosition(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                    >
+                                        <PencilIcon className="w-4 h-4 mr-3" />
+                                        Edit Section
+                                    </button>
+                                    {isGeminiConnected && (
+                                        <button
+                                            onClick={() => {
+                                                const template = templates.find(t => t.sections.some(s => s.id === openDropdown.id));
+                                                const section = template?.sections.find(s => s.id === openDropdown.id);
+                                                if (template && section) {
+                                                    setShowAIAddQuestionModal({
+                                                        open: true,
+                                                        templateId: template.id,
+                                                        sectionId: section.id,
+                                                        sectionName: section.name
+                                                    });
+                                                }
+                                                setOpenDropdown(null);
+                                                setDropdownPosition(null);
+                                            }}
+                                            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                        >
+                                            <SparklesIcon className="w-4 h-4 mr-3" />
+                                            AI Question
+                                        </button>
+                                    )}
+                                    <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                                    <button
+                                        onClick={() => {
+                                            const template = templates.find(t => t.sections.some(s => s.id === openDropdown.id));
+                                            const section = template?.sections.find(s => s.id === openDropdown.id);
+                                            if (template && section) {
+                                                setDeleteSectionConfirmData({
+                                                    templateId: template.id,
+                                                    sectionId: section.id,
+                                                    sectionName: section.name
+                                                });
+                                                setShowDeleteSectionConfirmModal(true);
+                                            }
+                                            setOpenDropdown(null);
+                                            setDropdownPosition(null);
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200 flex items-center"
+                                    >
+                                        <TrashIcon className="w-4 h-4 mr-3" />
+                                        Delete Section
+                                    </button>
+                                </div>
+                            </div>,
+                            document.body
+                        )}
+                    </>
+                )}
                 <AddTemplateModal
                     isOpen={showAddTemplateModal}
                     onClose={() => setShowAddTemplateModal(false)}
