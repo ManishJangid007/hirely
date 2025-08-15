@@ -75,10 +75,11 @@ const BackupManager: React.FC<BackupManagerProps> = ({ isOpen, onClose }) => {
         setMessage(null);
 
         try {
-            const [candidates, templates, positions, results] = await Promise.all([
+            const [candidates, templates, positions, jobDescriptions, results] = await Promise.all([
                 databaseService.getCandidates(),
                 databaseService.getQuestionTemplates(),
                 databaseService.getPositions(),
+                databaseService.getJobDescriptions(),
                 databaseService.getInterviewResults()
             ]);
 
@@ -86,6 +87,7 @@ const BackupManager: React.FC<BackupManagerProps> = ({ isOpen, onClose }) => {
                 candidates,
                 questionTemplates: templates,
                 positions,
+                jobDescriptions,
                 interviewResults: results,
                 exportedAt: new Date().toISOString(),
                 version: '1.0'
@@ -144,6 +146,13 @@ const BackupManager: React.FC<BackupManagerProps> = ({ isOpen, onClose }) => {
 
             // Import positions
             await databaseService.setPositions(importData.positions);
+
+            // Import job descriptions if they exist
+            if (importData.jobDescriptions) {
+                for (const jobDescription of importData.jobDescriptions) {
+                    await databaseService.addJobDescription(jobDescription);
+                }
+            }
 
             // Import interview results if they exist
             if (importData.interviewResults) {

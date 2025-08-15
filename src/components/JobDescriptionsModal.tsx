@@ -134,7 +134,17 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
                             Manage Job Descriptions
                         </h3>
                         <button
-                            onClick={onClose}
+                            onClick={() => {
+                                // Reset modal to initial state before closing
+                                setShowAddForm(false);
+                                setShowEditModal(false);
+                                setSelectedJobDescription(null);
+                                setIsEditing(false);
+                                setFormData({ title: '', description: '' });
+                                setShowDeleteConfirmModal(false);
+                                setJdToDelete(null);
+                                onClose();
+                            }}
                             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
                         >
                             <XMarkIcon className="w-6 h-6" />
@@ -264,7 +274,17 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
                     {/* Close Button */}
                     <div className="mt-6 flex justify-end">
                         <button
-                            onClick={onClose}
+                            onClick={() => {
+                                // Reset modal to initial state before closing
+                                setShowAddForm(false);
+                                setShowEditModal(false);
+                                setSelectedJobDescription(null);
+                                setIsEditing(false);
+                                setFormData({ title: '', description: '' });
+                                setShowDeleteConfirmModal(false);
+                                setJdToDelete(null);
+                                onClose();
+                            }}
                             className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                         >
                             Close
