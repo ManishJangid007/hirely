@@ -376,6 +376,7 @@ function App() {
                   <CandidateDetail
                     candidates={appState.candidates}
                     questionTemplates={appState.questionTemplates}
+                    positions={appState.positions}
                     onUpdateCandidate={updateCandidate}
                   />
                 }

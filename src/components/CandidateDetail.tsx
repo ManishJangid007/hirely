@@ -16,6 +16,7 @@ import { Candidate, Question, QuestionTemplate } from '../types';
 import { databaseService } from '../services/database';
 import AddQuestionModal from './AddQuestionModal';
 import EditQuestionModal from './EditQuestionModal';
+import EditCandidateModal from './EditCandidateModal';
 import SaveResultModal from './SaveResultModal';
 import ResultSummaryModal from './ResultSummaryModal';
 import ConfirmationModal from './ConfirmationModal';
@@ -23,12 +24,14 @@ import ConfirmationModal from './ConfirmationModal';
 interface CandidateDetailProps {
     candidates: Candidate[];
     questionTemplates: QuestionTemplate[];
+    positions: string[];
     onUpdateCandidate: (id: string, updates: Partial<Candidate>) => void;
 }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = ({
     candidates,
     questionTemplates,
+    positions,
     onUpdateCandidate
 }) => {
     const { id } = useParams<{ id: string }>();
@@ -38,6 +41,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     const [questions, setQuestions] = useState<Question[]>(candidate?.questions || []);
     const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
     const [showEditQuestionModal, setShowEditQuestionModal] = useState(false);
+    const [showEditCandidateModal, setShowEditCandidateModal] = useState(false);
     const [showSaveResultModal, setShowSaveResultModal] = useState(false);
     const [showResultSummaryModal, setShowResultSummaryModal] = useState(false);
     const [showDeleteQuestionConfirmModal, setShowDeleteQuestionConfirmModal] = useState(false);
@@ -254,11 +258,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                     Back
                                 </button>
                                 <div className="text-center sm:text-left">
-                                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{candidate.fullName}</h1>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">{candidate.position}</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {candidate.experience.years} years, {candidate.experience.months} months experience
-                                </p>
+                                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{candidate.fullName}</h1>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{candidate.position}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        {candidate.experience.years} years, {candidate.experience.months} months experience
+                                    </p>
                                     {candidate.interviewDate && (
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                             Interview Date: {(() => {
@@ -278,6 +282,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(candidate.status)}`}>
                                     {candidate.status}
                                 </span>
+                                <button
+                                    onClick={() => setShowEditCandidateModal(true)}
+                                    className="inline-flex items-center px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg shadow-sm text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 w-fit"
+                                    title="Edit candidate"
+                                >
+                                    <PencilIcon className="w-4 h-4 mr-2" />
+                                    Edit
+                                </button>
                                 {candidate.status !== 'Not Interviewed' && (
                                     <button
                                         onClick={() => setShowResultSummaryModal(true)}
@@ -578,6 +590,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 }}
                 onUpdateQuestion={updateQuestion}
                 question={questionToEdit}
+            />
+
+            <EditCandidateModal
+                isOpen={showEditCandidateModal}
+                onClose={() => setShowEditCandidateModal(false)}
+                onUpdateCandidate={onUpdateCandidate}
+                candidate={candidate}
+                positions={positions}
             />
 
             <SaveResultModal
