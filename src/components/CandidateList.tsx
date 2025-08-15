@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon, CalendarIcon } from '@heroicons/react/24/outline';
-import { Candidate, QuestionTemplate } from '../types';
+import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon, CalendarIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { Candidate, QuestionTemplate, JobDescription } from '../types';
 import AddCandidateModal from './AddCandidateModal';
 import EditCandidateModal from './EditCandidateModal';
 import ManagePositionsModal from './ManagePositionsModal';
+import JobDescriptionsModal from './JobDescriptionsModal';
 import ResultSummaryModal from './ResultSummaryModal';
 import CandidateFilters from './CandidateFilters';
 
@@ -12,27 +13,36 @@ interface CandidateListProps {
     candidates: Candidate[];
     positions: string[];
     questionTemplates: QuestionTemplate[];
+    jobDescriptions: JobDescription[];
     onAddCandidate: (candidate: Omit<Candidate, 'id' | 'createdAt'>) => void;
     onUpdateCandidate: (id: string, updates: Partial<Candidate>) => void;
     onDeleteCandidate: (id: string) => void;
     onAddPosition: (position: string) => void;
     onRemovePosition: (position: string) => void;
+    onAddJobDescription: (jobDescription: Omit<JobDescription, 'id' | 'createdAt'>) => void;
+    onUpdateJobDescription: (id: string, updates: Partial<JobDescription>) => void;
+    onDeleteJobDescription: (id: string) => void;
 }
 
 const CandidateList: React.FC<CandidateListProps> = ({
     candidates,
     positions,
     questionTemplates,
+    jobDescriptions,
     onAddCandidate,
     onUpdateCandidate,
     onDeleteCandidate,
     onAddPosition,
-    onRemovePosition
+    onRemovePosition,
+    onAddJobDescription,
+    onUpdateJobDescription,
+    onDeleteJobDescription
 }) => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showPositionsModal, setShowPositionsModal] = useState(false);
     const [showResultSummaryModal, setShowResultSummaryModal] = useState(false);
+    const [showJobDescriptionsModal, setShowJobDescriptionsModal] = useState(false);
     const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
     const [candidateToEdit, setCandidateToEdit] = useState<Candidate | null>(null);
     const [candidateForSummary, setCandidateForSummary] = useState<Candidate | null>(null);
@@ -117,6 +127,14 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                     <BriefcaseIcon className="w-4 h-4 mr-2" />
                                     <span className="hidden sm:inline">Manage Positions</span>
                                     <span className="sm:hidden">Positions</span>
+                                </button>
+                                <button
+                                    onClick={() => setShowJobDescriptionsModal(true)}
+                                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                >
+                                    <DocumentTextIcon className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">Job Descriptions</span>
+                                    <span className="sm:hidden">JDs</span>
                                 </button>
                                 <Link
                                     to="/templates"
@@ -273,6 +291,15 @@ const CandidateList: React.FC<CandidateListProps> = ({
                 positions={positions}
                 onAddPosition={onAddPosition}
                 onRemovePosition={onRemovePosition}
+            />
+
+            <JobDescriptionsModal
+                isOpen={showJobDescriptionsModal}
+                onClose={() => setShowJobDescriptionsModal(false)}
+                jobDescriptions={jobDescriptions}
+                onAddJobDescription={onAddJobDescription}
+                onUpdateJobDescription={onUpdateJobDescription}
+                onDeleteJobDescription={onDeleteJobDescription}
             />
 
             {/* Result Summary Modal */}

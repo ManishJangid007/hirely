@@ -2,6 +2,7 @@ export interface DatabaseSchema {
   candidates: Candidate[];
   questionTemplates: QuestionTemplate[];
   positions: string[];
+  jobDescriptions: JobDescription[];
   interviewResults: InterviewResult[];
 }
 
@@ -49,6 +50,13 @@ export interface QuestionTemplate {
   sections: QuestionSection[];
 }
 
+export interface JobDescription {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+}
+
 export interface AppSettings {
   apiKey?: string;
   geminiApiKey?: string;
@@ -59,6 +67,7 @@ export interface BackupData {
   candidates: Candidate[];
   questionTemplates: QuestionTemplate[];
   positions: string[];
+  jobDescriptions: JobDescription[];
   interviewResults: InterviewResult[];
   settings?: AppSettings;
   lastBackup: string;
@@ -66,7 +75,7 @@ export interface BackupData {
 
 class DatabaseService {
   private dbName = 'InterviewAppDB';
-  private version = 4; // Increment version since we added settings store for AI config
+  private version = 5; // Increment version since we added jobDescriptions store
   private db: IDBDatabase | null = null;
   private backupKey = 'interview_app_backup';
 
@@ -114,6 +123,10 @@ class DatabaseService {
           db.createObjectStore('positions', { keyPath: 'id' });
         }
 
+        if (!db.objectStoreNames.contains('jobDescriptions')) {
+          db.createObjectStore('jobDescriptions', { keyPath: 'id' });
+        }
+
         if (!db.objectStoreNames.contains('interviewResults')) {
           const resultStore = db.createObjectStore('interviewResults', { keyPath: 'id' });
           resultStore.createIndex('candidateId', 'candidateId', { unique: false });
@@ -146,10 +159,11 @@ class DatabaseService {
   // Backup and Recovery Methods
   async createBackup(): Promise<void> {
     try {
-      const [candidates, templates, positions, results, settings] = await Promise.all([
+      const [candidates, templates, positions, jobDescriptions, results, settings] = await Promise.all([
         this.getCandidates(),
         this.getQuestionTemplates(),
         this.getPositions(),
+        this.getJobDescriptions(),
         this.getInterviewResults(),
         this.getSettings()
       ]);
@@ -158,6 +172,7 @@ class DatabaseService {
         candidates,
         questionTemplates: templates,
         positions,
+        jobDescriptions,
         interviewResults: results,
         settings,
         lastBackup: new Date().toISOString()
@@ -194,6 +209,10 @@ class DatabaseService {
 
       await this.setPositions(backup.positions);
 
+      for (const jobDescription of backup.jobDescriptions || []) {
+        await this.addJobDescription(jobDescription);
+      }
+
       for (const result of backup.interviewResults) {
         await this.addInterviewResult(result);
       }
@@ -211,7 +230,7 @@ class DatabaseService {
   }
 
   async clearAllData(): Promise<void> {
-    const stores = ['candidates', 'questionTemplates', 'positions', 'interviewResults', 'settings'];
+    const stores = ['candidates', 'questionTemplates', 'positions', 'jobDescriptions', 'interviewResults', 'settings'];
 
     for (const storeName of stores) {
       const store = this.getStore(storeName, 'readwrite');
@@ -447,6 +466,68 @@ class DatabaseService {
           await this.autoBackup();
           resolve();
         }).catch(reject);
+      };
+    });
+  }
+
+  // Job Descriptions operations
+  async getJobDescriptions(): Promise<JobDescription[]> {
+    return new Promise((resolve, reject) => {
+      const store = this.getStore('jobDescriptions');
+      const request = store.getAll();
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  }
+
+  async addJobDescription(jobDescription: JobDescription): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const store = this.getStore('jobDescriptions', 'readwrite');
+      const request = store.add(jobDescription);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
+      };
+    });
+  }
+
+  async updateJobDescription(id: string, updates: Partial<JobDescription>): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const store = this.getStore('jobDescriptions', 'readwrite');
+      const getRequest = store.get(id);
+
+      getRequest.onerror = () => reject(getRequest.error);
+      getRequest.onsuccess = () => {
+        const existing = getRequest.result;
+        if (!existing) {
+          reject(new Error('Job Description not found'));
+          return;
+        }
+
+        const updated = { ...existing, ...updates };
+        const putRequest = store.put(updated);
+
+        putRequest.onerror = () => reject(putRequest.error);
+        putRequest.onsuccess = async () => {
+          await this.autoBackup();
+          resolve();
+        };
+      };
+    });
+  }
+
+  async deleteJobDescription(id: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const store = this.getStore('jobDescriptions', 'readwrite');
+      const request = store.delete(id);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = async () => {
+        await this.autoBackup();
+        resolve();
       };
     });
   }

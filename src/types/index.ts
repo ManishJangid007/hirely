@@ -42,8 +42,16 @@ export interface QuestionTemplate {
     sections: QuestionSection[];
 }
 
+export interface JobDescription {
+    id: string;
+    title: string;
+    description: string;
+    createdAt: string;
+}
+
 export interface AppState {
     candidates: Candidate[];
     questionTemplates: QuestionTemplate[];
     positions: string[];
+    jobDescriptions: JobDescription[];
 } 

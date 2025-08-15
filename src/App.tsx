@@ -6,7 +6,7 @@ import QuestionTemplates from './components/QuestionTemplates';
 import BackupManager from './components/BackupManager';
 import ConfirmationModal from './components/ConfirmationModal';
 import Header from './components/Header';
-import { Candidate, QuestionTemplate, AppState } from './types';
+import { Candidate, QuestionTemplate, AppState, JobDescription } from './types';
 import { databaseService } from './services/database';
 import { ThemeProvider } from './contexts/ThemeContext';
 // Import seeder to make it available globally
@@ -16,7 +16,8 @@ function App() {
   const [appState, setAppState] = useState<AppState>({
     candidates: [],
     questionTemplates: [],
-    positions: ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist']
+    positions: ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist'],
+    jobDescriptions: []
   });
   const [isLoading, setIsLoading] = useState(true);
   const [showBackupManager, setShowBackupManager] = useState(false);
@@ -67,10 +68,11 @@ function App() {
 
         await databaseService.migrateFromLocalStorage();
 
-        const [candidatesAfterRestore, templates, positions] = await Promise.all([
+        const [candidatesAfterRestore, templates, positions, jobDescriptions] = await Promise.all([
           databaseService.getCandidates(),
           databaseService.getQuestionTemplates(),
-          databaseService.getPositions()
+          databaseService.getPositions(),
+          databaseService.getJobDescriptions()
         ]);
 
 
@@ -83,7 +85,8 @@ function App() {
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           ),
           questionTemplates: templates,
-          positions: positions.length > 0 ? positions : ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist']
+          positions: positions.length > 0 ? positions : ['Backend Developer', 'Frontend Developer', 'Full Stack Developer', 'DevOps Engineer', 'Data Scientist'],
+          jobDescriptions: jobDescriptions || []
         });
       } catch (error) {
 
@@ -187,6 +190,50 @@ function App() {
       setAppState(prev => ({
         ...prev,
         positions: newPositions
+      }));
+    } catch (error) {
+
+    }
+  };
+
+  const addJobDescription = async (jobDescription: Omit<JobDescription, 'id' | 'createdAt'>) => {
+    const newJobDescription: JobDescription = {
+      ...jobDescription,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      await databaseService.addJobDescription(newJobDescription);
+      setAppState(prev => ({
+        ...prev,
+        jobDescriptions: [...prev.jobDescriptions, newJobDescription]
+      }));
+    } catch (error) {
+
+    }
+  };
+
+  const updateJobDescription = async (id: string, updates: Partial<JobDescription>) => {
+    try {
+      await databaseService.updateJobDescription(id, updates);
+      setAppState(prev => ({
+        ...prev,
+        jobDescriptions: prev.jobDescriptions.map(jd =>
+          jd.id === id ? { ...jd, ...updates } : jd
+        )
+      }));
+    } catch (error) {
+
+    }
+  };
+
+  const deleteJobDescription = async (id: string) => {
+    try {
+      await databaseService.deleteJobDescription(id);
+      setAppState(prev => ({
+        ...prev,
+        jobDescriptions: prev.jobDescriptions.filter(jd => jd.id !== id)
       }));
     } catch (error) {
 
@@ -334,6 +381,8 @@ function App() {
     }
   };
 
+
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
@@ -362,11 +411,15 @@ function App() {
                     candidates={appState.candidates}
                     positions={appState.positions}
                     questionTemplates={appState.questionTemplates}
+                    jobDescriptions={appState.jobDescriptions}
                     onAddCandidate={addCandidate}
                     onUpdateCandidate={updateCandidate}
                     onDeleteCandidate={deleteCandidate}
                     onAddPosition={addPosition}
                     onRemovePosition={removePosition}
+                    onAddJobDescription={addJobDescription}
+                    onUpdateJobDescription={updateJobDescription}
+                    onDeleteJobDescription={deleteJobDescription}
                   />
                 }
               />
