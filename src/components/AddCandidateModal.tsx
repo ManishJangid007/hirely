@@ -256,7 +256,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
 
         resetForm();
         onClose();
-    }, [formData.fullName, formData.position, formData.experienceYears, formData.experienceMonths, formData.interviewDate, importType, selectedTemplate, selectedCandidate, hasResume, parsedResume, onAddCandidate, onClose, resetForm]);
+    }, [formData.fullName, formData.position, formData.experienceYears, formData.experienceMonths, formData.interviewDate, importType, selectedTemplate, selectedCandidate, hasResume, parsedResume, onAddCandidate, onClose, resetForm, questionTemplates, candidates]);
 
     const handleInputChange = useCallback((field: string, value: string | number) => {
         setFormData(prev => ({
@@ -281,7 +281,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
         // Prevent rapid successive calls using ref
         if (value === selectedTemplate) return;
         setSelectedTemplate(value);
-    }, []);
+    }, [selectedTemplate]);
 
     const handleCandidateChange = useCallback((value: string) => {
         setSelectedCandidate(value);

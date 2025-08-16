@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import {
@@ -469,10 +469,11 @@ ${jsonExample}
     };
 
     const generateUniqueTemplateName = (baseName: string): string => {
+        const existingNames = new Set(templates.map(t => t.name));
         let name = baseName;
         let counter = 1;
 
-        while (templates.some(t => t.name === name)) {
+        while (existingNames.has(name)) {
             name = `${baseName} (${counter})`;
             counter++;
         }
@@ -482,6 +483,21 @@ ${jsonExample}
 
     const generateId = (): string => {
         return Math.random().toString(36).substr(2, 9);
+    };
+
+    const handleToggleAll = () => {
+        const allTemplateIds = templates.map(t => t.id);
+        const allSectionIds = templates.flatMap(t => t.sections.map(s => s.id));
+        const allCollapsed = templates.length > 0 && templates.every(t => collapsedTemplates.has(t.id));
+        if (allCollapsed) {
+            // Expand all
+            setCollapsedTemplates(new Set());
+            setCollapsedSections(new Set());
+        } else {
+            // Collapse all
+            setCollapsedTemplates(new Set(allTemplateIds));
+            setCollapsedSections(new Set(allSectionIds));
+        }
     };
 
     const handleEditTemplate = (templateId: string, templateName: string) => {
@@ -545,20 +561,7 @@ ${jsonExample}
                         <div className="flex items-center space-x-2">
                             {/* Toggle all templates (icon only) */}
                             <button
-                                onClick={() => {
-                                    const allTemplateIds = templates.map(t => t.id);
-                                    const allSectionIds = templates.flatMap(t => t.sections.map(s => s.id));
-                                    const allCollapsed = templates.length > 0 && templates.every(t => collapsedTemplates.has(t.id));
-                                    if (allCollapsed) {
-                                        // Expand all
-                                        setCollapsedTemplates(new Set());
-                                        setCollapsedSections(new Set());
-                                    } else {
-                                        // Collapse all
-                                        setCollapsedTemplates(new Set(allTemplateIds));
-                                        setCollapsedSections(new Set(allSectionIds));
-                                    }
-                                }}
+                                onClick={handleToggleAll}
                                 className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
                                 title="Toggle all"
                                 aria-label="Toggle all"
