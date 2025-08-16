@@ -186,7 +186,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={goToPreviousMonth}
-              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <ChevronLeftIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
             </button>
@@ -195,7 +195,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
             </h2>
             <button
               onClick={goToNextMonth}
-              className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <ChevronRightIcon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
             </button>
@@ -229,7 +229,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
                   key={index}
                   onClick={(e) => handleDateSelect(date, e)}
                   className={`
-                    h-8 w-8 rounded-lg text-sm font-medium transition-colors
+                    h-8 w-8 rounded-full text-sm font-medium transition-colors
                     ${isToday(date) ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200' : ''}
                     ${isSelected(date) ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}
                     ${!isSelected(date) && !isToday(date) && isCurrentMonth(date) ? 'text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700' : ''}

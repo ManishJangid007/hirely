@@ -134,7 +134,7 @@ const CandidateFilters: React.FC<CandidateFiltersProps> = ({
                     <div className="flex gap-2">
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}
-                            className={`inline-flex items-center px-4 py-2 border rounded-lg shadow-sm text-sm font-medium transition-all duration-200 ${hasActiveFilters
+                            className={`inline-flex items-center px-4 py-2 border rounded-full shadow-sm text-sm font-medium transition-all duration-200 ${hasActiveFilters
                                 ? 'border-blue-500 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900'
                                 : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
                                 }`}
@@ -151,7 +151,7 @@ const CandidateFilters: React.FC<CandidateFiltersProps> = ({
                         {hasActiveFilters && (
                             <button
                                 onClick={clearFilters}
-                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                             >
                                 <XMarkIcon className="w-4 h-4 mr-1" />
                                 Clear

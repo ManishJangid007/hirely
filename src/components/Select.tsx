@@ -27,7 +27,7 @@ const Select: React.FC<SelectProps> = memo(({ value, onChange, options, placehol
         <Listbox value={value} onChange={onChange} disabled={disabled}>
             <div className={`relative ${className}`}>
                 <Listbox.Button
-                    className="relative w-full cursor-default rounded-lg bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm text-gray-900 dark:text-white"
+                    className="relative w-full cursor-default rounded-full bg-white dark:bg-gray-700 py-2 pl-3 pr-10 text-left border border-gray-300 dark:border-gray-600 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 sm:text-sm text-gray-900 dark:text-white"
                 >
                     <span className="block truncate">
                         {selectedOption ? selectedOption.label : <span className="text-gray-400">{placeholder}</span>}
