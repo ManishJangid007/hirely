@@ -86,13 +86,13 @@ const CandidateFilters: React.FC<CandidateFiltersProps> = ({
 
     const hasActiveFilters = filters.search || filters.position || filters.status || filters.interviewDate;
 
-  // Status counts (based on all candidates passed in)
-  const statusCounts = {
-    notInterviewed: candidates.filter(c => c.status === 'Not Interviewed').length,
-    passed: candidates.filter(c => c.status === 'Passed').length,
-    rejected: candidates.filter(c => c.status === 'Rejected').length,
-    maybe: candidates.filter(c => c.status === 'Maybe').length
-  };
+    // Status counts (based on all candidates passed in)
+    const statusCounts = {
+        notInterviewed: candidates.filter(c => c.status === 'Not Interviewed').length,
+        passed: candidates.filter(c => c.status === 'Passed').length,
+        rejected: candidates.filter(c => c.status === 'Rejected').length,
+        maybe: candidates.filter(c => c.status === 'Maybe').length
+    };
 
     return (
         <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
@@ -127,7 +127,7 @@ const CandidateFilters: React.FC<CandidateFiltersProps> = ({
                             placeholder="Search candidates by name..."
                             value={filters.search}
                             onChange={(e) => handleFilterChange('search', e.target.value)}
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                         />
                     </div>
 

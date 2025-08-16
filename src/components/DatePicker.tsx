@@ -166,7 +166,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, placeholder = 
           placeholder={placeholder}
           readOnly
           onClick={handleInputClick}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 cursor-pointer"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 cursor-pointer"
         />
         <CalendarIcon className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
       </div>
