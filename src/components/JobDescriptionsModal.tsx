@@ -378,7 +378,7 @@ The description should be well-structured and suitable for job postings.`;
     return (
         <>
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                <div className="relative top-20 mx-auto p-5 pb-12 border w-11/12 md:w-3/4 lg:w-1/2 h-[80vh] shadow-lg rounded-md bg-white dark:bg-gray-800">
+                <div className="relative top-20 mx-auto p-5 pb-12 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                             Manage Job Descriptions
@@ -601,89 +601,91 @@ The description should be well-structured and suitable for job postings.`;
                         </div>
                     )}
 
-                    {/* Job Descriptions List */}
-                    <div className="space-y-4 flex-1 pb-8">
-                        {filteredJobDescriptions.length === 0 ? (
-                            searchTerm ? (
-                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                    <DocumentTextIcon className="mx-auto h-12 w-12 mb-4" />
-                                    <p>No job descriptions found for "{searchTerm}"</p>
-                                    <p className="text-sm">Try adjusting your search terms.</p>
-                                </div>
+                    {/* Job Descriptions List - Only show when add form is not expanded */}
+                    {!showAddForm && !showAIForm && (
+                        <div className="space-y-4 flex-1 pb-8">
+                            {filteredJobDescriptions.length === 0 ? (
+                                searchTerm ? (
+                                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                        <DocumentTextIcon className="mx-auto h-12 w-12 mb-4" />
+                                        <p>No job descriptions found for "{searchTerm}"</p>
+                                        <p className="text-sm">Try adjusting your search terms.</p>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                        <DocumentTextIcon className="mx-auto h-12 w-12 mb-4" />
+                                        <p>No job descriptions yet.</p>
+                                        <p className="text-sm">Add your first job description to get started.</p>
+                                    </div>
+                                )
                             ) : (
-                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                    <DocumentTextIcon className="mx-auto h-12 w-12 mb-4" />
-                                    <p>No job descriptions yet.</p>
-                                    <p className="text-sm">Add your first job description to get started.</p>
-                                </div>
-                            )
-                        ) : (
-                            filteredJobDescriptions.map((jd) => (
-                                <div
-                                    key={jd.id}
-                                    className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-700"
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex-1">
-                                            <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                                                {jd.title}
-                                            </h4>
-                                            <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                Created: {new Date(jd.createdAt).toLocaleDateString()}
+                                filteredJobDescriptions.map((jd) => (
+                                    <div
+                                        key={jd.id}
+                                        className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-700"
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex-1">
+                                                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                                                    {jd.title}
+                                                </h4>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                    Created: {new Date(jd.createdAt).toLocaleDateString()}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="flex space-x-2">
-                                            <button
-                                                onClick={() => handleEdit(jd)}
-                                                className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                                title="View/Edit"
-                                            >
-                                                <EyeIcon className="w-4 h-4" />
-                                            </button>
-
-                                            {/* Three Dot Menu */}
-                                            <div className="relative" data-dropdown>
+                                            <div className="flex space-x-2">
                                                 <button
-                                                    onClick={() => toggleDropdown(jd.id)}
+                                                    onClick={() => handleEdit(jd)}
                                                     className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                                    title="More options"
+                                                    title="View/Edit"
                                                 >
-                                                    <EllipsisVerticalIcon className="w-4 h-4" />
+                                                    <EyeIcon className="w-4 h-4" />
                                                 </button>
 
-                                                {/* Dropdown Menu */}
-                                                {openDropdown === jd.id && (
-                                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10">
-                                                        <div className="py-1">
-                                                            <button
-                                                                onClick={() => {
-                                                                    exportSingleJobDescription(jd);
-                                                                }}
-                                                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
-                                                            >
-                                                                <ArrowDownTrayIcon className="w-4 h-4" />
-                                                                <span>Export</span>
-                                                            </button>
-                                                            <button
-                                                                onClick={() => {
-                                                                    handleDelete(jd);
-                                                                    setOpenDropdown(null);
-                                                                }}
-                                                                className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center space-x-2"
-                                                            >
-                                                                <TrashIcon className="w-4 h-4" />
-                                                                <span>Delete</span>
-                                                            </button>
+                                                {/* Three Dot Menu */}
+                                                <div className="relative" data-dropdown>
+                                                    <button
+                                                        onClick={() => toggleDropdown(jd.id)}
+                                                        className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                                        title="More options"
+                                                    >
+                                                        <EllipsisVerticalIcon className="w-4 h-4" />
+                                                    </button>
+
+                                                    {/* Dropdown Menu */}
+                                                    {openDropdown === jd.id && (
+                                                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-10">
+                                                            <div className="py-1">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        exportSingleJobDescription(jd);
+                                                                    }}
+                                                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
+                                                                >
+                                                                    <ArrowDownTrayIcon className="w-4 h-4" />
+                                                                    <span>Export</span>
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => {
+                                                                        handleDelete(jd);
+                                                                        setOpenDropdown(null);
+                                                                    }}
+                                                                    className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center space-x-2"
+                                                                >
+                                                                    <TrashIcon className="w-4 h-4" />
+                                                                    <span>Delete</span>
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                )}
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
 
 
                 </div>
