@@ -516,12 +516,18 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                 <label htmlFor="candidate" className="form-label">
                                                     Select Candidate
                                                 </label>
-                                                <Select
+                                                <select
+                                                    id="candidate"
                                                     value={selectedCandidate}
-                                                    onChange={handleCandidateChange}
-                                                    options={candidateOptions}
-                                                    placeholder="Choose a candidate"
-                                                />
+                                                    onChange={(e) => handleCandidateChange(e.target.value)}
+                                                    className="form-input"
+                                                >
+                                                    {candidateOptions.map(option => (
+                                                        <option key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
                                             </div>
                                         )}
                                     </div>
