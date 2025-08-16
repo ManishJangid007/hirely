@@ -64,13 +64,30 @@ export async function processResumeToJson(file: File): Promise<string> {
 
     const prompt = `This is a resume. Convert this resume into JSON format. 
 
-IMPORTANT INSTRUCTIONS:
-- Do not add any unwanted text at the start or end
-- The output must contain ONLY valid JSON response
+CRITICAL REQUIREMENTS:
+- Output ONLY valid JSON - no text before or after
+- Do not include any explanatory text, introductions, or conclusions
+- Do not add phrases like "Here is the JSON:" or "The resume in JSON format:"
+- Start directly with { and end with }
+- Ensure all property names are in double quotes
+- Ensure all string values are in double quotes
+- Use proper JSON syntax with no trailing commas
 - Extract key information like name, contact details, experience, education, skills, etc.
 - Structure the JSON in a logical way that makes sense for a resume
-- Do not include any explanatory text, just the JSON object
-- Ensure the JSON is properly formatted and valid`;
+
+Example format:
+{
+  "personal_info": {
+    "name": "John Doe",
+    "email": "john@example.com"
+  },
+  "experience": [
+    {
+      "title": "Software Engineer",
+      "company": "Tech Corp"
+    }
+  ]
+}`;
 
     const body = {
         contents: [{
@@ -122,13 +139,88 @@ IMPORTANT INSTRUCTIONS:
         // Clean the response to extract just the JSON
         const cleanedText = text.trim();
 
-        // Try to find JSON in the response (in case AI added extra text)
-        const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            return jsonMatch[0];
+        // Try multiple strategies to extract valid JSON
+        let extractedJson = null;
+
+        // Strategy 1: Look for JSON object at the start
+        const startJsonMatch = cleanedText.match(/^\{[\s\S]*\}/);
+        if (startJsonMatch) {
+            try {
+                JSON.parse(startJsonMatch[0]);
+                extractedJson = startJsonMatch[0];
+            } catch (e) {
+                // Continue to next strategy
+            }
         }
 
-        return cleanedText;
+        // Strategy 2: Look for JSON object anywhere in the text
+        if (!extractedJson) {
+            const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                try {
+                    JSON.parse(jsonMatch[0]);
+                    extractedJson = jsonMatch[0];
+                } catch (e) {
+                    // Continue to next strategy
+                }
+            }
+        }
+
+        // Strategy 3: Try to clean common AI artifacts and parse
+        if (!extractedJson) {
+            // Remove common AI prefixes/suffixes
+            let cleaned = cleanedText;
+
+            // Remove common prefixes
+            cleaned = cleaned.replace(/^(Here is|Here's|This is|The resume|Resume|JSON|Here is the JSON|Here's the JSON|The JSON|Generated JSON|AI generated|I've generated|Generated):?\s*/i, '');
+
+            // Remove common suffixes
+            cleaned = cleaned.replace(/\s*(This JSON|The JSON|JSON format|Format|End|\.|$)/i, '');
+
+            // Try to find JSON in cleaned text
+            const cleanedJsonMatch = cleaned.match(/\{[\s\S]*\}/);
+            if (cleanedJsonMatch) {
+                try {
+                    JSON.parse(cleanedJsonMatch[0]);
+                    extractedJson = cleanedJsonMatch[0];
+                } catch (e) {
+                    // Continue to next strategy
+                }
+            }
+        }
+
+        // Strategy 4: Try to fix common JSON formatting issues
+        if (!extractedJson) {
+            // Try to fix common issues like missing quotes, extra commas, etc.
+            let fixed = cleanedText;
+
+            // Remove any text before the first {
+            const firstBraceIndex = fixed.indexOf('{');
+            if (firstBraceIndex > 0) {
+                fixed = fixed.substring(firstBraceIndex);
+            }
+
+            // Remove any text after the last }
+            const lastBraceIndex = fixed.lastIndexOf('}');
+            if (lastBraceIndex > 0 && lastBraceIndex < fixed.length - 1) {
+                fixed = fixed.substring(0, lastBraceIndex + 1);
+            }
+
+            try {
+                JSON.parse(fixed);
+                extractedJson = fixed;
+            } catch (e) {
+                // Last resort: try to return the cleaned text
+                console.warn('Could not extract valid JSON, returning cleaned text:', e);
+                extractedJson = cleanedText;
+            }
+        }
+
+        if (extractedJson) {
+            return extractedJson;
+        }
+
+        throw new Error('Could not extract valid JSON from AI response');
     } finally {
         clearTimeout(timeout);
     }

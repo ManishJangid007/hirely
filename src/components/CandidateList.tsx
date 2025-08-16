@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon, CalendarIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon, CalendarIcon, DocumentTextIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import { Candidate, QuestionTemplate, JobDescription } from '../types';
 import AddCandidateModal from './AddCandidateModal';
 import EditCandidateModal from './EditCandidateModal';
@@ -43,9 +43,11 @@ const CandidateList: React.FC<CandidateListProps> = ({
     const [showPositionsModal, setShowPositionsModal] = useState(false);
     const [showResultSummaryModal, setShowResultSummaryModal] = useState(false);
     const [showJobDescriptionsModal, setShowJobDescriptionsModal] = useState(false);
+    const [showResumeModal, setShowResumeModal] = useState(false);
     const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
     const [candidateToEdit, setCandidateToEdit] = useState<Candidate | null>(null);
     const [candidateForSummary, setCandidateForSummary] = useState<Candidate | null>(null);
+    const [candidateForResume, setCandidateForResume] = useState<Candidate | null>(null);
     const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>(candidates);
 
     useEffect(() => {
@@ -95,6 +97,11 @@ const CandidateList: React.FC<CandidateListProps> = ({
             onDeleteCandidate(candidateToDelete.id);
             setCandidateToDelete(null);
         }
+    };
+
+    const handleViewResume = (candidate: Candidate) => {
+        setCandidateForResume(candidate);
+        setShowResumeModal(true);
     };
 
     const hasInterviewResult = (candidate: Candidate) => {
@@ -224,6 +231,15 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                             >
                                                 <PencilIcon className="w-5 h-5" />
                                             </button>
+                                            {candidate.resume && (
+                                                <button
+                                                    onClick={() => handleViewResume(candidate)}
+                                                    className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
+                                                    title={`View ${candidate.fullName}'s Resume`}
+                                                >
+                                                    <DocumentIcon className="w-5 h-5" />
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={() => setCandidateToDelete(candidate)}
                                                 className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
@@ -339,6 +355,41 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                 >
                                     Delete
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Resume Modal */}
+            {showResumeModal && candidateForResume && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-auto max-h-[90vh] overflow-hidden">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                Resume - {candidateForResume.fullName}
+                            </h3>
+                            <button
+                                onClick={() => {
+                                    setShowResumeModal(false);
+                                    setCandidateForResume(null);
+                                }}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                            >
+                                <XCircleIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 overflow-auto max-h-[calc(90vh-120px)]">
+                            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Parsed Resume Object:</h4>
+                                <pre className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words overflow-x-auto">
+                                    {JSON.stringify(candidateForResume.resume, null, 2)}
+                                </pre>
+                            </div>
+
+                            <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                                <p>This is the AI-generated JSON resume for {candidateForResume.fullName}.</p>
                             </div>
                         </div>
                     </div>
