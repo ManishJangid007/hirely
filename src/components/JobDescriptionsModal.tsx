@@ -44,6 +44,26 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
     const [showImportModal, setShowImportModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [isGeminiConnected, setIsGeminiConnected] = useState<boolean>(false);
+
+    // Check AI connection when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            let mounted = true;
+            (async () => {
+                try {
+                    if (!databaseService.isInitialized()) {
+                        try { await databaseService.init(); } catch { }
+                    }
+                    const connected = await databaseService.getGeminiConnected();
+                    if (mounted) setIsGeminiConnected(!!connected);
+                } catch {
+                    if (mounted) setIsGeminiConnected(false);
+                }
+            })();
+            return () => { mounted = false; };
+        }
+    }, [isOpen]);
 
     // Sync form data with selectedJobDescription when it changes
     useEffect(() => {
@@ -552,16 +572,18 @@ The description should be well-structured and suitable for job postings.`;
                                     <PlusIcon className="w-5 h-5" />
                                 </button>
 
-                                <button
-                                    onClick={() => {
-                                        setShowAIForm(true);
-                                        setShowAddForm(false);
-                                    }}
-                                    className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                    title="AI Assistant"
-                                >
-                                    <SparklesIcon className="w-5 h-5" />
-                                </button>
+                                {isGeminiConnected && (
+                                    <button
+                                        onClick={() => {
+                                            setShowAIForm(true);
+                                            setShowAddForm(false);
+                                        }}
+                                        className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                        title="AI Assistant"
+                                    >
+                                        <SparklesIcon className="w-5 h-5" />
+                                    </button>
+                                )}
                             </div>
 
                             <div className="flex-1 max-w-xs ml-4 relative">
