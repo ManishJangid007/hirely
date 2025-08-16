@@ -1332,6 +1332,11 @@ Requirements:
                         isOpen={showAIAddQuestionModal.open}
                         onClose={() => setShowAIAddQuestionModal(null)}
                         sectionName={showAIAddQuestionModal.sectionName}
+                        sectionQuestions={(() => {
+                            const targetTemplate = templates.find(t => t.id === showAIAddQuestionModal?.templateId);
+                            const targetSection = targetTemplate?.sections.find(s => s.id === showAIAddQuestionModal?.sectionId);
+                            return targetSection?.questions || [];
+                        })()}
                         onStart={async ({ prompt, deleteExisting }) => {
                             const targetTemplate = templates.find(t => t.id === showAIAddQuestionModal?.templateId);
                             const targetSection = targetTemplate?.sections.find(s => s.id === showAIAddQuestionModal?.sectionId);

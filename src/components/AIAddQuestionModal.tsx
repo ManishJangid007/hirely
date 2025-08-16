@@ -1,23 +1,91 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { generateContent, extractFirstText } from '../services/ai';
+import { databaseService } from '../services/database';
 
 interface AIAddQuestionModalProps {
     isOpen: boolean;
     onClose: () => void;
     onStart: (params: { prompt: string; deleteExisting: boolean }) => void;
     sectionName?: string;
+    sectionQuestions?: Array<{ text: string; answer?: string }>;
 }
 
-const AIAddQuestionModal: React.FC<AIAddQuestionModalProps> = ({ isOpen, onClose, onStart, sectionName }) => {
+const AIAddQuestionModal: React.FC<AIAddQuestionModalProps> = ({ isOpen, onClose, onStart, sectionName, sectionQuestions = [] }) => {
     const [prompt, setPrompt] = useState('');
     const [deleteExisting, setDeleteExisting] = useState(false);
+    const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
+
+    const generateReversePrompt = useCallback(async () => {
+        if (sectionQuestions.length === 0) return;
+
+        setIsGeneratingPrompt(true);
+        try {
+            const questionsText = sectionQuestions.map((q, index) =>
+                `${index + 1}. Question: ${q.text}${q.answer ? `\n   Answer: ${q.answer}` : ''}`
+            ).join('\n\n');
+
+            const aiPrompt = `I generated some questions for ${sectionName || 'this section'}. Can you create a prompt that will generate these same or very similar questions, so I can offer that prompt to my users for adjustment so they may generate more tuned questions?
+
+${questionsText}
+
+Please provide only the prompt text without any additional explanation or formatting at the start or end.`;
+
+            const res = await generateContent({ prompt: aiPrompt, timeoutMs: 25000 });
+            const text = extractFirstText(res) || '';
+
+            if (text.trim()) {
+                setPrompt(text.trim());
+            } else {
+                throw new Error('AI response was empty');
+            }
+        } catch (error: any) {
+            console.error('Error generating reverse prompt:', error);
+            // Fallback to a basic template if AI fails
+            const questionsText = sectionQuestions.map((q, index) =>
+                `${index + 1}. Question: ${q.text}${q.answer ? `\n   Answer: ${q.answer}` : ''}`
+            ).join('\n\n');
+
+            const fallbackPrompt = `Generate ${sectionQuestions.length} questions similar to these for ${sectionName || 'this section'}:
+
+${questionsText}
+
+Focus on the same topic, difficulty level, and style.`;
+
+            setPrompt(fallbackPrompt);
+        } finally {
+            setIsGeneratingPrompt(false);
+        }
+    }, [sectionQuestions, sectionName]);
+
+    const checkAIConnectionAndGeneratePrompt = useCallback(async () => {
+        try {
+            // Check AI connection first
+            if (!databaseService.isInitialized()) {
+                try { await databaseService.init(); } catch { }
+            }
+            const connected = await databaseService.getGeminiConnected();
+
+            // Only generate prompt if AI is connected
+            if (connected) {
+                await generateReversePrompt();
+            }
+        } catch {
+            // AI connection failed, don't generate prompt
+        }
+    }, [generateReversePrompt]);
 
     useEffect(() => {
         if (isOpen) {
             setPrompt('');
             setDeleteExisting(false);
+
+            // Check AI connection and generate reverse prompt if available
+            if (sectionQuestions.length > 0) {
+                checkAIConnectionAndGeneratePrompt();
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, sectionQuestions, checkAIConnectionAndGeneratePrompt]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,15 +131,23 @@ const AIAddQuestionModal: React.FC<AIAddQuestionModalProps> = ({ isOpen, onClose
                         </div>
 
                         <div>
-                            <label htmlFor="aiQuestionPrompt" className="form-label required">Prompt</label>
+                            <label htmlFor="aiQuestionPrompt" className="form-label required">
+                                Prompt
+                                {isGeneratingPrompt && (
+                                    <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                                        (Generating reverse prompt...)
+                                    </span>
+                                )}
+                            </label>
                             <textarea
                                 id="aiQuestionPrompt"
                                 className="form-textarea"
                                 rows={5}
-                                placeholder="Describe what questions you want (e.g., 8 advanced React hooks questions with concise answers)."
+                                placeholder={isGeneratingPrompt ? "Generating reverse prompt..." : "Describe what questions you want (e.g., 8 advanced React hooks questions with concise answers)."}
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
                                 required
+                                disabled={isGeneratingPrompt}
                             />
                         </div>
 
