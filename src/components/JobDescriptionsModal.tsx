@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, DocumentTextIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, DocumentTextIcon, MagnifyingGlassIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { JobDescription } from '../types';
 import ConfirmationModal from './ConfirmationModal';
+import { generateContent, extractFirstText } from '../services/ai';
+import { databaseService } from '../services/database';
 
 interface JobDescriptionsModalProps {
     isOpen: boolean;
@@ -21,6 +23,7 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
     onDeleteJobDescription
 }) => {
     const [showAddForm, setShowAddForm] = useState(false);
+    const [showAIForm, setShowAIForm] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [selectedJobDescription, setSelectedJobDescription] = useState<JobDescription | null>(null);
@@ -31,6 +34,12 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
         title: '',
         description: ''
     });
+    const [aiFormData, setAiFormData] = useState({
+        title: '',
+        prompt: ''
+    });
+    const [isAIGenerating, setIsAIGenerating] = useState(false);
+    const [aiError, setAiError] = useState<string | null>(null);
 
     // Sync form data with selectedJobDescription when it changes
     useEffect(() => {
@@ -76,6 +85,95 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
         setIsEditing(false);
     };
 
+    const composeJobDescriptionPrompt = (jobTitle: string, additionalPrompt: string) => {
+        const jsonExample = `{
+  "title": "Job Title",
+  "description": "Detailed job description with requirements, responsibilities, and qualifications"
+}`;
+
+        return `You are head of management.
+
+We need to hire an employee for the ${jobTitle} role. Create a detailed job description.
+
+Additional context: ${additionalPrompt}
+
+Requirements:
+- Generate a comprehensive job description
+- Include role overview, responsibilities, requirements, qualifications, and benefits
+- Make it professional and detailed
+- Output must be only valid JSON (no extra text) following this schema exactly:
+${jsonExample}
+
+The description should be well-structured and suitable for job postings.`;
+    };
+
+    const sanitizeJson = (raw: string): string => {
+        // Trim any markdown fences or extra text
+        const firstBrace = raw.indexOf('{');
+        const lastBrace = raw.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            return raw.substring(firstBrace, lastBrace + 1);
+        }
+        return raw.trim();
+    };
+
+    const handleAISubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const title = aiFormData.title.trim();
+        const prompt = aiFormData.prompt.trim();
+
+        if (!title || !prompt) return;
+
+        setAiError(null);
+        setIsAIGenerating(true);
+
+        try {
+            // Ensure AI is configured
+            if (!databaseService.isInitialized()) {
+                try { await databaseService.init(); } catch { }
+            }
+            const connected = await databaseService.getGeminiConnected();
+            if (!connected) {
+                throw new Error('AI is not connected. Configure Gemini API key in Settings.');
+            }
+
+            const aiPrompt = composeJobDescriptionPrompt(title, prompt);
+            const res = await generateContent({ prompt: aiPrompt, timeoutMs: 30000 });
+            const text = extractFirstText(res) || '';
+            const cleaned = sanitizeJson(text);
+            const parsed = JSON.parse(cleaned);
+
+            if (!parsed || !parsed.title || !parsed.description) {
+                throw new Error('AI response missing required fields (title or description)');
+            }
+
+            // Create new job description from AI response
+            const newJobDescription: JobDescription = {
+                id: Date.now().toString(),
+                title: parsed.title,
+                description: parsed.description,
+                createdAt: new Date().toISOString()
+            };
+
+            // Add to database
+            onAddJobDescription(newJobDescription);
+
+            // Clear the form data after successful submission
+            setAiFormData({ title: '', prompt: '' });
+            setShowAIForm(false);
+
+            // Automatically open the view modal with the new JD
+            setSelectedJobDescription(newJobDescription);
+            setShowEditModal(true);
+            setIsEditing(false);
+
+        } catch (err: any) {
+            setAiError(err?.message || 'Failed to generate job description with AI');
+        } finally {
+            setIsAIGenerating(false);
+        }
+    };
+
     const handleEdit = (jd: JobDescription) => {
         setSelectedJobDescription(jd);
         setFormData({
@@ -89,6 +187,11 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
     const handleCancel = () => {
         setFormData({ title: '', description: '' });
         setShowAddForm(false);
+    };
+
+    const handleAICancel = () => {
+        setAiFormData({ title: '', prompt: '' });
+        setShowAIForm(false);
     };
 
     const handleDelete = (jd: JobDescription) => {
@@ -143,10 +246,12 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
                             onClick={() => {
                                 // Reset modal to initial state before closing
                                 setShowAddForm(false);
+                                setShowAIForm(false);
                                 setShowEditModal(false);
                                 setSelectedJobDescription(null);
                                 setIsEditing(false);
                                 setFormData({ title: '', description: '' });
+                                setAiFormData({ title: '', prompt: '' });
                                 setShowDeleteConfirmModal(false);
                                 setJdToDelete(null);
                                 onClose();
@@ -213,20 +318,109 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
                         </div>
                     )}
 
+                    {/* AI Form */}
+                    {showAIForm && (
+                        <div className="mb-6 p-4 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                            <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
+                                Create Job Description with AI
+                            </h4>
+
+                            {/* Error Message */}
+                            {aiError && (
+                                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                    <p className="text-sm text-red-700 dark:text-red-300">{aiError}</p>
+                                </div>
+                            )}
+
+                            <form onSubmit={handleAISubmit} className="space-y-4">
+                                <div>
+                                    <label htmlFor="ai-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Job Title
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="ai-title"
+                                        value={aiFormData.title}
+                                        onChange={(e) => setAiFormData(prev => ({ ...prev, title: e.target.value }))}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                                        placeholder="e.g., Senior Frontend Developer"
+                                        required
+                                        disabled={isAIGenerating}
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="ai-prompt" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Prompt
+                                    </label>
+                                    <textarea
+                                        id="ai-prompt"
+                                        value={aiFormData.prompt}
+                                        onChange={(e) => setAiFormData(prev => ({ ...prev, prompt: e.target.value }))}
+                                        rows={4}
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                                        placeholder="Describe the role, requirements, responsibilities, and any specific details you want the AI to consider..."
+                                        required
+                                        disabled={isAIGenerating}
+                                    />
+                                </div>
+                                <div className="flex space-x-3">
+                                    <button
+                                        type="submit"
+                                        disabled={isAIGenerating}
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isAIGenerating ? (
+                                            <>
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                Generating...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <SparklesIcon className="w-4 h-4 mr-2" />
+                                                Generate with AI
+                                            </>
+                                        )}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleAICancel}
+                                        disabled={isAIGenerating}
+                                        className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+
                     {/* Add Button and Search */}
-                    {!showAddForm && (
+                    {!showAddForm && !showAIForm && (
                         <div className="mb-6 flex justify-between items-center">
-                            <button
-                                onClick={() => {
-                                    // Clear form data and show add form
-                                    setFormData({ title: '', description: '' });
-                                    setShowAddForm(true);
-                                }}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-                            >
-                                <PlusIcon className="w-4 h-4 mr-2" />
-                                Add Job Description
-                            </button>
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => {
+                                        // Clear form data and show add form
+                                        setFormData({ title: '', description: '' });
+                                        setShowAddForm(true);
+                                    }}
+                                    className="inline-flex items-center p-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                                    title="Add Job Description"
+                                >
+                                    <PlusIcon className="w-5 h-5" />
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        setShowAIForm(true);
+                                        setShowAddForm(false);
+                                    }}
+                                    className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                    title="AI Assistant"
+                                >
+                                    <SparklesIcon className="w-5 h-5" />
+                                </button>
+                            </div>
 
                             <div className="flex-1 max-w-xs ml-4 relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
