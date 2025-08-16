@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, DocumentTextIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { JobDescription } from '../types';
 import ConfirmationModal from './ConfirmationModal';
 
@@ -26,6 +26,7 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
     const [selectedJobDescription, setSelectedJobDescription] = useState<JobDescription | null>(null);
     const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
     const [jdToDelete, setJdToDelete] = useState<JobDescription | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [formData, setFormData] = useState({
         title: '',
         description: ''
@@ -40,6 +41,11 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
             });
         }
     }, [selectedJobDescription]);
+
+    // Filter job descriptions based on search term
+    const filteredJobDescriptions = jobDescriptions.filter(jd =>
+        jd.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -207,9 +213,9 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
                         </div>
                     )}
 
-                    {/* Add Button */}
+                    {/* Add Button and Search */}
                     {!showAddForm && (
-                        <div className="mb-6">
+                        <div className="mb-6 flex justify-between items-center">
                             <button
                                 onClick={() => {
                                     // Clear form data and show add form
@@ -221,19 +227,40 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Job Description
                             </button>
+
+                            <div className="flex-1 max-w-xs ml-4 relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <MagnifyingGlassIcon className="h-4 w-4 text-gray-400" />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Search job descriptions..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white dark:border-gray-500 text-sm"
+                                />
+                            </div>
                         </div>
                     )}
 
                     {/* Job Descriptions List */}
                     <div className="space-y-4 max-h-96 overflow-y-auto">
-                        {jobDescriptions.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                                <DocumentTextIcon className="mx-auto h-12 w-12 mb-4" />
-                                <p>No job descriptions yet.</p>
-                                <p className="text-sm">Add your first job description to get started.</p>
-                            </div>
+                        {filteredJobDescriptions.length === 0 ? (
+                            searchTerm ? (
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                    <DocumentTextIcon className="mx-auto h-12 w-12 mb-4" />
+                                    <p>No job descriptions found for "{searchTerm}"</p>
+                                    <p className="text-sm">Try adjusting your search terms.</p>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                    <DocumentTextIcon className="mx-auto h-12 w-12 mb-4" />
+                                    <p>No job descriptions yet.</p>
+                                    <p className="text-sm">Add your first job description to get started.</p>
+                                </div>
+                            )
                         ) : (
-                            jobDescriptions.map((jd) => (
+                            filteredJobDescriptions.map((jd) => (
                                 <div
                                     key={jd.id}
                                     className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-700"
