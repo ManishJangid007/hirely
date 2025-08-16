@@ -1332,7 +1332,7 @@ Requirements:
                         isOpen={showAIAddQuestionModal.open}
                         onClose={() => setShowAIAddQuestionModal(null)}
                         sectionName={showAIAddQuestionModal.sectionName}
-                        onStart={async ({ prompt }) => {
+                        onStart={async ({ prompt, deleteExisting }) => {
                             const targetTemplate = templates.find(t => t.id === showAIAddQuestionModal?.templateId);
                             const targetSection = targetTemplate?.sections.find(s => s.id === showAIAddQuestionModal?.sectionId);
                             setShowAIAddQuestionModal(null);
@@ -1370,7 +1370,7 @@ Requirements:
 
                                 const updatedSection = {
                                     ...targetSection,
-                                    questions: [...targetSection.questions, ...newQuestions]
+                                    questions: deleteExisting ? newQuestions : [...targetSection.questions, ...newQuestions]
                                 };
 
                                 const updatedTemplate: QuestionTemplate = {

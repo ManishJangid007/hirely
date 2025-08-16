@@ -4,23 +4,25 @@ import { XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
 interface AIAddQuestionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onStart: (params: { prompt: string }) => void;
+    onStart: (params: { prompt: string; deleteExisting: boolean }) => void;
     sectionName?: string;
 }
 
 const AIAddQuestionModal: React.FC<AIAddQuestionModalProps> = ({ isOpen, onClose, onStart, sectionName }) => {
     const [prompt, setPrompt] = useState('');
+    const [deleteExisting, setDeleteExisting] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             setPrompt('');
+            setDeleteExisting(false);
         }
     }, [isOpen]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!prompt.trim()) return;
-        onStart({ prompt: prompt.trim() });
+        onStart({ prompt: prompt.trim(), deleteExisting });
     };
 
     if (!isOpen) return null;
@@ -44,6 +46,22 @@ const AIAddQuestionModal: React.FC<AIAddQuestionModalProps> = ({ isOpen, onClose
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        <div>
+                            <label className="form-label">Options</label>
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    id="deleteExisting"
+                                    type="checkbox"
+                                    checked={deleteExisting}
+                                    onChange={(e) => setDeleteExisting(e.target.checked)}
+                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                />
+                                <label htmlFor="deleteExisting" className="text-sm text-gray-700 dark:text-gray-300">
+                                    Delete existing questions in this section and replace with new ones
+                                </label>
+                            </div>
+                        </div>
+
                         <div>
                             <label htmlFor="aiQuestionPrompt" className="form-label required">Prompt</label>
                             <textarea
