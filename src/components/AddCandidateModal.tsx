@@ -36,6 +36,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
     const [importType, setImportType] = useState<'template' | 'candidate' | null>(null);
     const [isAIConnected, setIsAIConnected] = useState<boolean>(false);
     const [showJsonResumeModal, setShowJsonResumeModal] = useState(false);
+    const [showManualEditModal, setShowManualEditModal] = useState(false);
     const [jsonResume, setJsonResume] = useState<string>('');
     const [parsedResume, setParsedResume] = useState<any>(null);
     const [isProcessingResume, setIsProcessingResume] = useState(false);
@@ -437,12 +438,20 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                     </div>
                                 )}
 
-                                {/* Error Display and Clear Button */}
-                                {resumeError && (
+                                {/* Edit JSON Resume Manually Button - Always visible */}
+                                <div className="mt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowManualEditModal(true)}
+                                        className="text-sm text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 underline cursor-pointer"
+                                    >
+                                        {hasResume ? 'Edit JSON Resume Manually' : 'Add JSON Resume Manually'}
+                                    </button>
+                                </div>
+
+                                {/* Clear Resume Button (when has resume) */}
+                                {hasResume && (
                                     <div className="mt-2">
-                                        <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md mb-2">
-                                            {resumeError}
-                                        </div>
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -456,28 +465,6 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                     fileInput.value = '';
                                                 }
                                             }}
-                                            className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline cursor-pointer"
-                                        >
-                                            Clear & Try Again
-                                        </button>
-                                    </div>
-                                )}
-
-                                {/* Clear Resume Button (when no error but has resume) */}
-                                {!resumeError && hasResume && (
-                                    <div className="mt-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setHasResume(false);
-                                                setParsedResume(null);
-                                                setJsonResume('');
-                                                // Clear the file input
-                                                const fileInput = document.getElementById('resume') as HTMLInputElement;
-                                                if (fileInput) {
-                                                    fileInput.value = '';
-                                                }
-                                            }}
                                             className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 underline cursor-pointer"
                                         >
                                             Clear Resume
@@ -485,8 +472,8 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                     </div>
                                 )}
 
-                                {/* Clear File Input Button (when no resume and no error) */}
-                                {!resumeError && !hasResume && (
+                                {/* Clear File Input Button (when no resume) */}
+                                {!hasResume && (
                                     <div className="mt-2">
                                         <button
                                             type="button"
@@ -664,6 +651,86 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
 
                             <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
                                 <p>This JSON resume was generated by AI using the Gemini API. The parsed object will be saved to the database.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Manual Edit JSON Resume Modal */}
+            {showManualEditModal && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-auto max-h-[90vh] overflow-hidden">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                {hasResume ? 'Edit JSON Resume Manually' : 'Add JSON Resume Manually'}
+                            </h3>
+                            <button
+                                onClick={() => setShowManualEditModal(false)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 overflow-auto max-h-[calc(90vh-120px)]">
+                            <div className="mb-4">
+                                <label htmlFor="manualJsonResume" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    JSON Resume Content:
+                                </label>
+                                <textarea
+                                    id="manualJsonResume"
+                                    value={jsonResume}
+                                    onChange={(e) => {
+                                        setJsonResume(e.target.value);
+                                        // Clear error when user starts typing
+                                        if (resumeError) {
+                                            setResumeError('');
+                                        }
+                                    }}
+                                    placeholder="Enter or paste your JSON resume here..."
+                                    className="w-full h-64 p-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-mono text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 resize-none"
+                                />
+                            </div>
+
+                            {/* JSON Validation Error Display */}
+                            {resumeError && (
+                                <div className="mb-4 p-3 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-md">
+                                    ❌ {resumeError}
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between">
+                                <div className="text-sm text-gray-600 dark:text-gray-400">
+                                    <p>⚠️ Make sure the JSON is valid. Invalid JSON will not be saved.</p>
+                                </div>
+                                <div className="flex space-x-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowManualEditModal(false)}
+                                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            try {
+                                                // Validate JSON before saving
+                                                const parsed = JSON.parse(jsonResume);
+                                                setParsedResume(parsed);
+                                                setHasResume(true);
+                                                setResumeError('');
+                                                setShowManualEditModal(false);
+                                            } catch (error) {
+                                                setResumeError('Invalid JSON format. Please check your syntax and try again.');
+                                            }
+                                        }}
+                                        className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
+                                    >
+                                        Save JSON Resume
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
