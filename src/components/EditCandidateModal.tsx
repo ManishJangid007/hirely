@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Candidate } from '../types';
 import DatePicker from './DatePicker';
@@ -313,7 +313,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                             <div>
                                 <div className="flex items-center gap-2 mb-2">
                                     <label htmlFor="resume" className="form-label mb-0">
-                                        Resume Upload
+                                        Resume Upload (Optional)
                                     </label>
                                     <button
                                         type="button"
@@ -371,10 +371,70 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                                     </div>
                                 )}
 
-                                {/* Error Display */}
+                                {/* Error Display and Clear Button */}
                                 {resumeError && (
-                                    <div className="mt-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md">
-                                        {resumeError}
+                                    <div className="mt-2">
+                                        <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md mb-2">
+                                            {resumeError}
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setHasResume(false);
+                                                setParsedResume(null);
+                                                setJsonResume('');
+                                                setResumeError('');
+                                                // Clear the file input
+                                                const fileInput = document.getElementById('resume') as HTMLInputElement;
+                                                if (fileInput) {
+                                                    fileInput.value = '';
+                                                }
+                                            }}
+                                            className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline cursor-pointer"
+                                        >
+                                            Clear & Try Again
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Clear Resume Button (when no error but has resume) */}
+                                {!resumeError && hasResume && (
+                                    <div className="mt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setHasResume(false);
+                                                setParsedResume(null);
+                                                setJsonResume('');
+                                                // Clear the file input
+                                                const fileInput = document.getElementById('resume') as HTMLInputElement;
+                                                if (fileInput) {
+                                                    fileInput.value = '';
+                                                }
+                                            }}
+                                            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 underline cursor-pointer"
+                                        >
+                                            Clear Resume
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Clear File Input Button (when no resume and no error) */}
+                                {!resumeError && !hasResume && (
+                                    <div className="mt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                // Clear the file input
+                                                const fileInput = document.getElementById('resume') as HTMLInputElement;
+                                                if (fileInput) {
+                                                    fileInput.value = '';
+                                                }
+                                            }}
+                                            className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 underline cursor-pointer"
+                                        >
+                                            Clear File Selection
+                                        </button>
                                     </div>
                                 )}
                             </div>
