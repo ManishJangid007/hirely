@@ -13,7 +13,7 @@ interface AIAddQuestionModalProps {
 
 const AIAddQuestionModal: React.FC<AIAddQuestionModalProps> = ({ isOpen, onClose, onStart, sectionName, sectionQuestions = [] }) => {
     const [prompt, setPrompt] = useState('');
-    const [deleteExisting, setDeleteExisting] = useState(false);
+    const [deleteExisting, setDeleteExisting] = useState(true);
     const [isGeneratingPrompt, setIsGeneratingPrompt] = useState(false);
 
     const generateReversePrompt = useCallback(async () => {
@@ -139,6 +139,11 @@ Focus on the same topic, difficulty level, and style.`;
                                     </span>
                                 )}
                             </label>
+                            {prompt && !isGeneratingPrompt && (
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 italic">
+                                    Below is an AI-generated prompt based on your existing questions. Feel free to modify it to better suit your needs and generate more tailored questions.
+                                </p>
+                            )}
                             <textarea
                                 id="aiQuestionPrompt"
                                 className="form-textarea"
