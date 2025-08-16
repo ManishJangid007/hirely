@@ -150,7 +150,7 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
                     type="button"
                     onClick={handleTest}
                     disabled={testStatus === 'testing'}
-                    className={`inline-flex items-center px-3 py-2 rounded-md text-sm border whitespace-nowrap ${testStatus === 'success' ? 'border-green-600 text-green-700 dark:text-green-400' :
+                    className={`inline-flex items-center px-3 py-2 rounded-full text-sm border whitespace-nowrap ${testStatus === 'success' ? 'border-green-600 text-green-700 dark:text-green-400' :
                       testStatus === 'error' ? 'border-red-600 text-red-700 dark:text-red-400' :
                         'border-gray-300 text-gray-700 dark:text-gray-300'
                       }`}
