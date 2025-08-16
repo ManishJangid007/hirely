@@ -498,7 +498,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                 <button
                                     type="button"
                                     onClick={toggleQuestionImport}
-                                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                                 >
                                     <DocumentDuplicateIcon className="w-4 h-4 mr-2" />
                                     Import Questions (Optional)
@@ -513,7 +513,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                     <button
                                                         type="button"
                                                         onClick={() => handleImportTypeChange('template')}
-                                                        className={`w-full text-left px-3 py-2 rounded-lg border ${importType === 'template'
+                                                        className={`w-full text-left px-3 py-2 rounded-full border ${importType === 'template'
                                                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-200'
                                                             : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
                                                             }`}
@@ -526,7 +526,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                     <button
                                                         type="button"
                                                         onClick={() => handleImportTypeChange('candidate')}
-                                                        className={`w-full text-left px-3 py-2 rounded-lg border ${importType === 'candidate'
+                                                        className={`w-full text-left px-3 py-2 rounded-full border ${importType === 'candidate'
                                                             ? 'border-blue-500 bg-blue-900 text-blue-200'
                                                             : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
                                                             }`}
@@ -586,13 +586,13 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                             <button
                                 type="button"
                                 onClick={handleClose}
-                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                             >
                                 Add Candidate
                             </button>
@@ -708,7 +708,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setShowManualEditModal(false)}
-                                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                                     >
                                         Cancel
                                     </button>
@@ -726,7 +726,7 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                                 setResumeError('Invalid JSON format. Please check your syntax and try again.');
                                             }
                                         }}
-                                        className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
+                                        className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
                                     >
                                         Save JSON Resume
                                     </button>
