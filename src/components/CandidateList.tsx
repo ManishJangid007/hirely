@@ -222,7 +222,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                             )}
                                         </div>
                                         {/* Status pill moved to top right */}
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(candidate.status)}`}>
+                                        <span className={`inline-flex items-center px-2 py-1.5 rounded-full text-xs font-medium ${getStatusColor(candidate.status)}`}>
                                             {getStatusIcon(candidate.status)}
                                             <span className="ml-1">{candidate.status}</span>
                                         </span>
@@ -246,39 +246,45 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                         </div>
                                         {/* Action icons moved to bottom right */}
                                         <div className="flex space-x-2">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setCandidateToEdit(candidate);
-                                                    setShowEditModal(true);
-                                                }}
-                                                className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                                                title="Edit candidate"
-                                            >
-                                                <PencilIcon className="w-5 h-5" />
-                                            </button>
-                                            {candidate.resume && (
+                                            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleViewResume(candidate);
+                                                        setCandidateToEdit(candidate);
+                                                        setShowEditModal(true);
                                                     }}
-                                                    className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
-                                                    title={`View ${candidate.fullName}'s Resume`}
+                                                    className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                                                    title="Edit candidate"
                                                 >
-                                                    <DocumentIcon className="w-5 h-5" />
+                                                    <PencilIcon className="w-4 h-4" />
                                                 </button>
+                                            </div>
+                                            {candidate.resume && (
+                                                <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleViewResume(candidate);
+                                                        }}
+                                                        className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
+                                                        title={`View ${candidate.fullName}'s Resume`}
+                                                    >
+                                                        <DocumentIcon className="w-4 h-4" />
+                                                    </button>
+                                                </div>
                                             )}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setCandidateToDelete(candidate);
-                                                }}
-                                                className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
-                                                title="Delete candidate"
-                                            >
-                                                <TrashIcon className="w-5 h-5" />
-                                            </button>
+                                            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setCandidateToDelete(candidate);
+                                                    }}
+                                                    className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
+                                                    title="Delete candidate"
+                                                >
+                                                    <TrashIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
