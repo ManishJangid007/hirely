@@ -32,7 +32,11 @@ const Header: React.FC<HeaderProps> = ({ onBackupClick }) => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-1">
+          <div
+            className="flex items-center space-x-1 cursor-pointer hover:opacity-80 transition-opacity duration-200"
+            onClick={() => window.location.href = '/'}
+            title="Go to Home"
+          >
             <img
               src={logo}
               alt="Hirely"
