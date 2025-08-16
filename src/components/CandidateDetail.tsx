@@ -252,7 +252,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                                 <button
                                     onClick={() => navigate('/')}
-                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 w-fit"
+                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 w-fit"
                                 >
                                     <ArrowLeftIcon className="w-4 h-4 mr-2" />
                                     Back
@@ -284,7 +284,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 </span>
                                 <button
                                     onClick={() => setShowEditCandidateModal(true)}
-                                    className="inline-flex items-center px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-lg shadow-sm text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 w-fit"
+                                    className="inline-flex items-center px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-full shadow-sm text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 w-fit"
                                     title="Edit candidate"
                                 >
                                     <PencilIcon className="w-4 h-4 mr-2" />
@@ -293,7 +293,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 {candidate.status !== 'Not Interviewed' && (
                                     <button
                                         onClick={() => setShowResultSummaryModal(true)}
-                                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 w-fit"
+                                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 w-fit"
                                     >
                                         <ClipboardDocumentIcon className="w-4 h-4 mr-2" />
                                         View Summary
@@ -334,7 +334,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                             collapseAll();
                                         }
                                     }}
-                                    className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
+                                    className="inline-flex items-center p-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
                                     title="Toggle all sections"
                                     aria-label="Toggle all sections"
                                 >
@@ -350,7 +350,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 </button>
                                 <button
                                     onClick={() => setShowAddQuestionModal(true)}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto"
+                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto"
                                 >
                                     <PlusIcon className="w-4 h-4 mr-2" />
                                     Add Question
@@ -358,7 +358,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 {questions.length > 0 && (
                                     <button
                                         onClick={() => setShowSaveResultModal(true)}
-                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-all duration-200 w-full sm:w-auto"
+                                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 transition-all duration-200 w-full sm:w-auto"
                                     >
                                         <DocumentTextIcon className="w-4 h-4 mr-2" />
                                         Save Result
@@ -380,7 +380,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         <div className="mt-6">
                             <button
                                 onClick={() => setShowAddQuestionModal(true)}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
+                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
                             >
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Question
@@ -724,14 +724,14 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                         <>
                             <button
                                 onClick={onMarkCorrect}
-                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
+                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200"
                             >
                                 <CheckIcon className="w-4 h-4 mr-1" />
                                 Correct
                             </button>
                             <button
                                 onClick={onMarkWrong}
-                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
+                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-full text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200"
                             >
                                 <XMarkIcon className="w-4 h-4 mr-1" />
                                 Wrong
@@ -741,7 +741,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
                     {showUndo && onUndo && (
                         <button
                             onClick={onUndo}
-                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 transition-all duration-200"
+                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm leading-4 font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 hover:bg-gray-50 dark:hover:bg-gray-500 transition-all duration-200"
                         >
                             Undo
                         </button>

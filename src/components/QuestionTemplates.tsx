@@ -584,7 +584,7 @@ ${jsonExample}
                             </button>
                             <button
                                 onClick={importTemplate}
-                                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200 w-fit sm:w-auto"
+                                className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200 w-fit sm:w-auto"
                             >
                                 <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
                                 Import Template
@@ -592,7 +592,7 @@ ${jsonExample}
                             {isGeminiConnected && (
                                 <button
                                     onClick={() => setShowAIAddTemplateModal(true)}
-                                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200 w-fit sm:w-auto"
+                                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200 w-fit sm:w-auto"
                                 >
                                     <SparklesIcon className="w-4 h-4 mr-2" />
                                     AI Template
@@ -614,7 +614,7 @@ ${jsonExample}
                             <button
                                 onClick={() => setShowAddTemplateModal(true)}
                                 disabled={isLoading}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                             >
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 {isLoading ? 'Loading...' : 'Add Template'}
@@ -684,7 +684,7 @@ ${jsonExample}
 
                                                     setOpenDropdown(newState);
                                                 }}
-                                                className={`inline-flex items-center p-2 border rounded-lg shadow-sm text-sm font-medium transition-all duration-200 ${openDropdown?.type === 'template' && openDropdown?.id === template.id
+                                                className={`inline-flex items-center p-2 border rounded-full shadow-sm text-sm font-medium transition-all duration-200 ${openDropdown?.type === 'template' && openDropdown?.id === template.id
                                                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
                                                     : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600'
                                                     } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800`}
@@ -755,7 +755,7 @@ ${jsonExample}
 
                                                                             setOpenDropdown(newState);
                                                                         }}
-                                                                        className={`transition-colors duration-200 p-1 rounded ${openDropdown?.type === 'section' && openDropdown?.id === section.id
+                                                                        className={`transition-colors duration-200 p-1 rounded-full ${openDropdown?.type === 'section' && openDropdown?.id === section.id
                                                                             ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
                                                                             : 'text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100'
                                                                             }`}
@@ -881,7 +881,7 @@ ${jsonExample}
                                                                             });
                                                                             setShowAddQuestionModal(true);
                                                                         }}
-                                                                        className="w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                                                        className="w-full inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                                                                     >
                                                                         <PlusIcon className="w-4 h-4 mr-2" />
                                                                         Add Question
@@ -1473,7 +1473,7 @@ Requirements:
                                             setShowImportResultModal(false);
                                             setImportResult(null);
                                         }}
-                                        className={`w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ${importResult.success
+                                        className={`w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 ${importResult.success
                                             ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
                                             : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
                                             }`}
