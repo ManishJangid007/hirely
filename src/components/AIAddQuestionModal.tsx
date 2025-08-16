@@ -78,7 +78,7 @@ Focus on the same topic, difficulty level, and style.`;
     useEffect(() => {
         if (isOpen) {
             setPrompt('');
-            setDeleteExisting(false);
+            // Keep deleteExisting as true (default) - don't reset it
 
             // Check AI connection and generate reverse prompt if available
             if (sectionQuestions.length > 0) {
