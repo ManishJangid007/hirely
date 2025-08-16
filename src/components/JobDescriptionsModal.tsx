@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, DocumentTextIcon, MagnifyingGlassIcon, SparklesIcon, EyeIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, DocumentTextIcon, MagnifyingGlassIcon, SparklesIcon, EyeIcon, EllipsisVerticalIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { JobDescription } from '../types';
 import ConfirmationModal from './ConfirmationModal';
 import { generateContent, extractFirstText } from '../services/ai';
@@ -41,6 +41,9 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
     const [isAIGenerating, setIsAIGenerating] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     // Sync form data with selectedJobDescription when it changes
     useEffect(() => {
@@ -195,6 +198,107 @@ The description should be well-structured and suitable for job postings.`;
         setShowAIForm(false);
     };
 
+    const exportAllJobDescriptions = () => {
+        const data = {
+            jobDescriptions: filteredJobDescriptions,
+            exportedAt: new Date().toISOString(),
+            totalCount: filteredJobDescriptions.length
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `job-descriptions-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const exportSingleJobDescription = (jd: JobDescription) => {
+        const data = {
+            jobDescription: jd,
+            exportedAt: new Date().toISOString()
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${jd.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setOpenDropdown(null);
+    };
+
+    const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const content = e.target?.result as string;
+                const data = JSON.parse(content);
+
+                let importedCount = 0;
+
+                if (data.jobDescriptions && Array.isArray(data.jobDescriptions)) {
+                    // Import multiple JDs
+
+                    // Process imports sequentially to avoid conflicts
+                    const processImports = async () => {
+                        for (let i = 0; i < data.jobDescriptions.length; i++) {
+                            const jd = data.jobDescriptions[i];
+                            if (jd.title && jd.description) {
+                                const newJD: Omit<JobDescription, 'id' | 'createdAt'> = {
+                                    title: jd.title,
+                                    description: jd.description
+                                };
+                                onAddJobDescription(newJD);
+                                importedCount++;
+
+                                // Small delay to ensure database operations don't conflict
+                                await new Promise(resolve => setTimeout(resolve, 100));
+                            }
+                        }
+
+                        if (importedCount > 0) {
+                            setSuccessMessage(`Successfully imported ${importedCount} job descriptions!`);
+                            setShowSuccessModal(true);
+                        } else {
+                            setSuccessMessage('No valid job descriptions found in the file.');
+                            setShowSuccessModal(true);
+                        }
+                    };
+
+                    processImports();
+                } else if (data.jobDescription && data.jobDescription.title && data.jobDescription.description) {
+                    // Import single JD
+                    const newJD: Omit<JobDescription, 'id' | 'createdAt'> = {
+                        title: data.jobDescription.title,
+                        description: data.jobDescription.description
+                    };
+                    onAddJobDescription(newJD);
+                    setSuccessMessage('Successfully imported 1 job description!');
+                    setShowSuccessModal(true);
+                } else {
+                    alert('Invalid file format. Please check the file structure.');
+                    return;
+                }
+
+                setShowImportModal(false);
+            } catch (error) {
+                console.error('Import error:', error);
+                alert('Error reading file. Please check if it\'s a valid JSON file.');
+            }
+        };
+        reader.readAsText(file);
+    };
+
     const toggleDropdown = (jdId: string) => {
         setOpenDropdown(openDropdown === jdId ? null : jdId);
     };
@@ -254,29 +358,50 @@ The description should be well-structured and suitable for job postings.`;
     return (
         <>
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                <div className="relative top-20 mx-auto p-5 pb-8 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white dark:bg-gray-800">
+                <div className="relative top-20 mx-auto p-5 pb-12 border w-11/12 md:w-3/4 lg:w-1/2 h-[80vh] shadow-lg rounded-md bg-white dark:bg-gray-800">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                             Manage Job Descriptions
                         </h3>
-                        <button
-                            onClick={() => {
-                                // Reset modal to initial state before closing
-                                setShowAddForm(false);
-                                setShowAIForm(false);
-                                setShowEditModal(false);
-                                setSelectedJobDescription(null);
-                                setIsEditing(false);
-                                setFormData({ title: '', description: '' });
-                                setAiFormData({ title: '', prompt: '' });
-                                setShowDeleteConfirmModal(false);
-                                setJdToDelete(null);
-                                onClose();
-                            }}
-                            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
-                        >
-                            <XMarkIcon className="w-6 h-6" />
-                        </button>
+                        <div className="flex items-center space-x-2">
+                            {/* Import Button */}
+                            <button
+                                onClick={() => setShowImportModal(true)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 p-1"
+                                title="Import Job Descriptions"
+                            >
+                                <ArrowUpTrayIcon className="w-5 h-5" />
+                            </button>
+
+                            {/* Export All Button */}
+                            <button
+                                onClick={exportAllJobDescriptions}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200 p-1"
+                                title="Export All Job Descriptions"
+                            >
+                                <ArrowDownTrayIcon className="w-5 h-5" />
+                            </button>
+
+                            {/* Close Button */}
+                            <button
+                                onClick={() => {
+                                    // Reset modal to initial state before closing
+                                    setShowAddForm(false);
+                                    setShowAIForm(false);
+                                    setShowEditModal(false);
+                                    setSelectedJobDescription(null);
+                                    setIsEditing(false);
+                                    setFormData({ title: '', description: '' });
+                                    setAiFormData({ title: '', prompt: '' });
+                                    setShowDeleteConfirmModal(false);
+                                    setJdToDelete(null);
+                                    onClose();
+                                }}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
                     </div>
 
 
@@ -455,7 +580,7 @@ The description should be well-structured and suitable for job postings.`;
                     )}
 
                     {/* Job Descriptions List */}
-                    <div className="space-y-4 max-h-96 overflow-y-auto pb-4">
+                    <div className="space-y-4 flex-1 pb-8">
                         {filteredJobDescriptions.length === 0 ? (
                             searchTerm ? (
                                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -510,6 +635,15 @@ The description should be well-structured and suitable for job postings.`;
                                                         <div className="py-1">
                                                             <button
                                                                 onClick={() => {
+                                                                    exportSingleJobDescription(jd);
+                                                                }}
+                                                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center space-x-2"
+                                                            >
+                                                                <ArrowDownTrayIcon className="w-4 h-4" />
+                                                                <span>Export</span>
+                                                            </button>
+                                                            <button
+                                                                onClick={() => {
                                                                     handleDelete(jd);
                                                                     setOpenDropdown(null);
                                                                 }}
@@ -529,25 +663,7 @@ The description should be well-structured and suitable for job postings.`;
                         )}
                     </div>
 
-                    {/* Close Button */}
-                    <div className="mt-6 mb-8 flex justify-end">
-                        <button
-                            onClick={() => {
-                                // Reset modal to initial state before closing
-                                setShowAddForm(false);
-                                setShowEditModal(false);
-                                setSelectedJobDescription(null);
-                                setIsEditing(false);
-                                setFormData({ title: '', description: '' });
-                                setShowDeleteConfirmModal(false);
-                                setJdToDelete(null);
-                                onClose();
-                            }}
-                            className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                        >
-                            Close
-                        </button>
-                    </div>
+
                 </div>
 
                 {/* Edit/View Modal */}
@@ -670,6 +786,94 @@ The description should be well-structured and suitable for job postings.`;
                     </div>
                 )}
             </div>
+
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[70]">
+                    <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                Import Complete
+                            </h3>
+                            <button
+                                onClick={() => setShowSuccessModal(false)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="mb-6">
+                            <div className="flex items-center justify-center mb-4">
+                                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                                    <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <p className="text-center text-gray-700 dark:text-gray-300">
+                                {successMessage}
+                            </p>
+                        </div>
+
+                        <div className="flex justify-center">
+                            <button
+                                onClick={() => setShowSuccessModal(false)}
+                                className="px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                            >
+                                OK
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Import Modal */}
+            {showImportModal && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[70]">
+                    <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                Import Job Descriptions
+                            </h3>
+                            <button
+                                onClick={() => setShowImportModal(false)}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="mb-4">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                                Select a JSON file to import job descriptions. The file should contain either a single job description or an array of job descriptions.
+                            </p>
+
+                            <div className="flex justify-center">
+                                <label className="cursor-pointer inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200">
+                                    <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
+                                    Choose File
+                                    <input
+                                        type="file"
+                                        accept=".json"
+                                        onChange={handleImportFile}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => setShowImportModal(false)}
+                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Delete Confirmation Modal */}
             <ConfirmationModal
