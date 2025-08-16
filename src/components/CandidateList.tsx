@@ -198,7 +198,8 @@ const CandidateList: React.FC<CandidateListProps> = ({
                         {filteredCandidates.map((candidate) => (
                             <div
                                 key={candidate.id}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 card-hover animate-fade-in"
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 card-hover animate-fade-in cursor-pointer"
+                                onClick={() => window.location.href = `/candidate/${candidate.id}`}
                             >
                                 <div className="p-6">
                                     <div className="flex justify-between items-start mb-4">
@@ -220,9 +221,34 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                                 </div>
                                             )}
                                         </div>
+                                        {/* Status pill moved to top right */}
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(candidate.status)}`}>
+                                            {getStatusIcon(candidate.status)}
+                                            <span className="ml-1">{candidate.status}</span>
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        {/* Summary button moved to bottom left */}
+                                        <div className="flex space-x-2">
+                                            {hasInterviewResult(candidate) && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewSummary(candidate);
+                                                    }}
+                                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                                >
+                                                    <ClipboardDocumentIcon className="w-4 h-4 mr-1" />
+                                                    Summary
+                                                </button>
+                                            )}
+                                        </div>
+                                        {/* Action icons moved to bottom right */}
                                         <div className="flex space-x-2">
                                             <button
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     setCandidateToEdit(candidate);
                                                     setShowEditModal(true);
                                                 }}
@@ -233,7 +259,10 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                             </button>
                                             {candidate.resume && (
                                                 <button
-                                                    onClick={() => handleViewResume(candidate)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewResume(candidate);
+                                                    }}
                                                     className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
                                                     title={`View ${candidate.fullName}'s Resume`}
                                                 >
@@ -241,36 +270,15 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                                 </button>
                                             )}
                                             <button
-                                                onClick={() => setCandidateToDelete(candidate)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setCandidateToDelete(candidate);
+                                                }}
                                                 className="text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
                                                 title="Delete candidate"
                                             >
                                                 <TrashIcon className="w-5 h-5" />
                                             </button>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(candidate.status)}`}>
-                                            {getStatusIcon(candidate.status)}
-                                            <span className="ml-1">{candidate.status}</span>
-                                        </span>
-                                        <div className="flex space-x-2">
-                                            {hasInterviewResult(candidate) && (
-                                                <button
-                                                    onClick={() => handleViewSummary(candidate)}
-                                                    className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                                >
-                                                    <ClipboardDocumentIcon className="w-4 h-4 mr-1" />
-                                                    Summary
-                                                </button>
-                                            )}
-                                            <Link
-                                                to={`/candidate/${candidate.id}`}
-                                                className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                            >
-                                                View Details
-                                            </Link>
                                         </div>
                                     </div>
                                 </div>
