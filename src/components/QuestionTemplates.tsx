@@ -31,12 +31,15 @@ import AIAddQuestionModal from './AIAddQuestionModal';
 import { generateContent, extractFirstText } from '../services/ai';
 import { databaseService } from '../services/database';
 
+import { JobDescription } from '../types';
+
 interface QuestionTemplatesProps {
     templates: QuestionTemplate[];
     onAddTemplate: (template: Omit<QuestionTemplate, 'id'>) => void;
     onUpdateTemplate: (id: string, updates: Partial<QuestionTemplate>) => void;
     onDeleteTemplate: (id: string) => void;
     isLoading?: boolean;
+    jobDescriptions?: JobDescription[];
 }
 
 const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
@@ -44,7 +47,8 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
     onAddTemplate,
     onUpdateTemplate,
     onDeleteTemplate,
-    isLoading = false
+    isLoading = false,
+    jobDescriptions = []
 }) => {
     const [showAddTemplateModal, setShowAddTemplateModal] = useState(false);
     const [showAddSectionModal, setShowAddSectionModal] = useState(false);
@@ -1199,6 +1203,7 @@ ${jsonExample}
                         isOpen={showAIAddTemplateModal}
                         onClose={() => setShowAIAddTemplateModal(false)}
                         onStart={handleAIStart}
+                        jobDescriptions={jobDescriptions}
                     />
                 )}
 

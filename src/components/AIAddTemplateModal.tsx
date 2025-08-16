@@ -1,24 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import { XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, SparklesIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { JobDescription } from '../types';
 
 interface AIAddTemplateModalProps {
     isOpen: boolean;
     onClose: () => void;
     onStart: (params: { templateName: string; experienceYears: number; description?: string }) => void;
+    jobDescriptions?: JobDescription[];
 }
 
-const AIAddTemplateModal: React.FC<AIAddTemplateModalProps> = ({ isOpen, onClose, onStart }) => {
+const AIAddTemplateModal: React.FC<AIAddTemplateModalProps> = ({ isOpen, onClose, onStart, jobDescriptions = [] }) => {
     const [templateName, setTemplateName] = useState('');
     const [experienceYears, setExperienceYears] = useState(3);
     const [description, setDescription] = useState('');
+    const [selectedJD, setSelectedJD] = useState<JobDescription | null>(null);
+    const [showJDDropdown, setShowJDDropdown] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             setTemplateName('');
             setExperienceYears(3);
             setDescription('');
+            setSelectedJD(null);
+            setShowJDDropdown(false);
         }
     }, [isOpen]);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (showJDDropdown && !(event.target as Element).closest('[data-jd-dropdown]')) {
+                setShowJDDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showJDDropdown]);
+
+    const handleJDSelect = (jd: JobDescription) => {
+        setSelectedJD(jd);
+        setDescription(`This is the job description - ${jd.title}\n\n${jd.description}`);
+        setShowJDDropdown(false);
+    };
+
+    const handleJDUnselect = () => {
+        setSelectedJD(null);
+        setDescription('');
+        setShowJDDropdown(false);
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -75,6 +105,60 @@ const AIAddTemplateModal: React.FC<AIAddTemplateModalProps> = ({ isOpen, onClose
                                 <span>1+</span>
                                 <span>5+</span>
                                 <span>10+</span>
+                            </div>
+                        </div>
+
+                        {/* Job Description Dropdown */}
+                        <div>
+                            <label className="form-label">Job Description (Optional)</label>
+                            <div className="relative" data-jd-dropdown>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowJDDropdown(!showJDDropdown)}
+                                    className="w-full flex items-center justify-between px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                >
+                                    <span className={selectedJD ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}>
+                                        {selectedJD ? selectedJD.title : 'Select a job description...'}
+                                    </span>
+                                    <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${showJDDropdown ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                {showJDDropdown && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        <div className="py-1">
+                                            {jobDescriptions.length === 0 ? (
+                                                <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                                    No job descriptions available
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    {selectedJD && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleJDUnselect}
+                                                            className="w-full text-left px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 border-b border-gray-200 dark:border-gray-600"
+                                                        >
+                                                            Clear Selection
+                                                        </button>
+                                                    )}
+                                                    {jobDescriptions.map((jd) => (
+                                                        <button
+                                                            key={jd.id}
+                                                            type="button"
+                                                            onClick={() => handleJDSelect(jd)}
+                                                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 ${selectedJD?.id === jd.id
+                                                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                                                                : 'text-gray-700 dark:text-gray-300'
+                                                                }`}
+                                                        >
+                                                            {jd.title}
+                                                        </button>
+                                                    ))}
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

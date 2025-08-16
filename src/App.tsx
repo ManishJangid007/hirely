@@ -443,6 +443,7 @@ function App() {
                     onUpdateTemplate={updateQuestionTemplate}
                     onDeleteTemplate={deleteQuestionTemplate}
                     isLoading={isLoading}
+                    jobDescriptions={appState.jobDescriptions}
                   />
                 }
               />
