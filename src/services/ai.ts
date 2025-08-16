@@ -55,9 +55,21 @@ export async function processResumeToJson(file: File): Promise<string> {
         throw new Error('File size must be under 20MB');
     }
 
-    // Convert file to base64
-    const arrayBuffer = await file.arrayBuffer();
-    const base64Data = btoa(String.fromCharCode(...Array.from(new Uint8Array(arrayBuffer))));
+    // Convert file to base64 using FileReader to prevent stack overflow with large files
+    const base64Data = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            if (typeof reader.result === 'string') {
+                // Remove the data URL prefix (e.g., "data:application/pdf;base64,")
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            } else {
+                reject(new Error('Failed to read file as base64'));
+            }
+        };
+        reader.onerror = () => reject(new Error('File reading failed'));
+        reader.readAsDataURL(file);
+    });
 
     const model = 'gemini-2.5-flash'; // Use the latest model for document processing
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
@@ -155,11 +167,9 @@ Example format:
                 // Try to extract and validate JSON
                 const extractedJson = await extractAndValidateJson(text);
                 if (extractedJson) {
-                    console.log(`Successfully extracted JSON with ${config.maxOutputTokens} tokens`);
                     return extractedJson;
                 }
 
-                console.warn(`Failed to extract valid JSON with ${config.maxOutputTokens} tokens. Response length: ${text.length}`);
                 throw new Error('Failed to extract valid JSON from AI response');
 
             } finally {
@@ -167,7 +177,6 @@ Example format:
             }
         } catch (error) {
             lastError = error as Error;
-            console.warn(`Attempt with ${config.maxOutputTokens} tokens failed:`, error);
             continue; // Try next configuration
         }
     }
@@ -180,7 +189,11 @@ Example format:
  * Enhanced JSON extraction with better handling of incomplete responses
  */
 async function extractAndValidateJson(text: string): Promise<string | null> {
-    console.log(`Attempting to extract JSON from response of length: ${text.length}`);
+    // Safety check: if response is extremely long, truncate to prevent regex issues
+    const MAX_RESPONSE_LENGTH = 100000; // 100KB limit
+    if (text.length > MAX_RESPONSE_LENGTH) {
+        text = text.substring(0, MAX_RESPONSE_LENGTH);
+    }
 
     // Clean the response to extract just the JSON
     let cleanedText = text.trim();
@@ -193,9 +206,8 @@ async function extractAndValidateJson(text: string): Promise<string | null> {
 
         // Try to parse the cleaned text directly
         JSON.parse(cleanedText);
-        console.log('Strategy 1 succeeded: Direct JSON parse');
         return cleanedText;
-    } catch (e) {
+    } catch (e: any) {
         // Continue to other strategies
     }
 
@@ -205,43 +217,39 @@ async function extractAndValidateJson(text: string): Promise<string | null> {
         try {
             const jsonContent = codeBlockMatch[1].trim();
             JSON.parse(jsonContent);
-            console.log('Strategy 2 succeeded: Extracted from markdown code block');
             return jsonContent;
-        } catch (e) {
+        } catch (e: any) {
             // Try to fix the code block content
             const fixedCodeBlock = await attemptToFixIncompleteJson(codeBlockMatch[1].trim());
             if (fixedCodeBlock) {
                 try {
                     JSON.parse(fixedCodeBlock);
-                    console.log('Strategy 2 succeeded: Fixed markdown code block JSON');
                     return fixedCodeBlock;
-                } catch (e2) {
+                } catch (e2: any) {
                     // Continue to next strategy
                 }
             }
         }
     }
 
-    // Strategy 3: Look for JSON object at the start
-    const startJsonMatch = cleanedText.match(/^\{[\s\S]*\}/);
+    // Strategy 3: Look for JSON object at the start (using non-greedy matching to prevent backtracking)
+    const startJsonMatch = cleanedText.match(/^\{[^}]*\}/);
     if (startJsonMatch) {
         try {
             JSON.parse(startJsonMatch[0]);
-            console.log('Strategy 3 succeeded: Start JSON match');
             return startJsonMatch[0];
-        } catch (e) {
+        } catch (e: any) {
             // Continue to next strategy
         }
     }
 
-    // Strategy 4: Look for JSON object anywhere in the text
-    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+    // Strategy 4: Look for JSON object anywhere in the text (using non-greedy matching to prevent backtracking)
+    const jsonMatch = cleanedText.match(/\{[^}]*\}/);
     if (jsonMatch) {
         try {
             JSON.parse(jsonMatch[0]);
-            console.log('Strategy 4 succeeded: Any JSON match');
             return jsonMatch[0];
-        } catch (e) {
+        } catch (e: any) {
             // Continue to next strategy
         }
     }
@@ -255,9 +263,8 @@ async function extractAndValidateJson(text: string): Promise<string | null> {
         if (fixedJson) {
             try {
                 JSON.parse(fixedJson);
-                console.log('Strategy 5 succeeded: Fixed incomplete JSON');
                 return fixedJson;
-            } catch (e) {
+            } catch (e: any) {
                 // Continue to next strategy
             }
         }
@@ -267,10 +274,9 @@ async function extractAndValidateJson(text: string): Promise<string | null> {
     try {
         const reconstructedJson = await reconstructJsonFromPartial(cleanedText);
         if (reconstructedJson) {
-            console.log('Strategy 6 succeeded: Reconstructed JSON from partial content');
             return reconstructedJson;
         }
-    } catch (e) {
+    } catch (e: any) {
         // Continue to next strategy
     }
 
@@ -278,10 +284,9 @@ async function extractAndValidateJson(text: string): Promise<string | null> {
     try {
         const extractedFromStructure = await extractFromAIResponseStructure(cleanedText);
         if (extractedFromStructure) {
-            console.log('Strategy 6.5 succeeded: Extracted from AI response structure');
             return extractedFromStructure;
         }
-    } catch (e) {
+    } catch (e: any) {
         // Continue to next strategy
     }
 
@@ -289,10 +294,9 @@ async function extractAndValidateJson(text: string): Promise<string | null> {
     try {
         const minimalJson = await createMinimalValidJson(cleanedText);
         if (minimalJson) {
-            console.log('Strategy 7 succeeded: Created minimal valid JSON');
             return minimalJson;
         }
-    } catch (e) {
+    } catch (e: any) {
         // Continue to next strategy
     }
 
@@ -368,7 +372,6 @@ async function reconstructJsonFromPartial(text: string): Promise<string | null> 
         return await closeIncompleteJsonStructures(partialJson);
 
     } catch (e) {
-        console.warn('Error in JSON reconstruction:', e);
         return null;
     }
 }
@@ -454,7 +457,7 @@ async function extractFromAIResponseStructure(text: string): Promise<string | nu
                 // Extract the text content and try to find JSON within it
                 const textContent = match.match(/"text"\s*:\s*"([^"]*)"/)?.[1];
                 if (textContent && textContent.includes('{')) {
-                    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+                    const jsonMatch = textContent.match(/\{[^}]*\}/);
                     if (jsonMatch) {
                         try {
                             JSON.parse(jsonMatch[0]);
@@ -488,7 +491,7 @@ async function extractFromAIResponseStructure(text: string): Promise<string | nu
                 for (const part of textParts) {
                     const textContent = part.match(/"text"\s*:\s*"([^"]*)"/)?.[1];
                     if (textContent && textContent.includes('{')) {
-                        const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+                        const jsonMatch = textContent.match(/\{[^}]*\}/);
                         if (jsonMatch) {
                             try {
                                 JSON.parse(jsonMatch[0]);
@@ -505,7 +508,7 @@ async function extractFromAIResponseStructure(text: string): Promise<string | nu
         }
 
     } catch (e) {
-        console.warn('Error in AI response structure extraction:', e);
+        return null;
     }
 
     return null;
@@ -680,7 +683,7 @@ async function createMinimalValidJson(text: string): Promise<string | null> {
         }
 
     } catch (e) {
-        console.warn('Error in minimal JSON creation:', e);
+        return null;
     }
 
     return null;
