@@ -122,6 +122,14 @@ const CandidateList: React.FC<CandidateListProps> = ({
         );
     };
 
+    // Helper function to get color class based on JD match percentage
+    const getJDMatchColorClass = (percentage: number): string => {
+        if (percentage <= 10) return 'bg-gray-500 hover:bg-gray-600'; // Grey
+        if (percentage <= 50) return 'bg-red-500 hover:bg-red-600'; // Red
+        if (percentage <= 75) return 'bg-yellow-500 hover:bg-yellow-600'; // Yellow
+        return 'bg-green-500 hover:bg-green-600'; // Green (76-100)
+    };
+
     const handleDeleteCandidate = () => {
         if (candidateToDelete) {
             onDeleteCandidate(candidateToDelete.id);
@@ -369,7 +377,7 @@ Example output: 75`;
                                             <div className="group relative">
                                                 <span
                                                     className={`inline-flex items-center justify-center px-2 py-1.5 rounded-full text-xs font-medium ml-2 cursor-pointer transition-colors duration-200 ${isGeminiConnected
-                                                        ? 'bg-gray-500 text-white hover:bg-gray-600'
+                                                        ? getJDMatchColorClass(candidate.jdMatchPercentage || 0)
                                                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                                         }`}
                                                     onClick={(e) => {
