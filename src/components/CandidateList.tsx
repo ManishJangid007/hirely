@@ -342,15 +342,17 @@ Example output: 75`;
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredCandidates.map((candidate) => (
-                            <Link
+                            <div
                                 key={candidate.id}
-                                to={`/candidate/${candidate.id}`}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 card-hover animate-fade-in cursor-pointer block"
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 card-hover animate-fade-in"
                             >
                                 <div className="p-6">
                                     <div className="flex justify-between items-start mb-4">
-                                        <div className="flex-1">
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                                        <Link
+                                            to={`/candidate/${candidate.id}`}
+                                            className="flex-1 cursor-pointer hover:opacity-80 transition-opacity duration-200 group"
+                                        >
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors duration-200">
                                                 {candidate.fullName}
                                             </h3>
                                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
@@ -366,7 +368,7 @@ Example output: 75`;
                                                     {formatInterviewDate(candidate.interviewDate)}
                                                 </div>
                                             )}
-                                        </div>
+                                        </Link>
                                         {/* Status pill moved to top right */}
                                         <span className={`inline-flex items-center px-2 py-1.5 rounded-full text-xs font-medium ${getStatusColor(candidate.status)}`}>
                                             {getStatusIcon(candidate.status)}
@@ -512,7 +514,7 @@ Example output: 75`;
                                         </div>
                                     </div>
                                 </div>
-                            </Link>
+                            </div>
                         ))}
                     </div>
                 )}
