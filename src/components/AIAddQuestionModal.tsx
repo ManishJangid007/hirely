@@ -122,7 +122,7 @@ Focus on the same topic, difficulty level, and style.`;
                                     type="checkbox"
                                     checked={deleteExisting}
                                     onChange={(e) => setDeleteExisting(e.target.checked)}
-                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                                    className="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 checked:bg-primary-600 checked:border-primary-600"
                                 />
                                 <label htmlFor="deleteExisting" className="text-sm text-gray-700 dark:text-gray-300">
                                     Delete existing questions in this section and replace with new ones
@@ -134,7 +134,7 @@ Focus on the same topic, difficulty level, and style.`;
                             <label htmlFor="aiQuestionPrompt" className="form-label required">
                                 Prompt
                                 {isGeneratingPrompt && (
-                                    <span className="ml-2 text-xs text-blue-600 dark:text-blue-400">
+                                    <span className="ml-2 text-xs text-primary-600 dark:text-primary-400">
                                         (Generating reverse prompt...)
                                     </span>
                                 )}
@@ -160,14 +160,14 @@ Focus on the same topic, difficulty level, and style.`;
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                                className="px-4 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={!prompt.trim()}
-                                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 transition-all duration-200"
                             >
                                 Generate
                             </button>

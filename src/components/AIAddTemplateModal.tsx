@@ -99,7 +99,7 @@ const AIAddTemplateModal: React.FC<AIAddTemplateModalProps> = ({ isOpen, onClose
                                 step={1}
                                 value={experienceYears}
                                 onChange={(e) => setExperienceYears(Number(e.target.value))}
-                                className="w-full accent-blue-600"
+                                className="w-full accent-primary-600"
                             />
                             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 <span>1+</span>
@@ -115,7 +115,7 @@ const AIAddTemplateModal: React.FC<AIAddTemplateModalProps> = ({ isOpen, onClose
                                 <button
                                     type="button"
                                     onClick={() => setShowJDDropdown(!showJDDropdown)}
-                                    className="w-full flex items-center justify-between px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                    className="w-full flex items-center justify-between px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                                 >
                                     <span className={selectedJD ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}>
                                         {selectedJD ? selectedJD.title : 'Select a job description...'}
@@ -147,7 +147,7 @@ const AIAddTemplateModal: React.FC<AIAddTemplateModalProps> = ({ isOpen, onClose
                                                             type="button"
                                                             onClick={() => handleJDSelect(jd)}
                                                             className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-600 ${selectedJD?.id === jd.id
-                                                                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                                                                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
                                                                 : 'text-gray-700 dark:text-gray-300'
                                                                 }`}
                                                         >
@@ -178,14 +178,14 @@ const AIAddTemplateModal: React.FC<AIAddTemplateModalProps> = ({ isOpen, onClose
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                                className="px-4 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={!templateName.trim()}
-                                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 disabled:opacity-50 transition-all duration-200"
                             >
                                 Continue
                             </button>

@@ -64,7 +64,7 @@ const ManagePositionsModal: React.FC<ManagePositionsModalProps> = ({
                                 <button
                                     type="submit"
                                     disabled={!newPosition.trim()}
-                                    className="inline-flex items-center px-4 py-3 border border-transparent text-sm leading-4 font-medium rounded-full text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                    className="inline-flex items-center px-4 py-3 border border-transparent text-sm leading-4 font-medium rounded-full text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                 </button>
@@ -78,7 +78,7 @@ const ManagePositionsModal: React.FC<ManagePositionsModalProps> = ({
                                 {positions.map((position) => (
                                     <div
                                         key={position}
-                                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
+                                        className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600"
                                     >
                                         <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">{position}</span>
                                         <button
@@ -100,7 +100,7 @@ const ManagePositionsModal: React.FC<ManagePositionsModalProps> = ({
                         <div className="mt-6 flex justify-end">
                             <button
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                className="px-4 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                             >
                                 Close
                             </button>

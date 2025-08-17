@@ -376,7 +376,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                                             handleResumeUpload(file);
                                         }
                                     }}
-                                    className="form-input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-900 dark:file:text-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="form-input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900 dark:file:text-primary-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                 />
                                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                     Accepted formats: PDF, DOCX (Max size: 20MB)
@@ -388,7 +388,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => setShowJsonResumeModal(true)}
-                                            className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline cursor-pointer"
+                                            className="text-sm text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-300 underline cursor-pointer"
                                         >
                                             View JSON Resume
                                         </button>
@@ -454,13 +454,13 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                             <button
                                 type="button"
                                 onClick={handleClose}
-                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                className="px-4 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200"
                             >
                                 Save Changes
                             </button>
@@ -473,7 +473,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
             {isProcessingResume && (
                 <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[60]">
                     <div className="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-xl max-w-md mx-4 text-center">
-                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-primary-600 mx-auto mb-4"></div>
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                             Processing Resume
                         </h3>
@@ -557,7 +557,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                                         }
                                     }}
                                     placeholder="Enter or paste your JSON resume here..."
-                                    className="w-full h-64 p-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-mono text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 resize-none"
+                                    className="w-full h-64 p-3 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-mono text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-primary-500 dark:focus:border-primary-400 resize-none"
                                 />
                             </div>
 
@@ -576,7 +576,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setShowManualEditModal(false)}
-                                        className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                        className="px-4 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                                     >
                                         Cancel
                                     </button>

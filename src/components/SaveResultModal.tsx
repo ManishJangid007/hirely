@@ -146,7 +146,7 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
                                 </label>
                                 {(isGeminiConnected && (getCorrectCount() > 0 || getWrongCount() > 0)) && (
                                     <span
-                                        className="text-xs font-medium text-blue-600 dark:text-blue-400 cursor-pointer"
+                                        className="text-xs font-medium text-primary-600 dark:text-primary-400 cursor-pointer"
                                         title="AI summary"
                                         onClick={async () => {
                                             setAiError(null);
@@ -213,13 +213,13 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                className="px-4 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200"
                             >
                                 Save Result
                             </button>
@@ -232,7 +232,7 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
             {isAIGenerating && (
                 <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[60] flex items-center justify-center px-4">
                     <div className="w-full max-w-sm p-6 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg text-center">
-                        <div className="mx-auto mb-4 h-12 w-12 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin" />
+                        <div className="mx-auto mb-4 h-12 w-12 border-4 border-primary-200 dark:border-primary-900 border-t-primary-600 dark:border-t-primary-400 rounded-full animate-spin" />
                         <p className="text-sm text-gray-700 dark:text-gray-300 animate-pulse min-h-[1.5rem]">
                             {aiMessages[aiMessageIndex]}
                         </p>

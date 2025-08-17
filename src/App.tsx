@@ -387,7 +387,7 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
@@ -469,7 +469,7 @@ function App() {
             message="No data found in the database, but a backup is available. Would you like to restore from backup?"
             confirmText="Restore"
             cancelText="Skip"
-            confirmButtonClass="bg-blue-600 hover:bg-blue-700"
+            confirmButtonClass="bg-primary-600 hover:bg-primary-700"
           />
         </div>
       </Router>

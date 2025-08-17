@@ -289,7 +289,7 @@ Example output: 75`;
                                 </Link>
                                 <button
                                     onClick={() => setShowAddModal(true)}
-                                    className="group relative inline-flex items-center justify-center w-12 h-12 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 ease-out hover:duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 hover:w-auto hover:pl-0 hover:pr-4 origin-right"
+                                    className="group relative inline-flex items-center justify-center w-12 h-12 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 ease-out hover:duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 hover:w-auto hover:pl-0 hover:pr-4 origin-right"
                                     title="Add Candidate"
                                 >
                                     {/* Centered icon for circular state */}
@@ -331,7 +331,7 @@ Example output: 75`;
                             <div className="mt-6">
                                 <button
                                     onClick={() => setShowAddModal(true)}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200"
                                 >
                                     <PlusIcon className="w-4 h-4 mr-2" />
                                     Add Candidate
@@ -416,7 +416,7 @@ Example output: 75`;
                                                             e.stopPropagation();
                                                             handleViewSummary(candidate);
                                                         }}
-                                                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                                        className="inline-flex items-center px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                                                         title="View Interview Summary"
                                                     >
                                                         <ClipboardDocumentIcon className="w-4 h-4 mr-1" />
@@ -582,7 +582,7 @@ Example output: 75`;
                             <div className="flex justify-end space-x-3">
                                 <button
                                     onClick={() => setCandidateToDelete(null)}
-                                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                    className="px-4 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
                                 >
                                     Cancel
                                 </button>

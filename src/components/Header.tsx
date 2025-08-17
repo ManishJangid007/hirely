@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({ onBackupClick }) => {
             {/* Settings gear */}
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="inline-flex items-center p-2 border rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+              className="inline-flex items-center p-2 border rounded-full shadow-sm text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
               style={{
                 backgroundColor: 'var(--header-bg)',
                 borderColor: 'var(--header-border)',

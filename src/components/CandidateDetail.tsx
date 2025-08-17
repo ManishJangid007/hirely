@@ -291,7 +291,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 </span>
                                 <button
                                     onClick={() => setShowEditCandidateModal(true)}
-                                    className="inline-flex items-center px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-full shadow-sm text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 w-fit"
+                                    className="inline-flex items-center px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-all duration-200 w-fit"
                                     title="Edit candidate"
                                 >
                                     <PencilIcon className="w-4 h-4 mr-2" />
@@ -300,7 +300,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 {candidate.status !== 'Not Interviewed' && (
                                     <button
                                         onClick={() => setShowResultSummaryModal(true)}
-                                        className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200 w-fit"
+                                        className="inline-flex items-center px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-all duration-200 w-fit"
                                     >
                                         <ClipboardDocumentIcon className="w-4 h-4 mr-2" />
                                         View Summary
@@ -357,7 +357,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 </button>
                                 <button
                                     onClick={() => setShowAddQuestionModal(true)}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 w-full sm:w-auto"
+                                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-all duration-200 w-full sm:w-auto"
                                 >
                                     <PlusIcon className="w-4 h-4 mr-2" />
                                     Add Question
@@ -387,7 +387,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                         <div className="mt-6">
                             <button
                                 onClick={() => setShowAddQuestionModal(true)}
-                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
+                                className="inline-flex items-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-all duration-200"
                             >
                                 <PlusIcon className="w-4 h-4 mr-2" />
                                 Add Question
