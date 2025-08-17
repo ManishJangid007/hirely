@@ -8,6 +8,7 @@ import ManagePositionsModal from './ManagePositionsModal';
 import JobDescriptionsModal from './JobDescriptionsModal';
 import ResultSummaryModal from './ResultSummaryModal';
 import CandidateFilters from './CandidateFilters';
+import { databaseService } from '../services/database';
 
 interface CandidateListProps {
     candidates: Candidate[];
@@ -50,11 +51,29 @@ const CandidateList: React.FC<CandidateListProps> = ({
     const [candidateForResume, setCandidateForResume] = useState<Candidate | null>(null);
     const [candidateForJD, setCandidateForJD] = useState<Candidate | null>(null);
     const [showJDModal, setShowJDModal] = useState(false);
+    const [isGeminiConnected, setIsGeminiConnected] = useState<boolean>(false);
     const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>(candidates);
 
     useEffect(() => {
         setFilteredCandidates(candidates);
     }, [candidates]);
+
+    // Check AI connection status
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                if (!databaseService.isInitialized()) {
+                    try { await databaseService.init(); } catch { }
+                }
+                const connected = await databaseService.getGeminiConnected();
+                if (mounted) setIsGeminiConnected(!!connected);
+            } catch {
+                if (mounted) setIsGeminiConnected(false);
+            }
+        })();
+        return () => { mounted = false; };
+    }, []);
 
     const formatInterviewDate = (dateString?: string): string => {
         if (!dateString) return '';
@@ -106,6 +125,15 @@ const CandidateList: React.FC<CandidateListProps> = ({
             onDeleteCandidate(candidateToDelete.id);
             setCandidateToDelete(null);
         }
+    };
+
+    // Handle JD match calculation click
+    const handleJDMatchClick = (candidate: Candidate) => {
+        if (isGeminiConnected) {
+            // TODO: Implement JD match calculation logic
+            console.log('Calculating JD match for:', candidate.fullName);
+        }
+        // If AI not connected, do nothing (button is disabled)
     };
 
     const handleViewResume = (candidate: Candidate) => {
@@ -275,14 +303,30 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                         {/* 0% Label - positioned after status */}
                                         {candidate.jobDescription && (candidate.resume || hasAnsweredQuestions(candidate)) && (
                                             <div className="group relative">
-                                                <span className="inline-flex items-center justify-center px-2 py-1.5 rounded-full text-xs font-medium bg-gray-500 text-white ml-2 cursor-pointer">
+                                                <span
+                                                    className={`inline-flex items-center justify-center px-2 py-1.5 rounded-full text-xs font-medium ml-2 cursor-pointer transition-colors duration-200 ${isGeminiConnected
+                                                        ? 'bg-gray-500 text-white hover:bg-gray-600'
+                                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                                        }`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (isGeminiConnected) {
+                                                            handleJDMatchClick(candidate);
+                                                        }
+                                                    }}
+                                                >
                                                     0%
                                                 </span>
                                                 {/* Tooltip */}
                                                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 dark:bg-gray-700 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
                                                     <div className="text-center">
                                                         <div className="font-medium">JD Match</div>
-                                                        <div className="text-gray-200">Click to calculate match percentage</div>
+                                                        <div className="text-gray-200">
+                                                            {isGeminiConnected
+                                                                ? 'Click to calculate match percentage'
+                                                                : 'Configure AI connection to calculate JD Match'
+                                                            }
+                                                        </div>
                                                     </div>
                                                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                                                 </div>
