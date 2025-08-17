@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon, CalendarIcon, DocumentTextIcon, DocumentIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon, CalendarIcon, DocumentTextIcon, DocumentIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { Candidate, QuestionTemplate, JobDescription } from '../types';
 import AddCandidateModal from './AddCandidateModal';
 import EditCandidateModal from './EditCandidateModal';
@@ -129,33 +129,70 @@ const CandidateList: React.FC<CandidateListProps> = ({
                             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
                                 <button
                                     onClick={() => setShowPositionsModal(true)}
-                                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                    className="group relative inline-flex items-center justify-center w-12 h-12 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-700 hover:duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 hover:w-auto hover:pl-0 hover:pr-4 origin-right"
+                                    title="Manage Positions"
                                 >
-                                    <BriefcaseIcon className="w-4 h-4 mr-2" />
-                                    <span className="hidden sm:inline">Manage Positions</span>
-                                    <span className="sm:hidden">Positions</span>
+                                    {/* Centered icon for circular state */}
+                                    <BriefcaseIcon className="w-5 h-5 group-hover:opacity-0" />
+
+                                    {/* Expanded state with icon and text */}
+                                    <div className="hidden group-hover:flex items-center justify-center w-full transition-all duration-500">
+                                        <BriefcaseIcon className="w-5 h-5 flex-shrink-0" />
+                                        <span className="ml-2 whitespace-nowrap overflow-hidden">
+                                            <span className="hidden sm:inline">Manage Positions</span>
+                                            <span className="sm:hidden">Positions</span>
+                                        </span>
+                                    </div>
                                 </button>
                                 <button
                                     onClick={() => setShowJobDescriptionsModal(true)}
-                                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                    className="group relative inline-flex items-center justify-center w-12 h-12 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-700 hover:duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 hover:w-auto hover:pl-0 hover:pr-4 origin-right"
+                                    title="Job Descriptions"
                                 >
-                                    <DocumentTextIcon className="w-4 h-4 mr-2" />
-                                    <span className="hidden sm:inline">Job Descriptions</span>
-                                    <span className="sm:hidden">JDs</span>
+                                    {/* Centered icon for circular state */}
+                                    <DocumentTextIcon className="w-5 h-5 group-hover:opacity-0" />
+
+                                    {/* Expanded state with icon and text */}
+                                    <div className="hidden group-hover:flex items-center justify-center w-full transition-all duration-500">
+                                        <DocumentTextIcon className="w-5 h-5 flex-shrink-0" />
+                                        <span className="ml-2 whitespace-nowrap overflow-hidden">
+                                            <span className="hidden sm:inline">Job Descriptions</span>
+                                            <span className="sm:hidden">JDs</span>
+                                        </span>
+                                    </div>
                                 </button>
                                 <Link
                                     to="/templates"
-                                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                    className="group relative inline-flex items-center justify-center w-12 h-12 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-all duration-700 hover:duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 hover:w-auto hover:pl-0 hover:pr-4 origin-right"
+                                    title="Question Templates"
                                 >
-                                    <span className="hidden sm:inline">Question Templates</span>
-                                    <span className="sm:hidden">Templates</span>
+                                    {/* Centered icon for circular state */}
+                                    <DocumentDuplicateIcon className="w-5 h-5 group-hover:opacity-0" />
+
+                                    {/* Expanded state with icon and text */}
+                                    <div className="hidden group-hover:flex items-center justify-center w-full transition-all duration-500">
+                                        <DocumentDuplicateIcon className="w-5 h-5 flex-shrink-0" />
+                                        <span className="ml-2 whitespace-nowrap overflow-hidden">
+                                            <span className="hidden sm:inline">Question Templates</span>
+                                            <span className="sm:hidden">Templates</span>
+                                        </span>
+                                    </div>
                                 </Link>
                                 <button
                                     onClick={() => setShowAddModal(true)}
-                                    className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                                    className="group relative inline-flex items-center justify-center w-12 h-12 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-700 hover:duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 hover:w-auto hover:pl-0 hover:pr-4 origin-right"
+                                    title="Add Candidate"
                                 >
-                                    <PlusIcon className="w-4 h-4 mr-2" />
-                                    Add Candidate
+                                    {/* Centered icon for circular state */}
+                                    <PlusIcon className="w-5 h-5 group-hover:opacity-0" />
+
+                                    {/* Expanded state with icon and text */}
+                                    <div className="hidden group-hover:flex items-center justify-center w-full transition-all duration-500">
+                                        <PlusIcon className="w-5 h-5 flex-shrink-0" />
+                                        <span className="ml-2 whitespace-nowrap overflow-hidden">
+                                            Add Candidate
+                                        </span>
+                                    </div>
                                 </button>
                             </div>
                         </div>
