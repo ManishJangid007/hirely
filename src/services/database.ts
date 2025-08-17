@@ -1,4 +1,4 @@
-import { Candidate, QuestionTemplate, InterviewResult, JobDescription, ThemeSettings, AISettings, CompleteAppData } from '../types';
+import { Candidate, QuestionTemplate, InterviewResult, JobDescription, ThemeSettings, CompleteAppData } from '../types';
 
 export interface DatabaseSchema {
   candidates: Candidate[];
@@ -721,7 +721,7 @@ class DatabaseService {
 
     // Import AI settings
     if (data.aiSettings) {
-      await this.setSettings(data.aiSettings);
+      await this.setSettings(data.aiSettings as AppSettings);
     }
 
     // Import theme settings
