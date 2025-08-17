@@ -94,6 +94,13 @@ const CandidateList: React.FC<CandidateListProps> = ({
         }
     };
 
+    // Helper function to check if candidate has answered questions with scores
+    const hasAnsweredQuestions = (candidate: Candidate): boolean => {
+        return candidate.questions && candidate.questions.some(question =>
+            question.isCorrect !== undefined
+        );
+    };
+
     const handleDeleteCandidate = () => {
         if (candidateToDelete) {
             onDeleteCandidate(candidateToDelete.id);
@@ -265,6 +272,22 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                             {getStatusIcon(candidate.status)}
                                             <span className="ml-1">{candidate.status}</span>
                                         </span>
+                                        {/* 0% Label - positioned after status */}
+                                        {candidate.jobDescription && (candidate.resume || hasAnsweredQuestions(candidate)) && (
+                                            <div className="group relative">
+                                                <span className="inline-flex items-center justify-center px-2 py-1.5 rounded-full text-xs font-medium bg-gray-500 text-white ml-2 cursor-pointer">
+                                                    0%
+                                                </span>
+                                                {/* Tooltip */}
+                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 dark:bg-gray-700 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                                    <div className="text-center">
+                                                        <div className="font-medium">JD Match</div>
+                                                        <div className="text-gray-200">Click to calculate match percentage</div>
+                                                    </div>
+                                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex items-center justify-between">
