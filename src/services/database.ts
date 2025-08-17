@@ -1,4 +1,4 @@
-import { Candidate, QuestionTemplate, InterviewResult, JobDescription } from '../types';
+import { Candidate, QuestionTemplate, InterviewResult, JobDescription, ThemeSettings, AISettings, CompleteAppData } from '../types';
 
 export interface DatabaseSchema {
   candidates: Candidate[];
@@ -21,6 +21,8 @@ export interface BackupData {
   jobDescriptions: JobDescription[];
   interviewResults: InterviewResult[];
   settings?: AppSettings;
+  themeSettings?: ThemeSettings;
+  localStorageData?: Record<string, any>;
   lastBackup: string;
 }
 
@@ -119,6 +121,33 @@ class DatabaseService {
         this.getSettings()
       ]);
 
+      // Get theme settings from localStorage
+      const themeSettings: ThemeSettings = {
+        theme: (localStorage.getItem('theme') as 'light' | 'dark') || 'light',
+        primaryColor: (localStorage.getItem('primaryColor') as any) || 'blue'
+      };
+
+      // Get all localStorage data (excluding the backup key itself)
+      const localStorageData: Record<string, any> = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key !== this.backupKey) {
+          try {
+            const value = localStorage.getItem(key);
+            if (value) {
+              // Try to parse as JSON, fallback to string
+              try {
+                localStorageData[key] = JSON.parse(value);
+              } catch {
+                localStorageData[key] = value;
+              }
+            }
+          } catch (error) {
+            // Silently skip problematic keys
+          }
+        }
+      }
+
       const backupData: BackupData = {
         candidates,
         questionTemplates: templates,
@@ -126,13 +155,15 @@ class DatabaseService {
         jobDescriptions,
         interviewResults: results,
         settings,
+        themeSettings,
+        localStorageData,
         lastBackup: new Date().toISOString()
       };
 
       localStorage.setItem(this.backupKey, JSON.stringify(backupData));
 
     } catch (error) {
-
+      console.error('Failed to create backup:', error);
     }
   }
 
@@ -140,7 +171,6 @@ class DatabaseService {
     try {
       const backupData = localStorage.getItem(this.backupKey);
       if (!backupData) {
-
         return false;
       }
 
@@ -172,10 +202,32 @@ class DatabaseService {
         await this.setSettings(backup.settings);
       }
 
+      // Restore theme settings
+      if (backup.themeSettings) {
+        localStorage.setItem('theme', backup.themeSettings.theme);
+        localStorage.setItem('primaryColor', backup.themeSettings.primaryColor);
+      }
+
+      // Restore localStorage data
+      if (backup.localStorageData) {
+        for (const [key, value] of Object.entries(backup.localStorageData)) {
+          if (key !== this.backupKey) {
+            try {
+              if (typeof value === 'string') {
+                localStorage.setItem(key, value);
+              } else {
+                localStorage.setItem(key, JSON.stringify(value));
+              }
+            } catch (error) {
+              // Silently skip problematic keys
+            }
+          }
+        }
+      }
 
       return true;
     } catch (error) {
-
+      console.error('Failed to restore backup:', error);
       return false;
     }
   }
@@ -589,6 +641,151 @@ class DatabaseService {
       }
     } catch (error) {
 
+    }
+  }
+
+  // New method for complete data export
+  async exportCompleteData(): Promise<CompleteAppData> {
+    const [candidates, templates, positions, jobDescriptions, results, settings] = await Promise.all([
+      this.getCandidates(),
+      this.getQuestionTemplates(),
+      this.getPositions(),
+      this.getJobDescriptions(),
+      this.getInterviewResults(),
+      this.getSettings()
+    ]);
+
+    // Get theme settings
+    const themeSettings: ThemeSettings = {
+      theme: (localStorage.getItem('theme') as 'light' | 'dark') || 'light',
+      primaryColor: (localStorage.getItem('primaryColor') as any) || 'blue'
+    };
+
+    // Get all localStorage data
+    const localStorageData: Record<string, any> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key !== this.backupKey) {
+        try {
+          const value = localStorage.getItem(key);
+          if (value) {
+            try {
+              localStorageData[key] = JSON.parse(value);
+            } catch {
+              localStorageData[key] = value;
+            }
+          }
+        } catch (error) {
+          // Silently skip problematic keys
+        }
+      }
+    }
+
+    return {
+      candidates,
+      questionTemplates: templates,
+      positions,
+      jobDescriptions,
+      interviewResults: results,
+      themeSettings,
+      aiSettings: settings,
+      localStorageData,
+      exportedAt: new Date().toISOString(),
+      version: '2.0' // Increment version for new format
+    };
+  }
+
+  // New method for complete data import
+  async importCompleteData(data: CompleteAppData): Promise<void> {
+    // Clear existing data
+    await this.clearAllData();
+
+    // Import database data
+    for (const candidate of data.candidates) {
+      await this.addCandidate(candidate);
+    }
+
+    for (const template of data.questionTemplates) {
+      await this.addQuestionTemplate(template);
+    }
+
+    await this.setPositions(data.positions);
+
+    for (const jobDescription of data.jobDescriptions) {
+      await this.addJobDescription(jobDescription);
+    }
+
+    for (const result of data.interviewResults) {
+      await this.addInterviewResult(result);
+    }
+
+    // Import AI settings
+    if (data.aiSettings) {
+      await this.setSettings(data.aiSettings);
+    }
+
+    // Import theme settings
+    if (data.themeSettings) {
+      localStorage.setItem('theme', data.themeSettings.theme);
+      localStorage.setItem('primaryColor', data.themeSettings.primaryColor);
+    }
+
+    // Import localStorage data
+    if (data.localStorageData) {
+      for (const [key, value] of Object.entries(data.localStorageData)) {
+        if (key !== this.backupKey) {
+          try {
+            if (typeof value === 'string') {
+              localStorage.setItem(key, value);
+            } else {
+              localStorage.setItem(key, JSON.stringify(value));
+            }
+          } catch (error) {
+            // Silently skip problematic keys
+          }
+        }
+      }
+    }
+  }
+
+  // Helper method to get all localStorage keys (for debugging)
+  getAllLocalStorageKeys(): string[] {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) {
+        keys.push(key);
+      }
+    }
+    return keys;
+  }
+
+  // Helper method to verify backup completeness
+  async verifyBackupCompleteness(): Promise<{ complete: boolean; missing: string[] }> {
+    const backupData = localStorage.getItem(this.backupKey);
+    if (!backupData) {
+      return { complete: false, missing: ['No backup found'] };
+    }
+
+    try {
+      const backup: BackupData = JSON.parse(backupData);
+      const missing: string[] = [];
+
+      // Check if all required data is present
+      if (!backup.candidates) missing.push('candidates');
+      if (!backup.questionTemplates) missing.push('questionTemplates');
+      if (!backup.positions) missing.push('positions');
+      if (!backup.jobDescriptions) missing.push('jobDescriptions');
+      if (!backup.interviewResults) missing.push('interviewResults');
+      if (!backup.themeSettings) missing.push('themeSettings');
+      if (!backup.localStorageData) missing.push('localStorageData');
+
+      return {
+        complete: missing.length === 0,
+        missing
+      };
+    } catch (error) {
+      return { complete: false, missing: ['Invalid backup format'] };
     }
   }
 }

@@ -17,9 +17,9 @@ export const PRIMARY_COLORS: Record<PrimaryColor, { name: string; light: string;
 const generateColorShades = (baseColor: string, isDark: boolean = false): Record<string, string> => {
   // This is a simplified color generation - in a real app you might want to use a color library
   const color = isDark ? PRIMARY_COLORS[baseColor as PrimaryColor]?.dark : PRIMARY_COLORS[baseColor as PrimaryColor]?.light;
-  
+
   if (!color) return {};
-  
+
   // For now, we'll use the base colors and generate some variations
   // In a production app, you'd want to use a proper color manipulation library
   if (isDark) {
@@ -123,7 +123,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   useEffect(() => {
     const savedColor = localStorage.getItem('primaryColor');
     if (savedColor && !PRIMARY_COLORS[savedColor as PrimaryColor]) {
-      console.log('Clearing invalid primary color from localStorage:', savedColor);
       localStorage.removeItem('primaryColor');
     }
   }, []);
@@ -184,13 +183,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       setPrimaryColorState('blue');
       return;
     }
-    
+
     const primaryColorValue = theme === 'dark' ? currentColor.dark : currentColor.light;
     const colorShades = generateColorShades(primaryColor, theme === 'dark');
-    
-    console.log('Updating colors for:', primaryColor, 'theme:', theme, 'primary value:', primaryColorValue);
-    console.log('Generated shades:', colorShades);
-    
+
     root.style.setProperty('--primary-color', primaryColorValue);
     root.style.setProperty('--primary-color-50', colorShades['50']);
     root.style.setProperty('--primary-color-100', colorShades['100']);
@@ -257,22 +253,21 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   };
 
   const setPrimaryColor = (color: PrimaryColor) => {
-    console.log('Setting primary color to:', color);
-    
+
     // Validate the color exists
     if (!PRIMARY_COLORS[color]) {
       console.error('Invalid color:', color, 'falling back to blue');
       color = 'blue';
     }
-    
+
     setPrimaryColorState(color);
-    
+
     // Force immediate CSS variable update
     const root = document.documentElement;
     const currentColor = PRIMARY_COLORS[color];
     const primaryColorValue = theme === 'dark' ? currentColor.dark : currentColor.light;
     const colorShades = generateColorShades(color, theme === 'dark');
-    
+
     root.style.setProperty('--primary-color', primaryColorValue);
     root.style.setProperty('--primary-color-50', colorShades['50']);
     root.style.setProperty('--primary-color-100', colorShades['100']);
@@ -284,8 +279,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     root.style.setProperty('--primary-color-700', colorShades['700']);
     root.style.setProperty('--primary-color-800', colorShades['800']);
     root.style.setProperty('--primary-color-900', colorShades['900']);
-    
-    console.log('CSS variables updated for color:', color);
+
   };
 
   const toggleTheme = () => {

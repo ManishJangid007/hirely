@@ -57,4 +57,29 @@ export interface AppState {
     questionTemplates: QuestionTemplate[];
     positions: string[];
     jobDescriptions: JobDescription[];
+}
+
+// New interfaces for complete backup and export
+export interface ThemeSettings {
+    theme: 'light' | 'dark';
+    primaryColor: 'blue' | 'teal' | 'purple' | 'indigo' | 'orange';
+}
+
+export interface AISettings {
+    apiKey?: string;
+    geminiApiKey?: string;
+    geminiConnected?: boolean;
+}
+
+export interface CompleteAppData {
+    candidates: Candidate[];
+    questionTemplates: QuestionTemplate[];
+    positions: string[];
+    jobDescriptions: JobDescription[];
+    interviewResults: InterviewResult[];
+    themeSettings: ThemeSettings;
+    aiSettings: AISettings;
+    localStorageData: Record<string, any>; // For any other localStorage items
+    exportedAt: string;
+    version: string;
 } 
