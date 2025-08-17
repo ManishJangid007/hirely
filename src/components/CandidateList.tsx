@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon, CalendarIcon, DocumentTextIcon, DocumentIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon, UserIcon, BriefcaseIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ExclamationTriangleIcon, MinusCircleIcon, PencilIcon, ClipboardDocumentIcon, CalendarIcon, DocumentTextIcon, DocumentIcon, DocumentDuplicateIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Candidate, QuestionTemplate, JobDescription } from '../types';
 import AddCandidateModal from './AddCandidateModal';
 import EditCandidateModal from './EditCandidateModal';
@@ -48,6 +48,8 @@ const CandidateList: React.FC<CandidateListProps> = ({
     const [candidateToEdit, setCandidateToEdit] = useState<Candidate | null>(null);
     const [candidateForSummary, setCandidateForSummary] = useState<Candidate | null>(null);
     const [candidateForResume, setCandidateForResume] = useState<Candidate | null>(null);
+    const [candidateForJD, setCandidateForJD] = useState<Candidate | null>(null);
+    const [showJDModal, setShowJDModal] = useState(false);
     const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>(candidates);
 
     useEffect(() => {
@@ -309,6 +311,26 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                                     <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                                                 </div>
                                             </div>
+                                            {candidate.jobDescription && (
+                                                <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors duration-200 group relative">
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setCandidateForJD(candidate);
+                                                            setShowJDModal(true);
+                                                        }}
+                                                        className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200"
+                                                        title="View Job Description"
+                                                    >
+                                                        <DocumentTextIcon className="w-4 h-4" />
+                                                    </button>
+                                                    {/* Tooltip */}
+                                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 dark:bg-gray-700 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                                        View Job Description
+                                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                                                    </div>
+                                                </div>
+                                            )}
                                             {candidate.resume && (
                                                 <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors duration-200 group relative">
                                                     <button
@@ -431,6 +453,45 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                 >
                                     Delete
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Job Description Modal */}
+            {showJDModal && candidateForJD && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+                    <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full mx-auto max-h-[90vh] overflow-hidden">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                Job Description - {candidateForJD.fullName}
+                            </h3>
+                            <button
+                                onClick={() => {
+                                    setShowJDModal(false);
+                                    setCandidateForJD(null);
+                                }}
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 overflow-auto max-h-[calc(90vh-120px)]">
+                            <div className="mb-6">
+                                <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                                    {candidateForJD.jobDescription?.title}
+                                </h4>
+                                <div className="prose prose-gray dark:prose-invert max-w-none">
+                                    <div className="whitespace-pre-wrap text-gray-700 dark:text-gray-300 leading-relaxed">
+                                        {candidateForJD.jobDescription?.description}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                <p>Job Description attached to candidate on: {new Date(candidateForJD.jobDescription?.createdAt || '').toLocaleDateString()}</p>
                             </div>
                         </div>
                     </div>
