@@ -9,6 +9,7 @@ import JobDescriptionsModal from './JobDescriptionsModal';
 import ResultSummaryModal from './ResultSummaryModal';
 import CandidateFilters from './CandidateFilters';
 import { databaseService } from '../services/database';
+import { generateContent, extractFirstText } from '../services/ai';
 
 interface CandidateListProps {
     candidates: Candidate[];
@@ -52,6 +53,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
     const [candidateForJD, setCandidateForJD] = useState<Candidate | null>(null);
     const [showJDModal, setShowJDModal] = useState(false);
     const [isGeminiConnected, setIsGeminiConnected] = useState<boolean>(false);
+    const [calculatingJDMatchFor, setCalculatingJDMatchFor] = useState<string | null>(null);
     const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>(candidates);
 
     useEffect(() => {
@@ -128,10 +130,72 @@ const CandidateList: React.FC<CandidateListProps> = ({
     };
 
     // Handle JD match calculation click
-    const handleJDMatchClick = (candidate: Candidate) => {
+    const handleJDMatchClick = async (candidate: Candidate) => {
         if (isGeminiConnected) {
-            // TODO: Implement JD match calculation logic
-            console.log('Calculating JD match for:', candidate.fullName);
+            try {
+                // Show loading state
+                setCalculatingJDMatchFor(candidate.id);
+
+                // Determine data source (resume or answered questions)
+                let dataSource = '';
+                let dataContent = '';
+
+                if (hasAnsweredQuestions(candidate)) {
+                    dataSource = 'answered questions';
+                    const answeredQuestions = candidate.questions.filter(q => q.isCorrect !== undefined);
+                    dataContent = JSON.stringify(answeredQuestions, null, 2);
+                } else if (candidate.resume) {
+                    dataSource = 'resume';
+                    dataContent = JSON.stringify(candidate.resume, null, 2);
+                } else {
+                    throw new Error('No answered questions or resume available for JD match calculation');
+                }
+
+                // Compose the AI prompt
+                const prompt = `Here is the candidate's ${dataSource}:
+${dataContent}
+
+And here is the Job Description:
+Title: ${candidate.jobDescription?.title}
+Description: ${candidate.jobDescription?.description}
+
+Calculate the JD Match percentage between 0 to 100. The match should be consistent - if you give the same ${dataSource} with the same JD, the score should be the same next time. Use any formula you like that's suitable to calculate the JD match.
+
+CRITICAL REQUIREMENTS:
+- Output should be ONLY a number between 0-100
+- No extra text at the start or end of the response
+- No percentage sign (%)
+- Just the number
+- Ensure consistency in scoring for the same inputs
+
+Example output: 75`;
+
+                // Call AI
+                const response = await generateContent({
+                    prompt,
+                    timeoutMs: 30000
+                });
+
+                const aiResponse = extractFirstText(response);
+                if (!aiResponse) {
+                    throw new Error('No response from AI');
+                }
+
+                // Extract the number from AI response
+                const matchPercentage = parseInt(aiResponse.trim());
+                if (isNaN(matchPercentage) || matchPercentage < 0 || matchPercentage > 100) {
+                    throw new Error('Invalid percentage response from AI');
+                }
+
+                // Update candidate with JD match percentage
+                onUpdateCandidate(candidate.id, { jdMatchPercentage: matchPercentage });
+
+            } catch (error: any) {
+                console.error('JD Match calculation failed:', error);
+                // You can add error handling UI here if needed
+            } finally {
+                setCalculatingJDMatchFor(null);
+            }
         }
         // If AI not connected, do nothing (button is disabled)
     };
@@ -315,7 +379,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                                                         }
                                                     }}
                                                 >
-                                                    0%
+                                                    {calculatingJDMatchFor === candidate.id ? '...' : (candidate.jdMatchPercentage !== undefined ? `${candidate.jdMatchPercentage}%` : '0%')}
                                                 </span>
                                                 {/* Tooltip */}
                                                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-900 dark:bg-gray-700 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">

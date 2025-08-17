@@ -26,7 +26,7 @@ export interface BackupData {
 
 class DatabaseService {
   private dbName = 'InterviewAppDB';
-  private version = 7; // Increment version since we added jobDescription field to candidates
+  private version = 8; // Increment version since we added jdMatchPercentage field to candidates
   private db: IDBDatabase | null = null;
   private backupKey = 'interview_app_backup';
 
