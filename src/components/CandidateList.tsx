@@ -431,7 +431,10 @@ Example output: 75`;
                                             )}
                                         </div>
                                         {/* Action icons moved to bottom right */}
-                                        <div className="bg-primary-50 dark:bg-primary-900/30 rounded-full px-4 py-2 flex items-center justify-center space-x-3 hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-all duration-200 transform hover:scale-105">
+                                        <div
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="bg-primary-50 dark:bg-primary-900/30 border border-primary-300 dark:border-primary-600 rounded-full px-4 py-2 flex items-center justify-center space-x-3 hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-all duration-200 transform hover:scale-105"
+                                        >
                                             <div className="group relative">
                                                 <button
                                                     onClick={(e) => {
