@@ -64,7 +64,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.3s ease, color 0.3s ease;
+
 }
 
 code {
@@ -72,10 +72,7 @@ code {
     monospace;
 }
 
-/* Dark mode transitions */
-* {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-}
+
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
