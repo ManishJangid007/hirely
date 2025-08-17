@@ -342,10 +342,10 @@ Example output: 75`;
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredCandidates.map((candidate) => (
-                            <div
+                            <Link
                                 key={candidate.id}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 card-hover animate-fade-in cursor-pointer"
-                                onClick={() => window.location.href = `/candidate/${candidate.id}`}
+                                to={`/candidate/${candidate.id}`}
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 card-hover animate-fade-in cursor-pointer block"
                             >
                                 <div className="p-6">
                                     <div className="flex justify-between items-start mb-4">
@@ -512,7 +512,7 @@ Example output: 75`;
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}
