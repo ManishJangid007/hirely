@@ -430,6 +430,7 @@ function App() {
                     candidates={appState.candidates}
                     questionTemplates={appState.questionTemplates}
                     positions={appState.positions}
+                    jobDescriptions={appState.jobDescriptions}
                     onUpdateCandidate={updateCandidate}
                   />
                 }

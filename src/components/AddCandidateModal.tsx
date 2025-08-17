@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { XMarkIcon, DocumentDuplicateIcon, UserIcon } from '@heroicons/react/24/outline';
-import { Candidate, QuestionTemplate } from '../types';
+import { Candidate, QuestionTemplate, JobDescription } from '../types';
 import DatePicker from './DatePicker';
 import Select from './Select';
 import { databaseService } from '../services/database';
@@ -13,6 +13,7 @@ interface AddCandidateModalProps {
     positions: string[];
     questionTemplates: QuestionTemplate[];
     candidates: Candidate[];
+    jobDescriptions: JobDescription[];
 }
 
 const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
@@ -21,14 +22,16 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
     onAddCandidate,
     positions,
     questionTemplates,
-    candidates
+    candidates,
+    jobDescriptions
 }) => {
     const [formData, setFormData] = useState({
         fullName: '',
         position: '',
         experienceYears: 0,
         experienceMonths: 0,
-        interviewDate: ''
+        interviewDate: '',
+        jobDescription: ''
     });
     const [showQuestionImport, setShowQuestionImport] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<string>('');
@@ -140,7 +143,8 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
             position: '',
             experienceYears: 0,
             experienceMonths: 0,
-            interviewDate: ''
+            interviewDate: '',
+            jobDescription: ''
         });
         setShowQuestionImport(false);
         setSelectedTemplate('');
@@ -251,12 +255,13 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
             },
             interviewDate: formData.interviewDate || undefined,
             questions: importedQuestions,
-            resume: hasResume ? parsedResume : undefined
+            resume: hasResume ? parsedResume : undefined,
+            jobDescription: formData.jobDescription ? jobDescriptions.find(jd => jd.id === formData.jobDescription) : undefined
         });
 
         resetForm();
         onClose();
-    }, [formData.fullName, formData.position, formData.experienceYears, formData.experienceMonths, formData.interviewDate, importType, selectedTemplate, selectedCandidate, hasResume, parsedResume, onAddCandidate, onClose, resetForm, questionTemplates, candidates]);
+    }, [formData.fullName, formData.position, formData.experienceYears, formData.experienceMonths, formData.interviewDate, formData.jobDescription, importType, selectedTemplate, selectedCandidate, hasResume, parsedResume, onAddCandidate, onClose, resetForm, questionTemplates, candidates, jobDescriptions]);
 
     const handleInputChange = useCallback((field: string, value: string | number) => {
         setFormData(prev => ({
@@ -330,6 +335,19 @@ const AddCandidateModal: React.FC<AddCandidateModalProps> = ({
                                 onChange={(val) => handleInputChange('position', val)}
                                 options={positionOptions}
                                 placeholder="Select a position"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="form-label">Job Description (Optional)</label>
+                            <Select
+                                value={formData.jobDescription}
+                                onChange={(val) => handleInputChange('jobDescription', val)}
+                                options={[
+                                    { value: '', label: 'Select a job description' },
+                                    ...jobDescriptions.map(jd => ({ value: jd.id, label: jd.title }))
+                                ]}
+                                placeholder="Select a job description"
                             />
                         </div>
 

@@ -362,6 +362,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                 positions={positions}
                 questionTemplates={questionTemplates}
                 candidates={candidates}
+                jobDescriptions={jobDescriptions}
             />
 
             <EditCandidateModal
@@ -373,6 +374,7 @@ const CandidateList: React.FC<CandidateListProps> = ({
                 onUpdateCandidate={onUpdateCandidate}
                 candidate={candidateToEdit}
                 positions={positions}
+                jobDescriptions={jobDescriptions}
             />
 
             <ManagePositionsModal

@@ -12,7 +12,7 @@ import {
     ChevronDownIcon,
     ChevronRightIcon
 } from '@heroicons/react/24/outline';
-import { Candidate, Question, QuestionTemplate } from '../types';
+import { Candidate, Question, QuestionTemplate, JobDescription } from '../types';
 import { databaseService } from '../services/database';
 import AddQuestionModal from './AddQuestionModal';
 import EditQuestionModal from './EditQuestionModal';
@@ -25,6 +25,7 @@ interface CandidateDetailProps {
     candidates: Candidate[];
     questionTemplates: QuestionTemplate[];
     positions: string[];
+    jobDescriptions: JobDescription[];
     onUpdateCandidate: (id: string, updates: Partial<Candidate>) => void;
 }
 
@@ -32,6 +33,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     candidates,
     questionTemplates,
     positions,
+    jobDescriptions,
     onUpdateCandidate
 }) => {
     const { id } = useParams<{ id: string }>();
@@ -263,6 +265,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
                                         {candidate.experience.years} years, {candidate.experience.months} months experience
                                     </p>
+                                    {candidate.jobDescription && (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            Job Description: {candidate.jobDescription.title}
+                                        </p>
+                                    )}
                                     {candidate.interviewDate && (
                                         <p className="text-sm text-gray-500 dark:text-gray-400">
                                             Interview Date: {(() => {
@@ -598,6 +605,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 onUpdateCandidate={onUpdateCandidate}
                 candidate={candidate}
                 positions={positions}
+                jobDescriptions={jobDescriptions}
             />
 
             <SaveResultModal

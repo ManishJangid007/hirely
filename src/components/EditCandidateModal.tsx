@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { Candidate } from '../types';
+import { Candidate, JobDescription } from '../types';
 import DatePicker from './DatePicker';
 import { databaseService } from '../services/database';
 import { processResumeToJson } from '../services/ai';
@@ -11,6 +11,7 @@ interface EditCandidateModalProps {
     onUpdateCandidate: (id: string, updates: Partial<Candidate>) => void;
     candidate: Candidate | null;
     positions: string[];
+    jobDescriptions: JobDescription[];
 }
 
 const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
@@ -18,13 +19,15 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
     onClose,
     onUpdateCandidate,
     candidate,
-    positions
+    positions,
+    jobDescriptions
 }) => {
     const [fullName, setFullName] = useState('');
     const [position, setPosition] = useState('');
     const [experienceYears, setExperienceYears] = useState(0);
     const [experienceMonths, setExperienceMonths] = useState(0);
     const [interviewDate, setInterviewDate] = useState('');
+    const [jobDescription, setJobDescription] = useState('');
 
     // Resume-related state variables
     const [isAIConnected, setIsAIConnected] = useState<boolean>(false);
@@ -47,6 +50,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
             setExperienceYears(candidate.experience.years);
             setExperienceMonths(candidate.experience.months);
             setInterviewDate(candidate.interviewDate || '');
+            setJobDescription(candidate.jobDescription?.id || '');
 
             // Set resume-related state from existing candidate data
             if (candidate.resume) {
@@ -65,6 +69,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
             setExperienceYears(0);
             setExperienceMonths(0);
             setInterviewDate('');
+            setJobDescription('');
             setJsonResume('');
             setParsedResume(null);
             setHasResume(false);
@@ -185,7 +190,8 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                 months: experienceMonths
             },
             interviewDate: interviewDate || undefined,
-            resume: hasResume ? parsedResume : undefined
+            resume: hasResume ? parsedResume : undefined,
+            jobDescription: jobDescription ? jobDescriptions.find(jd => jd.id === jobDescription) : undefined
         });
         onClose();
     };
@@ -198,6 +204,7 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
             setExperienceYears(candidate.experience.years);
             setExperienceMonths(candidate.experience.months);
             setInterviewDate(candidate.interviewDate || '');
+            setJobDescription(candidate.jobDescription?.id || '');
 
             // Reset resume state to current candidate's data
             if (candidate.resume) {
@@ -257,6 +264,22 @@ const EditCandidateModal: React.FC<EditCandidateModalProps> = ({
                                 {positions.map(p => (
                                     <option key={p} value={p}>
                                         {p}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="form-label">Job Description</label>
+                            <select
+                                value={jobDescription}
+                                onChange={(e) => setJobDescription(e.target.value)}
+                                className="form-input"
+                            >
+                                <option value="">Select a job description</option>
+                                {jobDescriptions.map(jd => (
+                                    <option key={jd.id} value={jd.id}>
+                                        {jd.title}
                                     </option>
                                 ))}
                             </select>
