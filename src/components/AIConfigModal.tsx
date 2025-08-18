@@ -44,8 +44,8 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
       if (!key) {
         // Empty key disables AI
         await databaseService.setGeminiConnected(false);
-        // redirect to home page
-        window.location.href = '/';
+        // refresh current page
+        window.location.reload();
         return;
       }
 
@@ -58,8 +58,8 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
         await databaseService.setGeminiConnected(false);
       }
 
-      // Refresh the page to reflect AI connectivity state across the app
-      window.location.href = '/';
+      // Refresh the current page to reflect AI connectivity state across the app
+      window.location.reload();
     } catch (err) {
       setTestStatus('error');
       setTestMessage('Failed to save');
@@ -170,14 +170,14 @@ const AIConfigModal: React.FC<AIConfigModalProps> = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-full shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all duration-200"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                className="px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition-all duration-200"
               >
                 {saving ? 'Saving...' : 'Save'}
               </button>

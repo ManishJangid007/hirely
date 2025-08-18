@@ -28,6 +28,8 @@ import CopyTemplateModal from './CopyTemplateModal';
 import AIAddTemplateModal from './AIAddTemplateModal';
 import AIAddSectionModal from './AIAddSectionModal';
 import AIAddQuestionModal from './AIAddQuestionModal';
+import AIConnectionPromptModal from './AIConnectionPromptModal';
+import AIConfigModal from './AIConfigModal';
 import { generateContent, extractFirstText } from '../services/ai';
 import { databaseService } from '../services/database';
 
@@ -107,6 +109,9 @@ const QuestionTemplates: React.FC<QuestionTemplatesProps> = ({
         sectionId?: string;
         sectionName?: string;
     } | null>(null);
+    const [showAIConnectionPrompt, setShowAIConnectionPrompt] = useState(false);
+    const [showAIConfigModal, setShowAIConfigModal] = useState(false);
+    const [aiPromptMessage, setAiPromptMessage] = useState('');
     const [isAIGenerating, setIsAIGenerating] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
     const [isGeminiConnected, setIsGeminiConnected] = useState<boolean>(false);
@@ -589,15 +594,20 @@ ${jsonExample}
                                 <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
                                 Import Template
                             </button>
-                            {isGeminiConnected && (
-                                <button
-                                    onClick={() => setShowAIAddTemplateModal(true)}
-                                    className="inline-flex items-center px-4 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200 w-fit sm:w-auto"
-                                >
-                                    <SparklesIcon className="w-4 h-4 mr-2" />
-                                    AI Template
-                                </button>
-                            )}
+                            <button
+                                onClick={() => {
+                                    if (isGeminiConnected) {
+                                        setShowAIAddTemplateModal(true);
+                                    } else {
+                                        setAiPromptMessage("To use AI-powered template generation, you need to configure your Gemini API connection first.");
+                                        setShowAIConnectionPrompt(true);
+                                    }
+                                }}
+                                className="inline-flex items-center px-4 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200 w-fit sm:w-auto"
+                            >
+                                <SparklesIcon className="w-4 h-4 mr-2" />
+                                AI Template
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -625,6 +635,20 @@ ${jsonExample}
                             >
                                 <ArrowUpTrayIcon className="w-4 h-4 mr-2" />
                                 Import Template
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (isGeminiConnected) {
+                                        setShowAIAddTemplateModal(true);
+                                    } else {
+                                        setAiPromptMessage("To use AI-powered template generation, you need to configure your Gemini API connection first.");
+                                        setShowAIConnectionPrompt(true);
+                                    }
+                                }}
+                                className="inline-flex items-center px-4 py-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                            >
+                                <SparklesIcon className="w-4 h-4 mr-2" />
+                                AI Template
                             </button>
                         </div>
                     </div>
@@ -783,9 +807,9 @@ ${jsonExample}
                                                                                     <PencilIcon className="w-4 h-4 mr-3" />
                                                                                     Edit Section
                                                                                 </button>
-                                                                                {isGeminiConnected && (
-                                                                                    <button
-                                                                                        onClick={() => {
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        if (isGeminiConnected) {
                                                                                             setShowAIAddQuestionModal({
                                                                                                 open: true,
                                                                                                 templateId: template.id,
@@ -793,13 +817,17 @@ ${jsonExample}
                                                                                                 sectionName: section.name
                                                                                             });
                                                                                             setOpenDropdown(null);
-                                                                                        }}
-                                                                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
-                                                                                    >
-                                                                                        <SparklesIcon className="w-4 h-4 mr-3" />
-                                                                                        AI Question
-                                                                                    </button>
-                                                                                )}
+                                                                                        } else {
+                                                                                            setAiPromptMessage("To use AI-powered question generation, you need to configure your Gemini API connection first.");
+                                                                                            setShowAIConnectionPrompt(true);
+                                                                                            setOpenDropdown(null);
+                                                                                        }
+                                                                                    }}
+                                                                                    className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                                                                >
+                                                                                    <SparklesIcon className="w-4 h-4 mr-3" />
+                                                                                    AI Question
+                                                                                </button>
                                                                                 <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                                                                                 <button
                                                                                     onClick={() => {
@@ -981,19 +1009,24 @@ ${jsonExample}
                                         <ArrowDownTrayIcon className="w-4 h-4 mr-3" />
                                         Export Template
                                     </button>
-                                    {isGeminiConnected && (
-                                        <button
-                                            onClick={() => {
+                                    <button
+                                        onClick={() => {
+                                            if (isGeminiConnected) {
                                                 setShowAIAddSectionModal({ open: true, templateId: openDropdown.id });
                                                 setOpenDropdown(null);
                                                 setDropdownPosition(null);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
-                                        >
-                                            <SparklesIcon className="w-4 h-4 mr-3" />
-                                            AI Section
-                                        </button>
-                                    )}
+                                            } else {
+                                                setAiPromptMessage("To use AI-powered section generation, you need to configure your Gemini API connection first.");
+                                                setShowAIConnectionPrompt(true);
+                                                setOpenDropdown(null);
+                                                setDropdownPosition(null);
+                                            }
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                    >
+                                        <SparklesIcon className="w-4 h-4 mr-3" />
+                                        AI Section
+                                    </button>
                                     <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                                     <button
                                         onClick={() => {
@@ -1050,9 +1083,9 @@ ${jsonExample}
                                         <PencilIcon className="w-4 h-4 mr-3" />
                                         Edit Section
                                     </button>
-                                    {isGeminiConnected && (
-                                        <button
-                                            onClick={() => {
+                                    <button
+                                        onClick={() => {
+                                            if (isGeminiConnected) {
                                                 const template = templates.find(t => t.sections.some(s => s.id === openDropdown.id));
                                                 const section = template?.sections.find(s => s.id === openDropdown.id);
                                                 if (template && section) {
@@ -1065,13 +1098,18 @@ ${jsonExample}
                                                 }
                                                 setOpenDropdown(null);
                                                 setDropdownPosition(null);
-                                            }}
-                                            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
-                                        >
-                                            <SparklesIcon className="w-4 h-4 mr-3" />
-                                            AI Question
-                                        </button>
-                                    )}
+                                            } else {
+                                                setAiPromptMessage("To use AI-powered question generation, you need to configure your Gemini API connection first.");
+                                                setShowAIConnectionPrompt(true);
+                                                setOpenDropdown(null);
+                                                setDropdownPosition(null);
+                                            }
+                                        }}
+                                        className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center"
+                                    >
+                                        <SparklesIcon className="w-4 h-4 mr-3" />
+                                        AI Question
+                                    </button>
                                     <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
                                     <button
                                         onClick={() => {
@@ -1199,6 +1237,28 @@ ${jsonExample}
                         currentTemplateName={editTemplateData.templateName}
                     />
                 )}
+
+                {/* AI Connection Prompt Modal */}
+                <AIConnectionPromptModal
+                    isOpen={showAIConnectionPrompt}
+                    onClose={() => {
+                        setShowAIConnectionPrompt(false);
+                        setAiPromptMessage('');
+                    }}
+                    onConfigure={() => {
+                        setShowAIConnectionPrompt(false);
+                        setAiPromptMessage('');
+                        setShowAIConfigModal(true);
+                    }}
+                    title="AI Feature Requires Configuration"
+                    message={aiPromptMessage || "To use AI-powered features, you need to configure your Gemini API connection first."}
+                />
+
+                {/* AI Config Modal */}
+                <AIConfigModal
+                    isOpen={showAIConfigModal}
+                    onClose={() => setShowAIConfigModal(false)}
+                />
 
                 {/* AI Add Template Modal */}
                 {showAIAddTemplateModal && (
