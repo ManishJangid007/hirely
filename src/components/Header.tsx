@@ -40,7 +40,7 @@ const Header: React.FC<HeaderProps> = ({ onBackupClick }) => {
             <img
               src={logo}
               alt="Hirely"
-              className="h-14 w-auto object-contain"
+              className="h-[52px] w-auto object-contain"
             />
             <h1 className="text-2xl font-bold" style={{ color: 'var(--header-text)' }}>
               Hirely
