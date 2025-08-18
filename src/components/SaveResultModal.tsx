@@ -4,6 +4,8 @@ import Select from './Select';
 import { Candidate, Question } from '../types';
 import { databaseService } from '../services/database';
 import { generateContent, extractFirstText } from '../services/ai';
+import AIConnectionPromptModal from './AIConnectionPromptModal';
+import AIConfigModal from './AIConfigModal';
 
 interface SaveResultModalProps {
     isOpen: boolean;
@@ -23,6 +25,8 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
     const [description, setDescription] = useState('');
     const [result, setResult] = useState<'Passed' | 'Rejected' | 'Maybe'>('Passed');
     const [isGeminiConnected, setIsGeminiConnected] = useState(false);
+    const [showAIConnectionPrompt, setShowAIConnectionPrompt] = useState(false);
+    const [showAIConfigModal, setShowAIConfigModal] = useState(false);
     const [isAIGenerating, setIsAIGenerating] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
     const aiMessages = ['Judging the candidate', 'Evaluating the responses'];
@@ -144,38 +148,42 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
                                 <label htmlFor="description" className="form-label">
                                     Interview Description
                                 </label>
-                                {(isGeminiConnected && (getCorrectCount() > 0 || getWrongCount() > 0)) && (
+                                {(getCorrectCount() > 0 || getWrongCount() > 0) && (
                                     <span
                                         className="text-xs font-medium text-primary-600 dark:text-primary-400 cursor-pointer"
                                         title="AI summary"
                                         onClick={async () => {
-                                            setAiError(null);
-                                            setIsAIGenerating(true);
-                                            try {
-                                                // Build knows/doesn't know lists excluding unanswered
-                                                const knows = questions.filter(q => q.isAnswered && q.isCorrect === true);
-                                                const doesntKnow = questions.filter(q => q.isAnswered && q.isCorrect === false);
+                                            if (isGeminiConnected) {
+                                                setAiError(null);
+                                                setIsAIGenerating(true);
+                                                try {
+                                                    // Build knows/doesn't know lists excluding unanswered
+                                                    const knows = questions.filter(q => q.isAnswered && q.isCorrect === true);
+                                                    const doesntKnow = questions.filter(q => q.isAnswered && q.isCorrect === false);
 
-                                                const header = `Candidate Position: ${candidate.position}\nExperience: ${candidate.experience.years} years, ${candidate.experience.months} months`;
-                                                const knowsBlock = knows.length > 0
-                                                    ? `Knows (answered correctly):\n${knows.map(q => `- Q: ${q.text}${q.answer ? `\n  Expected: ${q.answer}` : ''}`).join('\n')}`
-                                                    : 'Knows: (none)';
-                                                const doesntKnowBlock = doesntKnow.length > 0
-                                                    ? `Doesn't know (answered wrong):\n${doesntKnow.map(q => `- Q: ${q.text}${q.answer ? `\n  Expected: ${q.answer}` : ''}`).join('\n')}`
-                                                    : `Doesn't know: (none)`;
+                                                    const header = `Candidate Position: ${candidate.position}\nExperience: ${candidate.experience.years} years, ${candidate.experience.months} months`;
+                                                    const knowsBlock = knows.length > 0
+                                                        ? `Knows (answered correctly):\n${knows.map(q => `- Q: ${q.text}${q.answer ? `\n  Expected: ${q.answer}` : ''}`).join('\n')}`
+                                                        : 'Knows: (none)';
+                                                    const doesntKnowBlock = doesntKnow.length > 0
+                                                        ? `Doesn't know (answered wrong):\n${doesntKnow.map(q => `- Q: ${q.text}${q.answer ? `\n  Expected: ${q.answer}` : ''}`).join('\n')}`
+                                                        : `Doesn't know: (none)`;
 
-                                                const formatSpec = `Respond ONLY in the following format (plain text, no markdown fences):\nPassed / Rejected\n  - Pros\n     - point 1\n     - point 2\n  - Cons\n     - point 1\n     - point 2\nNotes:\n- Pros/Cons sections are optional.\n- The first line MUST clearly be either 'Passed' or 'Rejected'.`;
+                                                    const formatSpec = `Respond ONLY in the following format (plain text, no markdown fences):\nPassed / Rejected\n  - Pros\n     - point 1\n     - point 2\n  - Cons\n     - point 1\n     - point 2\nNotes:\n- Pros/Cons sections are optional.\n- The first line MUST clearly be either 'Passed' or 'Rejected'.`;
 
-                                                const prompt = `You are an experienced interviewer. Using the information below, produce a concise evaluation.\n${header}\n\n${knowsBlock}\n\n${doesntKnowBlock}\n\n${formatSpec}`;
+                                                    const prompt = `You are an experienced interviewer. Using the information below, produce a concise evaluation.\n${header}\n\n${knowsBlock}\n\n${doesntKnowBlock}\n\n${formatSpec}`;
 
-                                                const res = await generateContent({ prompt, timeoutMs: 25000 });
-                                                const text = (extractFirstText(res) || '').trim();
-                                                if (!text) throw new Error('Empty AI response');
-                                                setDescription(text);
-                                            } catch (err: any) {
-                                                setAiError(err?.message || 'Failed to generate summary');
-                                            } finally {
-                                                setIsAIGenerating(false);
+                                                    const res = await generateContent({ prompt, timeoutMs: 25000 });
+                                                    const text = (extractFirstText(res) || '').trim();
+                                                    if (!text) throw new Error('Empty AI response');
+                                                    setDescription(text);
+                                                } catch (err: any) {
+                                                    setAiError(err?.message || 'Failed to generate summary');
+                                                } finally {
+                                                    setIsAIGenerating(false);
+                                                }
+                                            } else {
+                                                setShowAIConnectionPrompt(true);
                                             }
                                         }}
                                     >
@@ -227,6 +235,24 @@ const SaveResultModal: React.FC<SaveResultModalProps> = ({
                     </form>
                 </div>
             </div>
+
+            {/* AI Connection Prompt Modal */}
+            <AIConnectionPromptModal
+                isOpen={showAIConnectionPrompt}
+                onClose={() => setShowAIConnectionPrompt(false)}
+                onConfigure={() => {
+                    setShowAIConnectionPrompt(false);
+                    setShowAIConfigModal(true);
+                }}
+                title="AI Summary Requires Configuration"
+                message="To use AI-powered interview summary generation, you need to configure your Gemini API connection first."
+            />
+
+            {/* AI Config Modal */}
+            <AIConfigModal
+                isOpen={showAIConfigModal}
+                onClose={() => setShowAIConfigModal(false)}
+            />
 
             {/* AI Generating Overlay */}
             {isAIGenerating && (
