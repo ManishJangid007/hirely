@@ -3,7 +3,7 @@ module.exports = {
         {
             name: 'hirely-interview-app',
             script: 'npx',
-            args: 'serve -s build -l 3000',
+            args: 'serve -s build -l 3000 --single',
             cwd: './',
             instances: 1,
             autorestart: true,
