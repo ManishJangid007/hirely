@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { XMarkIcon, PlusIcon, PencilIcon, TrashIcon, DocumentTextIcon, MagnifyingGlassIcon, SparklesIcon, EyeIcon, EllipsisVerticalIcon, ArrowDownTrayIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { JobDescription } from '../types';
 import ConfirmationModal from './ConfirmationModal';
+import AIConnectionPromptModal from './AIConnectionPromptModal';
+import AIConfigModal from './AIConfigModal';
 import { generateContent, extractFirstText } from '../services/ai';
 import { databaseService } from '../services/database';
 
@@ -44,6 +46,8 @@ const JobDescriptionsModal: React.FC<JobDescriptionsModalProps> = ({
     const [showImportModal, setShowImportModal] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [showAIConnectionPrompt, setShowAIConnectionPrompt] = useState(false);
+    const [showAIConfigModal, setShowAIConfigModal] = useState(false);
     const [isGeminiConnected, setIsGeminiConnected] = useState<boolean>(false);
 
     // Check AI connection when modal opens
@@ -572,18 +576,20 @@ The description should be well-structured and suitable for job postings.`;
                                     <PlusIcon className="w-5 h-5" />
                                 </button>
 
-                                {isGeminiConnected && (
-                                    <button
-                                        onClick={() => {
+                                <button
+                                    onClick={() => {
+                                        if (isGeminiConnected) {
                                             setShowAIForm(true);
                                             setShowAddForm(false);
-                                        }}
-                                        className="inline-flex items-center p-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
-                                        title="AI Assistant"
-                                    >
-                                        <SparklesIcon className="w-5 h-5" />
-                                    </button>
-                                )}
+                                        } else {
+                                            setShowAIConnectionPrompt(true);
+                                        }
+                                    }}
+                                    className="inline-flex items-center p-2 border border-primary-300 dark:border-primary-600 rounded-full shadow-sm text-sm font-medium text-primary-700 dark:text-primary-800 bg-primary-50 dark:bg-primary-900/30 hover:bg-primary-100 dark:hover:bg-primary-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-gray-800 transition-all duration-200"
+                                    title="AI Assistant"
+                                >
+                                    <SparklesIcon className="w-5 h-5" />
+                                </button>
                             </div>
 
                             <div className="flex-1 max-w-xs ml-4 relative">
@@ -887,6 +893,24 @@ The description should be well-structured and suitable for job postings.`;
                     </div>
                 </div>
             )}
+
+            {/* AI Connection Prompt Modal */}
+            <AIConnectionPromptModal
+                isOpen={showAIConnectionPrompt}
+                onClose={() => setShowAIConnectionPrompt(false)}
+                onConfigure={() => {
+                    setShowAIConnectionPrompt(false);
+                    setShowAIConfigModal(true);
+                }}
+                title="AI Job Description Requires Configuration"
+                message="To use AI-powered job description generation, you need to configure your Gemini API connection first."
+            />
+
+            {/* AI Config Modal */}
+            <AIConfigModal
+                isOpen={showAIConfigModal}
+                onClose={() => setShowAIConfigModal(false)}
+            />
 
             {/* Delete Confirmation Modal */}
             <ConfirmationModal
