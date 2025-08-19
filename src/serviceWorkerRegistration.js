@@ -44,6 +44,11 @@ function registerValidSW(swUrl, config) {
     navigator.serviceWorker
         .register(swUrl)
         .then((registration) => {
+            // Check for updates every hour
+            setInterval(() => {
+                registration.update();
+            }, 1000 * 60 * 60);
+
             registration.onupdatefound = () => {
                 const installingWorker = registration.installing;
                 if (installingWorker == null) {
@@ -56,7 +61,7 @@ function registerValidSW(swUrl, config) {
                             // but the previous service worker will still serve the older
                             // content until all client tabs are closed.
 
-                            // Execute callback
+                            // Execute callback for update
                             if (config && config.onUpdate) {
                                 config.onUpdate(registration);
                             }
@@ -66,7 +71,7 @@ function registerValidSW(swUrl, config) {
                             // "Content is cached for offline use." message.
                             // No-op
 
-                            // Execute callback
+                            // Execute callback for success
                             if (config && config.onSuccess) {
                                 config.onSuccess(registration);
                             }
@@ -74,9 +79,17 @@ function registerValidSW(swUrl, config) {
                     }
                 };
             };
+
+            // Handle waiting service worker
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
+            });
         })
         .catch((error) => {
-            // No-op
+            console.error('Error during service worker registration:', error);
         });
 }
 
@@ -104,7 +117,7 @@ function checkValidServiceWorker(swUrl, config) {
             }
         })
         .catch(() => {
-            // No-op
+            console.log('No internet connection found. App is running in offline mode.');
         });
 }
 
@@ -115,7 +128,19 @@ export function unregister() {
                 registration.unregister();
             })
             .catch((error) => {
-                // No-op
+                console.error(error.message);
             });
+    }
+}
+
+// Function to skip waiting and reload the page
+export function skipWaiting() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then((registration) => {
+            if (registration.waiting) {
+                // Send message to waiting service worker
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+        });
     }
 } 

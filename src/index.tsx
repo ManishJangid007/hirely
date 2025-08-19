@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
+import UpdatePrompt from './components/UpdatePrompt';
 
 // Initialize PWA theme colors before React renders
 const initializePWATheme = () => {
@@ -56,17 +57,53 @@ const initializePWATheme = () => {
 // Initialize theme before React renders
 initializePWATheme();
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+// Create root element
+const rootElement = document.getElementById('root') as HTMLElement;
+const root = ReactDOM.createRoot(rootElement);
+
+// Create a wrapper component to handle service worker updates
+const AppWrapper = () => {
+  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
+
+  useEffect(() => {
+    // Service worker update callback
+    const onUpdate = (registration: ServiceWorkerRegistration) => {
+      console.log('New content is available; please refresh.');
+      setShowUpdatePrompt(true);
+    };
+
+    // Service worker success callback
+    const onSuccess = (registration: ServiceWorkerRegistration) => {
+      console.log('Content is cached for offline use.');
+    };
+
+    // Register service worker with callbacks
+    serviceWorkerRegistration.register({
+      onUpdate,
+      onSuccess,
+    });
+  }, []);
+
+  const handleUpdate = () => {
+    serviceWorkerRegistration.skipWaiting();
+  };
+
+  const handleDismiss = () => {
+    setShowUpdatePrompt(false);
+  };
+
+  return (
+    <>
+      <App />
+      {showUpdatePrompt && (
+        <UpdatePrompt onUpdate={handleUpdate} onDismiss={handleDismiss} />
+      )}
+    </>
+  );
+};
 
 root.render(
   <React.StrictMode>
-    <App />
+    <AppWrapper />
   </React.StrictMode>
 );
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
-serviceWorkerRegistration.register();
